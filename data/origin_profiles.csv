@@ -1,0 +1,15 @@
+﻿country,acidity,body,sweetness,common_notes,recommended_methods
+Ethiopia,high,light,medium_high,"jasmine,citrus,bergamot,peach","V60,Origami"
+Kenya,high,medium,high,"berry,currant,citrus","V60,Origami"
+Colombia,medium,medium,medium_high,"caramel,nutty,red_fruit","V60,Aeropress"
+Brazil,low,heavy,medium,"chocolate,nutty,brown_sugar","V60,French Press"
+India,low,heavy,medium,"spice,dark_chocolate,nutty","Moka Pot,French Press"
+Guatemala,medium,medium,medium,"chocolate,citrus,caramel",V60
+Costa Rica,medium_high,medium,high,"honey,citrus,tropical_fruit",V60
+El Salvador,low_medium,medium,high,"caramel,chocolate,almond","V60,Aeropress"
+Panama,high,light,high,"jasmine,bergamot,tropical_fruit","V60,Origami"
+Rwanda,medium_high,medium,high,"berry,tea_like,citrus",V60
+Peru,medium,medium,medium,"caramel,cocoa,nutty",V60
+Honduras,medium,medium,medium,"chocolate,stone_fruit,caramel","V60,Aeropress"
+Nicaragua,medium,medium,medium,"cocoa,nutty,brown_sugar",V60
+Indonesia,low,heavy,medium,"earthy,spice,dark_chocolate","French Press,Moka Pot"

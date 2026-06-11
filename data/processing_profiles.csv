@@ -1,0 +1,10 @@
+﻿process,expected_acidity,expected_body,expected_sweetness,common_characteristics
+washed,high,light_medium,medium,"clean,bright,high_clarity"
+natural,medium,heavy,high,"fruity,sweet,round"
+honey,medium,medium,high,"sweet,syrupy,balanced"
+anaerobic,medium_high,heavy,high,"funky,fermented,complex"
+carbonic_maceration,medium_high,medium,high,"winey,fruit_forward"
+wet_hulled,low,heavy,medium,"earthy,spicy,low_acidity"
+semi_washed,medium,medium,medium,"balanced,clean"
+co_fermented,medium_high,heavy,high,"intense_fruit,experimental"
+lactic_fermentation,medium_high,medium,high,"yogurt_like,complex"
