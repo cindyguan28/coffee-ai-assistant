@@ -16,8 +16,8 @@ def ask_ollama(prompt: str, model: str = "llama3.2:3b") -> str:
         data = response.json()
         return data.get("response", "").strip()
     except requests.exceptions.ConnectionError:
-        return "无法连接 Ollama。请确认已经运行：ollama serve"
+        return "Cannot connect to Ollama. Please run: ollama serve"
     except requests.exceptions.Timeout:
-        return "Ollama 响应超时。"
+        return "Ollama request timed out."
     except Exception as e:
-        return f"Ollama 调用失败：{e}"
+        return f"Ollama error: {e}"

@@ -21,10 +21,10 @@ st.set_page_config(
 init_db()
 
 st.title("☕ Coffee AI Assistant V2")
-st.caption("Personal coffee database + bean profile generation + local AI assistant")
+st.caption("Personal coffee database + bean profile generation + brew log + local AI assistant")
 
-tab_beans, tab_profiles, tab_brew, tab_ai = st.tabs(
-    ["Beans", "Bean Profiles", "Brew Logs", "AI Assistant"]
+tab_beans, tab_profiles, tab_brew, tab_best, tab_ai = st.tabs(
+    ["Beans", "Bean Profiles", "Brew Logs", "Best Settings", "AI Assistant"]
 )
 
 
@@ -603,19 +603,111 @@ with tab_brew:
 
 
 with tab_ai:
-    st.subheader("Ask Local AI")
+    st.subheader("AI Brewing Assistant")
+    st.caption("Uses your brew logs to suggest the next grind adjustment.")
 
-    question = st.text_area(
-        "Question",
-        placeholder="Example: How should I brew this India medium roast coffee with low acidity?"
+    model = st.text_input("Ollama model", value="qwen2.5:7b")
+
+    brew_logs = fetch_all(
+        """
+        SELECT
+            brew_logs.brew_date,
+            beans.name AS bean_name,
+            beans.roaster,
+            beans.country,
+            beans.roast_level,
+            beans.flavor_notes,
+            brew_logs.machine_model,
+            brew_logs.grinder_type,
+            brew_logs.brew_method,
+            brew_logs.drink_type,
+            brew_logs.grind_setting,
+            brew_logs.default_dose_g,
+            brew_logs.espresso_volume_ml,
+            brew_logs.extraction_time_sec,
+            brew_logs.milk_ml,
+            brew_logs.milk_type,
+            brew_logs.acidity,
+            brew_logs.bitterness,
+            brew_logs.body,
+            brew_logs.sweetness,
+            brew_logs.balance,
+            brew_logs.score,
+            brew_logs.taste_result,
+            brew_logs.problem_tags,
+            brew_logs.next_adjustment,
+            brew_logs.notes
+        FROM brew_logs
+        LEFT JOIN beans ON brew_logs.bean_id = beans.id
+        ORDER BY brew_logs.id DESC
+        LIMIT 30
+        """
     )
 
-    model = st.text_input("Ollama model", value="llama3.2:3b")
+    if not brew_logs:
+        st.info("Add some brew logs first. AI needs your own taste data.")
+    else:
+        st.dataframe(pd.DataFrame(brew_logs), use_container_width=True)
 
-    if st.button("Ask Ollama"):
-        if not question:
-            st.warning("Please enter a question.")
-        else:
-            with st.spinner("Calling Ollama..."):
-                answer = ask_ollama(question, model=model)
+        user_question = st.text_area(
+            "Question",
+            value="Based on my brew logs, what grind setting should I try next and how should I adjust if the coffee is too sour, too bitter, or too weak after adding milk?",
+)
+
+        if st.button("Ask AI"):
+            history_text = pd.DataFrame(brew_logs).to_string(index=False)
+
+            prompt = f"""
+You are a coffee assistant.
+
+STRICT RULES:
+- Answer ONLY in English.
+- Never use Chinese.
+- Never use Traditional Chinese.
+- Never mix multiple languages.
+- Use concise and practical recommendations.
+- Focus primarily on grind setting.
+- Consider milk amount when the drink type contains milk.
+- Ignore water temperature unless explicitly provided.
+- Ignore extraction time if it is missing or zero.
+- Do not invent machine parameters that are not in the data.
+
+User brew logs:
+
+{history_text}
+
+User question:
+
+{user_question}
+
+Respond using this exact structure:
+
+## Recommendation
+
+One sentence summary of the best grind setting to try.
+
+## Reasoning
+
+Explain the recommendation based on the available brew logs.
+
+## Next Test
+
+- Grind setting:
+- Milk amount:
+- Drink type:
+- What to observe:
+
+## Adjustment Guide
+
+- If too sour:
+- If too bitter:
+- If too weak:
+- If milk hides the coffee flavor:
+
+Keep the answer practical and based only on the available data.
+"""
+
+            with st.spinner("Calling local Ollama..."):
+                answer = ask_ollama(prompt, model=model)
+
             st.markdown(answer)
