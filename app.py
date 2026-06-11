@@ -4,6 +4,12 @@ import streamlit as st
 from database.db import init_db, execute, fetch_all, fetch_one
 from ai.bean_profile_engine import generate_bean_profile
 from ai.ollama_client import ask_ollama
+from database.import_knowledge import (
+    get_country_options,
+    get_process_options,
+    get_roast_level_options,
+    get_flavor_note_options,
+)
 
 
 st.set_page_config(
@@ -33,17 +39,23 @@ with tab_beans:
             roaster = st.text_input("Roaster")
 
         with col2:
-            country = st.text_input("Country", placeholder="Example: Colombia, India, Ethiopia")
-            process = st.text_input("Process", placeholder="Example: washed, natural, honey")
+            country = st.selectbox("Country", get_country_options())
+            process = st.selectbox("Process", get_process_options())
 
         with col3:
-            roast_level = st.text_input("Roast level", placeholder="Example: light, medium_light, medium")
-            notes = st.text_area("Personal notes")
-
+            roast_level = st.selectbox("Roast level", get_roast_level_options())
+            selected_flavor_notes = st.multiselect(
+            "Flavor notes",
+            get_flavor_note_options(),
+            help="Choose flavor notes from the knowledge base."
+        )
+            
         description_raw = st.text_area(
             "Raw description",
             placeholder="Example: ausgewogen, kräftig und würzig, aber mit dezenter Säure"
         )
+
+        notes = st.text_area("Personal notes")
 
         submitted = st.form_submit_button("Save Bean")
 
@@ -51,13 +63,27 @@ with tab_beans:
             if not name:
                 st.error("Bean name is required.")
             else:
+                flavor_notes_text = ",".join(selected_flavor_notes)
+
+                combined_notes = notes
+                if flavor_notes_text:
+                    combined_notes = f"{notes}\n\nSelected flavor notes: {flavor_notes_text}".strip()
+
                 execute(
                     """
                     INSERT INTO beans
                     (name, roaster, country, process, roast_level, description_raw, notes)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    [name, roaster, country, process, roast_level, description_raw, notes],
+                    [
+                        name,
+                        roaster,
+                        country,
+                        process,
+                        roast_level,
+                        description_raw,
+                        combined_notes,
+                    ],
                 )
                 st.success("Bean saved.")
 
