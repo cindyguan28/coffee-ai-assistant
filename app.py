@@ -247,6 +247,7 @@ with tab_profiles:
 
 with tab_brew:
     st.subheader("Add Brew Log")
+    st.caption("This log is optimized for a home barista machine. Most technical values are optional.")
 
     beans = fetch_all("SELECT id, name FROM beans ORDER BY id DESC")
 
@@ -255,26 +256,252 @@ with tab_brew:
     else:
         bean_options = {f"{bean['id']} | {bean['name']}": bean["id"] for bean in beans}
 
+        brew_method_options = [
+            "espresso_machine",
+            "automatic_machine",
+            "moka_pot",
+            "french_press",
+            "v60",
+            "other",
+        ]
+
+        brew_method_help = {
+            "espresso_machine": "Semi-automatic or barista-style machine. Usually uses fine grind and pressure extraction.",
+            "automatic_machine": "Fully automatic machine with built-in grinder and automatic extraction.",
+            "moka_pot": "Stovetop moka pot. Uses medium-fine grind.",
+            "french_press": "Immersion brew. Uses coarse grind.",
+            "v60": "Pour-over method. Uses medium grind.",
+            "other": "Use this if the method does not fit the above categories.",
+        }
+
+        drink_type_options = [
+            "espresso",
+            "lungo",
+            "americano",
+            "cappuccino",
+            "latte",
+            "flat_white",
+            "milk_coffee",
+            "other",
+        ]
+
+        grinder_type_options = [
+            "",
+            "built_in_grinder",
+            "external_electric_grinder",
+            "manual_grinder",
+            "pre_ground",
+            "unknown",
+        ]
+
+        milk_type_options = [
+            "",
+            "whole_milk",
+            "low_fat_milk",
+            "lactose_free_milk",
+            "oat_milk",
+            "soy_milk",
+            "almond_milk",
+            "other",
+        ]
+
+        taste_result_options = [
+            "",
+            "excellent",
+            "good",
+            "okay",
+            "too_sour",
+            "too_bitter",
+            "too_weak",
+            "too_strong",
+            "watery",
+            "astringent",
+            "flat",
+            "good_with_milk",
+            "bad_with_milk",
+        ]
+
+        problem_tag_options = [
+            "too_sour",
+            "too_bitter",
+            "too_weak",
+            "too_strong",
+            "watery",
+            "astringent",
+            "flat",
+            "not_enough_body",
+            "milk_too_much",
+            "milk_too_little",
+            "good_with_milk",
+            "good_balance",
+        ]
+
+        next_adjustment_options = [
+            "",
+            "grind_finer",
+            "grind_coarser",
+            "increase_dose",
+            "decrease_dose",
+            "increase_milk",
+            "decrease_milk",
+            "try_as_espresso",
+            "try_with_milk",
+            "keep_setting",
+        ]
+
         with st.form("add_brew_log"):
+            st.markdown("### Basic Info")
+
             col1, col2, col3 = st.columns(3)
 
             with col1:
                 selected_bean = st.selectbox("Bean", list(bean_options.keys()))
-                brew_date = st.date_input("Brew date")
-                brew_method = st.text_input("Brew method", value="V60")
+                brew_date = st.date_input(
+                    "Brew date",
+                    help="The date you made this cup."
+                )
+                bean_best_before = st.text_input(
+                    "Bean best before / roast info",
+                    value="",
+                    placeholder="Example: best before 2026-12 / roasted on 2026-06-01 / unknown",
+                    help="Use this if the package only shows a best-before date instead of roast date."
+                )
 
             with col2:
-                grinder = st.text_input("Grinder")
-                grind_setting = st.text_input("Grind setting")
-                brew_time = st.text_input("Brew time", placeholder="Example: 2:30")
+                brew_method = st.selectbox(
+                    "Brew method",
+                    brew_method_options,
+                    index=brew_method_options.index("espresso_machine"),
+                    help="Choose the closest brewing setup."
+                )
+                st.caption(brew_method_help.get(brew_method, ""))
+
+                drink_type = st.selectbox(
+                    "Drink type",
+                    drink_type_options,
+                    index=drink_type_options.index("cappuccino"),
+                    help="What did you actually drink?"
+                )
 
             with col3:
-                dose_g = st.number_input("Dose g", min_value=0.0, value=15.0, step=0.5)
-                water_g = st.number_input("Water g", min_value=0.0, value=240.0, step=5.0)
-                water_temp_c = st.number_input("Water temp °C", min_value=0.0, value=92.0, step=1.0)
+                machine_model = st.text_input(
+                    "Machine model",
+                    value="Sage Barista Impress",
+                    placeholder="Example: Sage Barista Express / DeLonghi La Specialista",
+                    help="Useful because grind settings are machine-specific."
+                )
+                grinder_type = st.selectbox(
+                    "Grinder type",
+                    grinder_type_options,
+                    index=grinder_type_options.index("built_in_grinder"),
+                    help="Built-in grinder means the grind setting is usually machine-specific."
+                )
 
-            score = st.slider("Score", 1.0, 10.0, 8.0, 0.1)
-            notes = st.text_area("Tasting notes")
+            st.markdown("### Machine Setting")
+
+            col4, col5, col6 = st.columns(3)
+
+            with col4:
+                grind_setting = st.slider(
+                    "Grind setting",
+                    min_value=1,
+                    max_value=26,
+                    value=10,
+                    help="Use the number shown on your machine or grinder. For example, 1 = finer, 20 = coarser if your machine works that way."
+                )
+
+            with col5:
+                default_dose_g = st.number_input(
+                    "Default dose g",
+                    min_value=0.0,
+                    value=9.0,
+                    step=0.5,
+                    help="Optional. Many machines dose automatically, so leave 0 if unknown."
+                )
+
+            with col6:
+                espresso_volume_ml = st.number_input(
+                    "Espresso output ml",
+                    min_value=0.0,
+                    value=20.0,
+                    step=2.0,
+                    help="Optional. Leave 0 if your machine does not show or you do not measure it."
+                )
+
+            col7, col8, col9 = st.columns(3)
+
+            with col7:
+                extraction_time_sec = st.number_input(
+                    "Extraction time sec",
+                    min_value=0.0,
+                    value=25.0,
+                    step=1.0,
+                    help="Optional. Time from starting extraction to coffee flow stopping. Leave 0 if unknown."
+                )
+
+            with col8:
+                milk_ml = st.number_input(
+                    "Milk amount ml",
+                    min_value=0.0,
+                    value=80.0,
+                    step=10.0,
+                    help="Optional. Useful for latte/cappuccino taste comparison."
+                )
+
+            with col9:
+                milk_type = st.selectbox(
+                    "Milk type",
+                    milk_type_options,
+                    index=milk_type_options.index("whole_milk"),
+                    help="Milk type can strongly affect sweetness and body."
+                )
+
+            st.markdown("### Taste Evaluation")
+
+            col10, col11, col12, col13, col14 = st.columns(5)
+
+            with col10:
+                acidity = st.slider("Acidity", 1, 5, 3)
+            with col11:
+                bitterness = st.slider("Bitterness", 1, 5, 3)
+            with col12:
+                body = st.slider("Body", 1, 5, 3)
+            with col13:
+                sweetness = st.slider("Sweetness", 1, 5, 3)
+            with col14:
+                balance = st.slider("Balance", 1, 5, 3)
+
+            score = st.slider(
+                "Overall score",
+                1.0,
+                10.0,
+                8.0,
+                0.1,
+                help="Your personal overall score for this cup."
+            )
+
+            taste_result = st.selectbox(
+                "Taste result",
+                taste_result_options,
+                help="A quick summary of how this cup tasted."
+            )
+
+            problem_tags = st.multiselect(
+                "Problem tags",
+                problem_tag_options,
+                help="Choose all that apply. This helps future AI learn how grind setting affects taste."
+            )
+
+            next_adjustment = st.selectbox(
+                "Next adjustment",
+                next_adjustment_options,
+                help="What should you try next time?"
+            )
+
+            notes = st.text_area(
+                "Notes",
+                placeholder="Example: grind 8 tasted too sour; grind 7 was better with 120ml milk."
+            )
 
             submitted = st.form_submit_button("Save Brew Log")
 
@@ -283,22 +510,55 @@ with tab_brew:
                     """
                     INSERT INTO brew_logs
                     (
-                        bean_id, brew_date, brew_method, grinder, grind_setting,
-                        dose_g, water_g, water_temp_c, brew_time, score, notes
+                        bean_id,
+                        brew_date,
+                        bean_best_before,
+                        machine_model,
+                        grinder_type,
+                        default_dose_g,
+                        brew_method,
+                        drink_type,
+                        grind_setting,
+                        espresso_volume_ml,
+                        extraction_time_sec,
+                        milk_ml,
+                        milk_type,
+                        acidity,
+                        bitterness,
+                        body,
+                        sweetness,
+                        balance,
+                        score,
+                        taste_result,
+                        problem_tags,
+                        next_adjustment,
+                        notes
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     [
                         bean_options[selected_bean],
                         str(brew_date),
+                        bean_best_before,
+                        machine_model,
+                        grinder_type,
+                        default_dose_g if default_dose_g != 0 else None,
                         brew_method,
-                        grinder,
+                        drink_type,
                         grind_setting,
-                        dose_g,
-                        water_g,
-                        water_temp_c,
-                        brew_time,
+                        espresso_volume_ml if espresso_volume_ml != 0 else None,
+                        extraction_time_sec if extraction_time_sec != 0 else None,
+                        milk_ml if milk_ml != 0 else None,
+                        milk_type,
+                        acidity,
+                        bitterness,
+                        body,
+                        sweetness,
+                        balance,
                         score,
+                        taste_result,
+                        ",".join(problem_tags),
+                        next_adjustment,
                         notes,
                     ],
                 )
@@ -312,14 +572,26 @@ with tab_brew:
             brew_logs.id,
             brew_logs.brew_date,
             beans.name AS bean_name,
+            brew_logs.bean_best_before,
+            brew_logs.machine_model,
+            brew_logs.grinder_type,
             brew_logs.brew_method,
-            brew_logs.grinder,
+            brew_logs.drink_type,
             brew_logs.grind_setting,
-            brew_logs.dose_g,
-            brew_logs.water_g,
-            brew_logs.water_temp_c,
-            brew_logs.brew_time,
+            brew_logs.default_dose_g,
+            brew_logs.espresso_volume_ml,
+            brew_logs.extraction_time_sec,
+            brew_logs.milk_ml,
+            brew_logs.milk_type,
+            brew_logs.acidity,
+            brew_logs.bitterness,
+            brew_logs.body,
+            brew_logs.sweetness,
+            brew_logs.balance,
             brew_logs.score,
+            brew_logs.taste_result,
+            brew_logs.problem_tags,
+            brew_logs.next_adjustment,
             brew_logs.notes
         FROM brew_logs
         LEFT JOIN beans ON brew_logs.bean_id = beans.id
