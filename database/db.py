@@ -9,6 +9,24 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 
+def add_column_if_missing(cur, table_name: str, column_name: str, column_def: str):
+    cur.execute(f"PRAGMA table_info({table_name})")
+    existing_columns = [row[1] for row in cur.fetchall()]
+
+    if column_name not in existing_columns:
+        cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
+
+
+def migrate_db(cur):
+    add_column_if_missing(cur, "beans", "flavor_notes", "TEXT")
+    add_column_if_missing(cur, "beans", "acidity", "TEXT")
+    add_column_if_missing(cur, "beans", "body", "TEXT")
+    add_column_if_missing(cur, "beans", "sweetness", "TEXT")
+    add_column_if_missing(cur, "beans", "milk_compatibility", "TEXT")
+    add_column_if_missing(cur, "beans", "personal_interest", "TEXT")
+    add_column_if_missing(cur, "beans", "description_raw", "TEXT")
+    add_column_if_missing(cur, "beans", "notes", "TEXT")
+
 def init_db():
     conn = get_connection()
     cur = conn.cursor()
@@ -21,8 +39,17 @@ def init_db():
         country TEXT,
         process TEXT,
         roast_level TEXT,
+
+        flavor_notes TEXT,
+        acidity TEXT,
+        body TEXT,
+        sweetness TEXT,
+        milk_compatibility TEXT,
+        personal_interest TEXT,
+
         description_raw TEXT,
         notes TEXT,
+
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
@@ -68,19 +95,11 @@ def init_db():
         FOREIGN KEY(bean_id) REFERENCES beans(id)
     )
     """)
+
     migrate_db(cur)
+
     conn.commit()
     conn.close()
-
-def migrate_db(cur):
-    def add_column_if_missing(table_name: str, column_name: str, column_def: str):
-        cur.execute(f"PRAGMA table_info({table_name})")
-        existing_columns = [row[1] for row in cur.fetchall()]
-
-        if column_name not in existing_columns:
-            cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
-
-    add_column_if_missing("brew_logs", "brew_time", "TEXT")
 
 
 def execute(query, params=None):

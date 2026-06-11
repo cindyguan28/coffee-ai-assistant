@@ -32,60 +32,122 @@ with tab_beans:
     st.subheader("Add Coffee Bean")
 
     with st.form("add_bean"):
+        country_options = get_country_options()
+        process_options = get_process_options()
+        roast_level_options = get_roast_level_options()
+        flavor_note_options = get_flavor_note_options()
+
+        acidity_options = ["", "very_low", "low", "medium", "high", "very_high"]
+        body_options = ["", "light", "medium", "heavy", "full_bodied", "round", "creamy"]
+        sweetness_options = ["", "low", "medium", "high", "very_high"]
+
+        milk_compatibility_options = [
+            "",
+            "excellent_with_milk",
+            "good_with_milk",
+            "okay_with_milk",
+            "espresso_only",
+            "unknown",
+        ]
+
+        personal_interest_options = [
+            "flavor_notes",
+            "recommended_by_friend",
+            "online_review",
+            "roaster_recommendation",
+            "origin_curiosity",
+            "milk_drink_testing",
+            "espresso_testing",
+            "discount_or_offer",
+            "beautiful_packaging",
+            "experiment",
+        ]
+
         col1, col2, col3 = st.columns(3)
 
         with col1:
             name = st.text_input("Bean name *")
             roaster = st.text_input("Roaster")
+            country = st.selectbox("Country", country_options)
 
         with col2:
-            country = st.selectbox("Country", get_country_options())
-            process = st.selectbox("Process", get_process_options())
+            process = st.selectbox("Process", process_options)
+            roast_level = st.selectbox("Roast level", roast_level_options)
+            milk_compatibility = st.selectbox(
+                "Milk compatibility",
+                milk_compatibility_options,
+            )
 
         with col3:
-            roast_level = st.selectbox("Roast level", get_roast_level_options())
-            selected_flavor_notes = st.multiselect(
+            acidity = st.selectbox("Acidity", acidity_options)
+            body = st.selectbox("Body", body_options)
+            sweetness = st.selectbox("Sweetness", sweetness_options)
+
+        selected_flavor_notes = st.multiselect(
             "Flavor notes",
-            get_flavor_note_options(),
-            help="Choose flavor notes from the knowledge base."
-        )
-            
-        description_raw = st.text_area(
-            "Raw description",
-            placeholder="Example: ausgewogen, kräftig und würzig, aber mit dezenter Säure"
+            flavor_note_options,
+            help="Choose flavor notes from the knowledge base.",
         )
 
-        notes = st.text_area("Personal notes")
+        selected_personal_interest = st.multiselect(
+            "Personal interest",
+            personal_interest_options,
+            help="Why did you buy or want to test this bean?",
+        )
+
+        description_raw = st.text_area(
+            "Raw description",
+            placeholder="Original description from package or website, e.g. ausgewogen, kräftig und würzig, aber mit dezenter Säure",
+        )
+
+        notes = st.text_area(
+            "Personal notes",
+            placeholder="Your own notes, e.g. looks suitable for latte, bought for testing, friend recommended...",
+        )
 
         submitted = st.form_submit_button("Save Bean")
 
-        if submitted:
-            if not name:
-                st.error("Bean name is required.")
-            else:
-                flavor_notes_text = ",".join(selected_flavor_notes)
-
-                combined_notes = notes
-                if flavor_notes_text:
-                    combined_notes = f"{notes}\n\nSelected flavor notes: {flavor_notes_text}".strip()
-
-                execute(
-                    """
-                    INSERT INTO beans
-                    (name, roaster, country, process, roast_level, description_raw, notes)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    [
-                        name,
-                        roaster,
-                        country,
-                        process,
-                        roast_level,
-                        description_raw,
-                        combined_notes,
-                    ],
+    if submitted:
+        if not name:
+            st.error("Bean name is required.")
+        else:
+            execute(
+                """
+                INSERT INTO beans
+                (
+                    name,
+                    roaster,
+                    country,
+                    process,
+                    roast_level,
+                    flavor_notes,
+                    acidity,
+                    body,
+                    sweetness,
+                    milk_compatibility,
+                    personal_interest,
+                    description_raw,
+                    notes
                 )
-                st.success("Bean saved.")
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    name,
+                    roaster,
+                    country,
+                    process,
+                    roast_level,
+                    ",".join(selected_flavor_notes),
+                    acidity,
+                    body,
+                    sweetness,
+                    milk_compatibility,
+                    ",".join(selected_personal_interest),
+                    description_raw,
+                    notes,
+                ],
+            )
+            st.success("Bean saved.")
 
     st.subheader("Bean List")
 
