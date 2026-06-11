@@ -1,0 +1,13 @@
+﻿en,zh,possible_cause
+too_sour,太酸,under_extraction
+too_bitter,太苦,over_extraction
+watery,水感重,low_strength
+hollow,中段空,uneven_extraction
+muddy,浑浊,too_many_fines
+astringent,涩感,over_extraction
+flat,平淡,stale_coffee
+grassy,青草味,underdeveloped_roast
+slow_drawdown,流速过慢,too_fine
+fast_drawdown,流速过快,too_coarse
+dry_finish,收口发干,over_extraction
+harsh,刺激感强,channeling_or_overextraction
