@@ -13,6 +13,13 @@ from database.import_knowledge import (
 )
 
 
+def rerun_app():
+    try:
+        st.experimental_rerun()
+    except AttributeError:
+        st.stop()
+
+
 st.set_page_config(
     page_title="Coffee AI Assistant",
     page_icon="☕",
@@ -202,6 +209,214 @@ with tab_beans:
     st.dataframe(pd.DataFrame(beans), use_container_width=True)
 
     if beans:
+        st.subheader("Edit Bean Entry")
+        edit_options = {"Select a bean to edit": None}
+        edit_options.update({
+            f"{bean['id']} | {bean['name']} | {bean.get('country') or ''}": bean["id"]
+            for bean in beans
+        })
+        edit_label = st.selectbox("Select bean to edit", list(edit_options.keys()))
+        edit_id = edit_options[edit_label]
+
+        if edit_id:
+            bean_to_edit = fetch_one("SELECT * FROM beans WHERE id = ?", [edit_id])
+            with st.form("edit_bean"):
+                country_options = get_country_options()
+                process_options = get_process_options()
+                roast_level_options = get_roast_level_options()
+                flavor_note_options = get_flavor_note_options()
+                roaster_options = [""] + get_roaster_options()
+
+                previous_roaster_rows = fetch_all(
+                    "SELECT roaster, COUNT(*) AS cnt FROM beans WHERE roaster IS NOT NULL AND roaster != '' GROUP BY roaster ORDER BY cnt DESC"
+                )
+                previous_roasters = [row["roaster"] for row in previous_roaster_rows if row.get("roaster")]
+                roaster_options += [r for r in previous_roasters if r and r not in roaster_options]
+
+                acidity_options = ["", "very_low", "low", "medium", "high", "very_high"]
+                body_options = ["", "light", "medium", "heavy", "full_bodied", "round", "creamy"]
+                sweetness_options = ["", "low", "medium", "high", "very_high"]
+
+                milk_compatibility_options = [
+                    "",
+                    "excellent_with_milk",
+                    "good_with_milk",
+                    "okay_with_milk",
+                    "espresso_only",
+                    "unknown",
+                ]
+
+                personal_interest_options = [
+                    "flavor_notes",
+                    "recommended_by_friend",
+                    "online_review",
+                    "roaster_recommendation",
+                    "origin_curiosity",
+                    "milk_drink_testing",
+                    "espresso_testing",
+                    "discount_or_offer",
+                    "beautiful_packaging",
+                    "experiment",
+                ]
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    edit_name = st.text_input("Bean name *", value=bean_to_edit["name"])
+                    roaster_input = st.text_input(
+                        "Roaster",
+                        value=bean_to_edit.get("roaster", ""),
+                        placeholder="Type roaster name here",
+                        help="Type to search known roasters or enter a new one.",
+                        key="edit_roaster_input"
+                    ).strip()
+
+                    suggestion_options = [
+                        r for r in roaster_options
+                        if r and (not roaster_input or roaster_input.lower() in r.lower())
+                    ]
+                    selected_suggestion = ""
+                    if suggestion_options:
+                        selected_suggestion = st.selectbox(
+                            "Choose a suggested roaster",
+                            [""] + suggestion_options,
+                            format_func=lambda r: r or "Select a suggestion",
+                            key="edit_roaster_suggestion",
+                        )
+
+                    edit_roaster = selected_suggestion.strip() if selected_suggestion else roaster_input
+
+                    selected_countries = bean_to_edit.get("country", "").split(",") if bean_to_edit.get("country") else []
+                    countries = st.multiselect(
+                        "Country",
+                        country_options,
+                        default=[c for c in selected_countries if c],
+                        help="Select one or more origin countries for this bean.",
+                    )
+                    edit_country = ",".join(countries)
+
+                with col2:
+                    edit_process = st.selectbox("Process", process_options, index=process_options.index(bean_to_edit.get("process")) if bean_to_edit.get("process") in process_options else 0)
+                    edit_roast_level = st.selectbox("Roast level", roast_level_options, index=roast_level_options.index(bean_to_edit.get("roast_level")) if bean_to_edit.get("roast_level") in roast_level_options else 0)
+                    edit_milk_compatibility = st.selectbox(
+                        "Milk compatibility",
+                        milk_compatibility_options,
+                        index=milk_compatibility_options.index(bean_to_edit.get("milk_compatibility")) if bean_to_edit.get("milk_compatibility") in milk_compatibility_options else 0,
+                    )
+
+                with col3:
+                    edit_acidity = st.selectbox("Acidity", acidity_options, index=acidity_options.index(bean_to_edit.get("acidity")) if bean_to_edit.get("acidity") in acidity_options else 0)
+                    edit_body = st.selectbox("Body", body_options, index=body_options.index(bean_to_edit.get("body")) if bean_to_edit.get("body") in body_options else 0)
+                    edit_sweetness = st.selectbox("Sweetness", sweetness_options, index=sweetness_options.index(bean_to_edit.get("sweetness")) if bean_to_edit.get("sweetness") in sweetness_options else 0)
+                    edit_price = st.number_input(
+                        "Price",
+                        min_value=0.0,
+                        step=0.01,
+                        format="%.2f",
+                        value=bean_to_edit.get("price") or 0.0,
+                        help="Price per bag or package in your currency.",
+                    )
+                    edit_weblink = st.text_input("Weblink", value=bean_to_edit.get("weblink") or "", placeholder="https://")
+
+                flavor_note_map = {option[0]: option for option in flavor_note_options}
+                edit_flavor_defaults = [flavor_note_map[note] for note in (bean_to_edit.get("flavor_notes") or "").split(",") if note and note in flavor_note_map]
+                edit_selected_flavor_notes = st.multiselect(
+                    "Flavor notes",
+                    flavor_note_options,
+                    default=edit_flavor_defaults,
+                    format_func=lambda option: option[1],
+                    help="Choose flavor notes from the knowledge base.",
+                    key="edit_flavor_notes",
+                )
+                edit_selected_flavor_notes = [option[0] for option in edit_selected_flavor_notes]
+
+                edit_selected_personal_interest = st.multiselect(
+                    "Personal interest",
+                    personal_interest_options,
+                    default=[item for item in (bean_to_edit.get("personal_interest") or "").split(",") if item],
+                    help="Why did you buy or want to test this bean?",
+                )
+
+                edit_description_raw = st.text_area(
+                    "Raw description",
+                    value=bean_to_edit.get("description_raw") or "",
+                    placeholder="Original description from package or website, e.g. ausgewogen, kräftig und würzig, aber mit dezenter Säure",
+                )
+
+                edit_notes = st.text_area(
+                    "Personal notes",
+                    value=bean_to_edit.get("notes") or "",
+                    placeholder="Your own notes, e.g. looks suitable for latte, bought for testing, friend recommended...",
+                )
+
+                edit_submitted = st.form_submit_button("Update Bean")
+
+            if edit_submitted:
+                if not edit_name:
+                    st.error("Bean name is required.")
+                else:
+                    execute(
+                        """
+                        UPDATE beans SET
+                            name = ?,
+                            roaster = ?,
+                            country = ?,
+                            process = ?,
+                            roast_level = ?,
+                            price = ?,
+                            weblink = ?,
+                            flavor_notes = ?,
+                            acidity = ?,
+                            body = ?,
+                            sweetness = ?,
+                            milk_compatibility = ?,
+                            personal_interest = ?,
+                            description_raw = ?,
+                            notes = ?
+                        WHERE id = ?
+                        """,
+                        [
+                            edit_name,
+                            edit_roaster,
+                            edit_country,
+                            edit_process,
+                            edit_roast_level,
+                            edit_price,
+                            edit_weblink,
+                            ",".join(edit_selected_flavor_notes),
+                            edit_acidity,
+                            edit_body,
+                            edit_sweetness,
+                            edit_milk_compatibility,
+                            ",".join(edit_selected_personal_interest),
+                            edit_description_raw,
+                            edit_notes,
+                            edit_id,
+                        ],
+                    )
+                    st.success("Bean updated.")
+                    rerun_app()
+
+        st.subheader("Delete Bean Entry")
+        with st.form("delete_bean"):
+            delete_options = {
+                f"{bean['id']} | {bean['name']} | {bean.get('country') or ''}": bean["id"]
+                for bean in beans
+            }
+            delete_label = st.selectbox("Select bean to delete", list(delete_options.keys()))
+            confirm_delete = st.checkbox("I understand this will remove the bean and its profile data")
+            delete_submitted = st.form_submit_button("Delete bean")
+
+        if delete_submitted:
+            if confirm_delete:
+                delete_id = delete_options[delete_label]
+                execute("DELETE FROM bean_profiles WHERE bean_id = ?", [delete_id])
+                execute("DELETE FROM beans WHERE id = ?", [delete_id])
+                st.success("Bean entry deleted.")
+                rerun_app()
+            else:
+                st.error("Please confirm deletion before removing the bean.")
+
         st.subheader("Generate Bean Profile")
 
         bean_options = {
