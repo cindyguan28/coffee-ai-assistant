@@ -9,6 +9,7 @@ from database.import_knowledge import (
     get_process_options,
     get_roast_level_options,
     get_flavor_note_options,
+    get_roaster_options,
 )
 
 
@@ -36,6 +37,13 @@ with tab_beans:
         process_options = get_process_options()
         roast_level_options = get_roast_level_options()
         flavor_note_options = get_flavor_note_options()
+        roaster_options = [""] + get_roaster_options()
+
+        previous_roaster_rows = fetch_all(
+            "SELECT roaster, COUNT(*) AS cnt FROM beans WHERE roaster IS NOT NULL AND roaster != '' GROUP BY roaster ORDER BY cnt DESC"
+        )
+        previous_roasters = [row["roaster"] for row in previous_roaster_rows if row.get("roaster")]
+        roaster_options += [r for r in previous_roasters if r and r not in roaster_options]
 
         acidity_options = ["", "very_low", "low", "medium", "high", "very_high"]
         body_options = ["", "light", "medium", "heavy", "full_bodied", "round", "creamy"]
@@ -67,8 +75,33 @@ with tab_beans:
 
         with col1:
             name = st.text_input("Bean name *")
-            roaster = st.text_input("Roaster")
-            country = st.selectbox("Country", country_options)
+            roaster_input = st.text_input(
+                "Roaster",
+                placeholder="Type roaster name here",
+                help="Type to search known roasters or enter a new one.",
+            ).strip()
+
+            suggestion_options = [
+                r for r in roaster_options
+                if r and (not roaster_input or roaster_input.lower() in r.lower())
+            ]
+            selected_suggestion = ""
+            if suggestion_options:
+                selected_suggestion = st.selectbox(
+                    "Choose a suggested roaster",
+                    [""] + suggestion_options,
+                    format_func=lambda r: r or "Select a suggestion",
+                    key="roaster_suggestion",
+                )
+
+            roaster = selected_suggestion.strip() if selected_suggestion else roaster_input
+
+            countries = st.multiselect(
+                "Country",
+                country_options,
+                help="Select one or more origin countries for this bean.",
+            )
+            country = ",".join(countries)
 
         with col2:
             process = st.selectbox("Process", process_options)

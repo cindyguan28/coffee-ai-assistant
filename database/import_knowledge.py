@@ -30,6 +30,11 @@ def load_roast_profiles() -> list[dict]:
 def load_flavor_dictionary() -> list[dict]:
     return load_csv("flavor_dictionary.csv")
 
+
+def load_roaster_profiles() -> list[dict]:
+    return load_csv("roaster_profiles.csv")
+
+
 def get_country_options() -> list[str]:
     rows = load_origin_profiles()
     countries = sorted({row["country"] for row in rows if row.get("country")})
@@ -64,3 +69,23 @@ def get_flavor_note_options() -> list[tuple[str, str]]:
 
     options.sort(key=lambda item: item[1].lower())
     return options
+
+
+def get_roaster_options() -> list[str]:
+    rows = load_roaster_profiles()
+    roasters = sorted({row["roaster"] for row in rows if row.get("roaster")})
+    return roasters
+
+
+def get_roaster_profile(roaster_name: str) -> dict | None:
+    rows = load_roaster_profiles()
+    for row in rows:
+        if row.get("roaster") and row["roaster"].strip().lower() == roaster_name.strip().lower():
+            return row
+    return None
+
+
+def get_roaster_options() -> list[str]:
+    rows = load_roaster_profiles()
+    roasters = sorted({row["roaster"] for row in rows if row.get("roaster")})
+    return roasters

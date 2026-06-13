@@ -93,10 +93,6 @@ def match_description(description_raw: str) -> dict:
 
 
 def generate_bean_profile(bean: dict) -> dict:
-    """
-    根据 bean 的有限信息生成 Bean Profile。
-    第一版不用 LLM，先用规则 + CSV 知识库，稳定、可解释。
-    """
     country = bean.get("country")
     process = bean.get("process")
     roast_level = bean.get("roast_level")
@@ -106,7 +102,15 @@ def generate_bean_profile(bean: dict) -> dict:
     processing_profiles = load_processing_profiles()
     roast_profiles = load_roast_profiles()
 
-    origin = find_by_value(origin_profiles, "country", country)
+    origin = None
+    if country:
+        # support multiple origin countries stored as comma-separated values
+        origin_candidates = [item.strip() for item in country.split(",") if item.strip()]
+        for candidate in origin_candidates:
+            origin = find_by_value(origin_profiles, "country", candidate)
+            if origin:
+                break
+
     process_profile = find_by_value(processing_profiles, "process", process)
     roast_profile = find_by_value(roast_profiles, "roast_level", roast_level)
     desc_match = match_description(description_raw)
