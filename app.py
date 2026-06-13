@@ -82,12 +82,22 @@ with tab_beans:
             acidity = st.selectbox("Acidity", acidity_options)
             body = st.selectbox("Body", body_options)
             sweetness = st.selectbox("Sweetness", sweetness_options)
+            price = st.number_input(
+                "Price",
+                min_value=0.0,
+                step=0.01,
+                format="%.2f",
+                help="Price per bag or package in your currency.",
+            )
+            weblink = st.text_input("Weblink", placeholder="https://")
 
         selected_flavor_notes = st.multiselect(
             "Flavor notes",
             flavor_note_options,
+            format_func=lambda option: option[1],
             help="Choose flavor notes from the knowledge base.",
         )
+        selected_flavor_notes = [option[0] for option in selected_flavor_notes]
 
         selected_personal_interest = st.multiselect(
             "Personal interest",
@@ -120,6 +130,8 @@ with tab_beans:
                     country,
                     process,
                     roast_level,
+                    price,
+                    weblink,
                     flavor_notes,
                     acidity,
                     body,
@@ -129,7 +141,7 @@ with tab_beans:
                     description_raw,
                     notes
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     name,
@@ -137,6 +149,8 @@ with tab_beans:
                     country,
                     process,
                     roast_level,
+                    price,
+                    weblink,
                     ",".join(selected_flavor_notes),
                     acidity,
                     body,

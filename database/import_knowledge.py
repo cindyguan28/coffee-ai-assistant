@@ -48,11 +48,19 @@ def get_roast_level_options() -> list[str]:
     return [""] + roast_levels
 
 
-def get_flavor_note_options() -> list[str]:
+def get_flavor_note_options() -> list[tuple[str, str]]:
     rows = load_flavor_dictionary()
-    notes = sorted({
-        row["normalized_value"]
-        for row in rows
-        if row.get("normalized_value")
-    })
-    return notes
+    seen = set()
+    options = []
+
+    for row in rows:
+        normalized = row.get("normalized_value")
+        if not normalized or normalized in seen:
+            continue
+
+        seen.add(normalized)
+        display = row.get("en") or row.get("de") or normalized
+        options.append((normalized, display))
+
+    options.sort(key=lambda item: item[1].lower())
+    return options

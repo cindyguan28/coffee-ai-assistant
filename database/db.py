@@ -19,6 +19,8 @@ def migrate_db(cur):
             cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
 
     # beans
+    add_column_if_missing("beans", "price", "REAL")
+    add_column_if_missing("beans", "weblink", "TEXT")
     add_column_if_missing("beans", "flavor_notes", "TEXT")
     add_column_if_missing("beans", "acidity", "TEXT")
     add_column_if_missing("beans", "body", "TEXT")
@@ -65,6 +67,8 @@ def init_db():
         country TEXT,
         process TEXT,
         roast_level TEXT,
+        price REAL,
+        weblink TEXT,
 
         flavor_notes TEXT,
         acidity TEXT,
