@@ -119,9 +119,22 @@ with tab_beans:
             )
 
         with col3:
-            acidity = st.selectbox("Acidity", acidity_options)
-            body = st.selectbox("Body", body_options)
-            sweetness = st.selectbox("Sweetness", sweetness_options)
+            acidity = st.selectbox(
+                "Acidity",
+                acidity_options,
+                help="Perceived brightness or liveliness; higher = more citrus/fruit acidity.",
+            )
+            body = st.selectbox(
+                "Body",
+                body_options,
+                help="Perceived weight and mouthfeel (light → full-bodied/creamy).",
+            )
+            sweetness = st.selectbox(
+                "Sweetness",
+                sweetness_options,
+                help="Perceived sweetness level (low → very high).",
+            )
+            rating = st.slider("Rating", 1, 10, 5, help="Your evaluation of this bean (1-10)")
             price = st.number_input(
                 "Price",
                 min_value=0.0,
@@ -129,7 +142,7 @@ with tab_beans:
                 format="%.2f",
                 help="Price per bag or package in your currency.",
             )
-            weblink = st.text_input("Weblink", placeholder="https://")
+            weblink = st.text_input("Website", placeholder="https://")
 
         selected_flavor_notes = st.multiselect(
             "Flavor notes",
@@ -172,6 +185,7 @@ with tab_beans:
                     roast_level,
                     price,
                     weblink,
+                    rating,
                     flavor_notes,
                     acidity,
                     body,
@@ -181,7 +195,7 @@ with tab_beans:
                     description_raw,
                     notes
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     name,
@@ -191,6 +205,7 @@ with tab_beans:
                     roast_level,
                     price,
                     weblink,
+                    rating,
                     ",".join(selected_flavor_notes),
                     acidity,
                     body,
@@ -305,9 +320,25 @@ with tab_beans:
                     )
 
                 with col3:
-                    edit_acidity = st.selectbox("Acidity", acidity_options, index=acidity_options.index(bean_to_edit.get("acidity")) if bean_to_edit.get("acidity") in acidity_options else 0)
-                    edit_body = st.selectbox("Body", body_options, index=body_options.index(bean_to_edit.get("body")) if bean_to_edit.get("body") in body_options else 0)
-                    edit_sweetness = st.selectbox("Sweetness", sweetness_options, index=sweetness_options.index(bean_to_edit.get("sweetness")) if bean_to_edit.get("sweetness") in sweetness_options else 0)
+                    edit_acidity = st.selectbox(
+                        "Acidity",
+                        acidity_options,
+                        index=acidity_options.index(bean_to_edit.get("acidity")) if bean_to_edit.get("acidity") in acidity_options else 0,
+                        help="Perceived brightness or liveliness; higher = more citrus/fruit acidity.",
+                    )
+                    edit_body = st.selectbox(
+                        "Body",
+                        body_options,
+                        index=body_options.index(bean_to_edit.get("body")) if bean_to_edit.get("body") in body_options else 0,
+                        help="Perceived weight and mouthfeel (light → full-bodied/creamy).",
+                    )
+                    edit_sweetness = st.selectbox(
+                        "Sweetness",
+                        sweetness_options,
+                        index=sweetness_options.index(bean_to_edit.get("sweetness")) if bean_to_edit.get("sweetness") in sweetness_options else 0,
+                        help="Perceived sweetness level (low → very high).",
+                    )
+                    edit_rating = st.slider("Rating", 1, 10, bean_to_edit.get("rating") or 5, help="Your evaluation of this bean (1-10)")
                     edit_price = st.number_input(
                         "Price",
                         min_value=0.0,
@@ -365,6 +396,7 @@ with tab_beans:
                             roast_level = ?,
                             price = ?,
                             weblink = ?,
+                            rating = ?,
                             flavor_notes = ?,
                             acidity = ?,
                             body = ?,
@@ -383,6 +415,7 @@ with tab_beans:
                             edit_roast_level,
                             edit_price,
                             edit_weblink,
+                            edit_rating,
                             ",".join(edit_selected_flavor_notes),
                             edit_acidity,
                             edit_body,
@@ -723,15 +756,45 @@ with tab_brew:
             col10, col11, col12, col13, col14 = st.columns(5)
 
             with col10:
-                acidity = st.slider("Acidity", 1, 5, 3)
+                acidity = st.slider(
+                    "Acidity",
+                    1,
+                    5,
+                    3,
+                    help="Perceived brightness or liveliness; higher = more citrus/fruit acidity.",
+                )
             with col11:
-                bitterness = st.slider("Bitterness", 1, 5, 3)
+                bitterness = st.slider(
+                    "Bitterness",
+                    1,
+                    5,
+                    3,
+                    help="Degree of bitter taste; higher may indicate over-extraction or darker roast.",
+                )
             with col12:
-                body = st.slider("Body", 1, 5, 3)
+                body = st.slider(
+                    "Body",
+                    1,
+                    5,
+                    3,
+                    help="Perceived weight and mouthfeel (light → full-bodied/creamy).",
+                )
             with col13:
-                sweetness = st.slider("Sweetness", 1, 5, 3)
+                sweetness = st.slider(
+                    "Sweetness",
+                    1,
+                    5,
+                    3,
+                    help="Perceived sweetness level (low → very high).",
+                )
             with col14:
-                balance = st.slider("Balance", 1, 5, 3)
+                balance = st.slider(
+                    "Balance",
+                    1,
+                    5,
+                    3,
+                    help="How well acidity, bitterness, sweetness and body are in harmony.",
+                )
 
             score = st.slider(
                 "Overall score",
@@ -919,6 +982,11 @@ with tab_ai:
         if st.button("Ask AI"):
             history_text = pd.DataFrame(brew_logs).to_string(index=False)
 
+            beans_ratings = fetch_all(
+                "SELECT name, roaster, rating, flavor_notes, roast_level FROM beans ORDER BY rating DESC"
+            )
+            beans_text = pd.DataFrame(beans_ratings).to_string(index=False)
+
             prompt = f"""
 You are a coffee assistant.
 
@@ -933,6 +1001,10 @@ STRICT RULES:
 - Ignore water temperature unless explicitly provided.
 - Ignore extraction time if it is missing or zero.
 - Do not invent machine parameters that are not in the data.
+
+Available beans and ratings:
+
+{beans_text}
 
 User brew logs:
 

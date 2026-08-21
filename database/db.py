@@ -1,7 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("data/coffee.db")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = ROOT_DIR / "data" / "coffee.db"
 
 
 def get_connection():
@@ -21,6 +22,7 @@ def migrate_db(cur):
     # beans
     add_column_if_missing("beans", "price", "REAL")
     add_column_if_missing("beans", "weblink", "TEXT")
+    add_column_if_missing("beans", "rating", "INTEGER")
     add_column_if_missing("beans", "flavor_notes", "TEXT")
     add_column_if_missing("beans", "acidity", "TEXT")
     add_column_if_missing("beans", "body", "TEXT")
@@ -69,6 +71,7 @@ def init_db():
         roast_level TEXT,
         price REAL,
         weblink TEXT,
+        rating INTEGER,
 
         flavor_notes TEXT,
         acidity TEXT,
