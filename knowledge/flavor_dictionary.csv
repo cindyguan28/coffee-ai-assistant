@@ -1,0 +1,99 @@
+﻿category,de,en,zh,normalized_value
+acidity,kaum Säure,very low acidity,几乎无酸,very_low_acidity
+acidity,dezente Säure,subtle acidity,柔和酸质,low_acidity
+acidity,milde Säure,mild acidity,温和酸度,low_acidity
+acidity,sanfte Säure,gentle acidity,柔和酸感,low_acidity
+acidity,ausgewogene Säure,balanced acidity,平衡酸质,medium_acidity
+acidity,angenehme Säure,pleasant acidity,舒适酸感,medium_acidity
+acidity,lebendige Säure,vibrant acidity,明亮活泼酸质,high_acidity
+acidity,frische Säure,fresh acidity,清新酸感,high_acidity
+acidity,spritzige Säure,sparkling acidity,活泼酸感,high_acidity
+acidity,helle Säure,bright acidity,明亮酸质,high_acidity
+acidity,intensive Säure,intense acidity,强烈酸质,very_high_acidity
+body,leicht,light-bodied,轻盈,light_bodied
+body,zart,delicate,细腻轻柔,delicate
+body,seidig,silky,丝滑,silky
+body,weich,smooth,顺滑,smooth
+body,rund,round,圆润,round
+body,cremig,creamy,奶油感,creamy
+body,saftig,juicy,多汁感,juicy
+body,vollmundig,full-bodied,饱满醇厚,full_bodied
+body,kräftig,full-bodied,浓郁醇厚,full_bodied
+body,dicht,dense,扎实厚重,dense
+body,sirupartig,syrupy,糖浆感,syrupy
+sweetness,dezente Süße,subtle sweetness,淡淡甜感,low_sweetness
+sweetness,angenehme Süße,pleasant sweetness,舒适甜感,medium_sweetness
+sweetness,ausgewogene Süße,balanced sweetness,平衡甜感,medium_sweetness
+sweetness,honigartige Süße,honey-like sweetness,蜂蜜甜感,high_sweetness
+sweetness,honig,honey,蜂蜜,honey
+sweetness,karamellige Süße,caramel sweetness,焦糖甜感,high_sweetness
+sweetness,ausgeprägte Süße,pronounced sweetness,明显甜感,high_sweetness
+sweetness,hohe Süße,high sweetness,高甜感,very_high_sweetness
+balance,ausgewogen,balanced,平衡,balanced
+balance,harmonisch,harmonious,和谐,balanced
+style,komplex,complex,复杂有层次,complex
+style,elegant,elegant,优雅,elegant
+style,klar,clean,干净清晰,clean
+style,präzise,precise,风味明确,precise
+style,vielschichtig,layered,层次丰富,layered
+style,strukturiert,structured,结构感强,structured
+floral,blumig,floral,花香,floral
+floral,Jasmin,jasmine,茉莉花,jasmine
+floral,Rose,rose,玫瑰,rose
+floral,Lavendel,lavender,薰衣草,lavender
+floral,Orangenblüte,orange blossom,橙花,orange_blossom
+floral,Holunderblüte,elderflower,接骨木花,elderflower
+floral,Kamille,chamomile,洋甘菊,chamomile
+citrus,Zitrus,citrus,柑橘,citrus
+citrus,Zitrone,lemon,柠檬,lemon
+citrus,Limette,lime,青柠,lime
+citrus,Orange,orange,橙子,orange
+citrus,Mandarine,mandarin,柑橘,mandarin
+citrus,Grapefruit,grapefruit,西柚,grapefruit
+citrus,Bergamotte,bergamot,佛手柑,bergamot
+stone_fruit,Pfirsich,peach,桃子,peach
+stone_fruit,Aprikose,apricot,杏子,apricot
+stone_fruit,Nektarine,nectarine,油桃,nectarine
+stone_fruit,Pflaume,plum,李子,plum
+stone_fruit,Kirsche,cherry,樱桃,cherry
+berry,Erdbeere,strawberry,草莓,strawberry
+berry,Himbeere,raspberry,覆盆子,raspberry
+berry,Heidelbeere,blueberry,蓝莓,blueberry
+berry,Brombeere,blackberry,黑莓,blackberry
+berry,Johannisbeere,currant,醋栗,currant
+tropical_fruit,Mango,mango,芒果,mango
+tropical_fruit,Ananas,pineapple,菠萝,pineapple
+tropical_fruit,Passionsfrucht,passion fruit,百香果,passion_fruit
+tropical_fruit,Papaya,papaya,木瓜,papaya
+tropical_fruit,tropische Früchte,tropical fruit,热带水果,tropical_fruit
+chocolate,schokoladig,chocolatey,巧克力风味,chocolatey
+chocolate,Milchschokolade,milk chocolate,牛奶巧克力,milk_chocolate
+chocolate,dunkle Schokolade,dark chocolate,黑巧克力,dark_chocolate
+chocolate,Kakao,cocoa,可可,cocoa
+chocolate,Kakaonibs,cocoa nibs,可可豆碎,cocoa_nibs
+nutty,nussig,nutty,坚果风味,nutty
+nutty,Mandel,almond,杏仁,almond
+nutty,Haselnuss,hazelnut,榛子,hazelnut
+nutty,Walnuss,walnut,核桃,walnut
+nutty,Pistazie,pistachio,开心果,pistachio
+nutty,Erdnuss,peanut,花生,peanut
+spice,würzig,spicy,香料感,spicy
+spice,Zimt,cinnamon,肉桂,cinnamon
+spice,Nelke,clove,丁香,clove
+spice,Muskat,nutmeg,肉豆蔻,nutmeg
+spice,schwarzer Pfeffer,black pepper,黑胡椒,black_pepper
+spice,Kardamom,cardamom,小豆蔻,cardamom
+tea_herbal,Schwarztee,black tea,红茶,black_tea
+tea_herbal,Grüntee,green tea,绿茶,green_tea
+tea_herbal,Oolong,oolong,乌龙茶,oolong
+tea_herbal,Kräutertee,herbal tea,花草茶,herbal_tea
+tea_herbal,teeartig,tea-like,茶感,tea_like
+fermentation,weinartig,winey,葡萄酒感,winey
+fermentation,fermentiert,fermented,发酵感,fermented
+fermentation,rumartig,rum-like,朗姆酒感,rum_like
+fermentation,likörartig,liqueur-like,利口酒感,liqueur_like
+roast,geröstet,roasted,烘烤感,roasted
+roast,Karamell,caramel,焦糖,caramel
+roast,Toffee,toffee,太妃糖,toffee
+roast,brauner Zucker,brown sugar,红糖,brown_sugar
+roast,Ahornsirup,maple syrup,枫糖浆,maple_syrup

@@ -1,0 +1,7 @@
+﻿roast_level,acidity,body,recommended_temp,expected_notes
+ultra_light,very_high,light,94-97,"floral,citrus"
+light,high,light,92-96,"floral,fruit"
+medium_light,medium_high,medium,91-94,"fruit,sweet"
+medium,medium,medium,90-93,"caramel,nutty"
+medium_dark,low_medium,heavy,88-92,"chocolate,roasted"
+dark,low,very_heavy,86-90,"roasted,bitter"

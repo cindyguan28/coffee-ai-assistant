@@ -1,5 +1,6 @@
-coffee.db
-__pycache__/
-*.pyccoffee.db
 __pycache__/
 *.pyc
+.DS_Store
+data/coffee.db
+.venv/
+.env
