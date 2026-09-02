@@ -48,6 +48,7 @@ def migrate_db(cur):
     add_column_if_missing("brew_logs", "body", "INTEGER")
     add_column_if_missing("brew_logs", "sweetness", "INTEGER")
     add_column_if_missing("brew_logs", "balance", "INTEGER")
+    add_column_if_missing("brew_logs", "aroma", "INTEGER")
 
     add_column_if_missing("brew_logs", "score", "REAL")
     add_column_if_missing("brew_logs", "taste_result", "TEXT")
@@ -136,6 +137,7 @@ def init_db():
         body INTEGER,
         sweetness INTEGER,
         balance INTEGER,
+        aroma INTEGER,
 
         score REAL,
 

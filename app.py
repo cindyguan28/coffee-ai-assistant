@@ -1,9 +1,11 @@
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 
 from database.db import init_db, execute, fetch_all, fetch_one
 from ai.bean_profile_engine import generate_bean_profile
 from ai.ollama_client import ask_ollama
+from ai.taste_profile import SENSORY_DIMENSIONS, calculate_liking_weighted_profile
 from database.import_knowledge import (
     get_country_options,
     get_process_options,
@@ -31,8 +33,8 @@ init_db()
 st.title("☕ Coffee AI Assistant V2")
 st.caption("Personal coffee database + bean profile generation + brew log + local AI assistant")
 
-tab_beans, tab_profiles, tab_brew, tab_best, tab_ai = st.tabs(
-    ["Beans", "Bean Profiles", "Brew Logs", "Best Settings", "AI Assistant"]
+tab_beans, tab_profiles, tab_brew, tab_best, tab_taste, tab_ai = st.tabs(
+    ["Beans", "Bean Profiles", "Brew Logs", "Best Settings", "My Taste", "AI Assistant"]
 )
 
 
@@ -720,7 +722,7 @@ with tab_brew:
 
             st.markdown("### Taste Evaluation")
 
-            col10, col11, col12, col13, col14 = st.columns(5)
+            col10, col11, col12, col13, col14, col15 = st.columns(6)
 
             with col10:
                 acidity = st.slider("Acidity", 1, 5, 3)
@@ -732,14 +734,16 @@ with tab_brew:
                 sweetness = st.slider("Sweetness", 1, 5, 3)
             with col14:
                 balance = st.slider("Balance", 1, 5, 3)
+            with col15:
+                aroma = st.slider("Aroma", 1, 5, 3)
 
             score = st.slider(
-                "Overall score",
+                "Personal liking",
                 1.0,
                 10.0,
                 8.0,
                 0.1,
-                help="Your personal overall score for this cup."
+                help="How much you personally liked this cup. This weights your My Taste profile."
             )
 
             taste_result = st.selectbox(
@@ -790,13 +794,14 @@ with tab_brew:
                         body,
                         sweetness,
                         balance,
+                        aroma,
                         score,
                         taste_result,
                         problem_tags,
                         next_adjustment,
                         notes
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     [
                         bean_options[selected_bean],
@@ -817,6 +822,7 @@ with tab_brew:
                         body,
                         sweetness,
                         balance,
+                        aroma,
                         score,
                         taste_result,
                         ",".join(problem_tags),
@@ -850,6 +856,7 @@ with tab_brew:
             brew_logs.body,
             brew_logs.sweetness,
             brew_logs.balance,
+            brew_logs.aroma,
             brew_logs.score,
             brew_logs.taste_result,
             brew_logs.problem_tags,
@@ -862,6 +869,71 @@ with tab_brew:
     )
 
     st.dataframe(pd.DataFrame(brew_logs), use_container_width=True)
+
+
+with tab_taste:
+    st.subheader("My Taste")
+    st.caption(
+        "Your personal taste fingerprint is calculated from coffees you actually consumed. "
+        "Brews you liked more have more influence; bean reference profiles are kept separate."
+    )
+
+    taste_logs = fetch_all(
+        """
+        SELECT acidity, sweetness, bitterness, body, balance, aroma, score
+        FROM brew_logs
+        ORDER BY id DESC
+        """
+    )
+    taste_profile = calculate_liking_weighted_profile(taste_logs)
+    profile_values = taste_profile["dimensions"]
+
+    if not taste_logs:
+        st.info("Add a brew log to start building your personal taste profile.")
+    elif taste_profile["contributing_brews"] == 0:
+        st.info(
+            "No brew contributes yet. Rate a brew above 5 in Personal liking "
+            "to include it in your taste profile."
+        )
+    else:
+        labels = [dimension.title() for dimension in SENSORY_DIMENSIONS]
+        values = [profile_values[dimension] for dimension in SENSORY_DIMENSIONS]
+
+        figure = go.Figure(
+            data=[
+                go.Scatterpolar(
+                    r=values + values[:1],
+                    theta=labels + labels[:1],
+                    fill="toself",
+                    name="My Taste",
+                    connectgaps=False,
+                    hovertemplate="%{theta}: %{r:.2f}<extra></extra>",
+                )
+            ]
+        )
+        figure.update_layout(
+            margin=dict(l=40, r=40, t=40, b=40),
+            polar=dict(radialaxis=dict(visible=True, range=[1, 5], dtick=1)),
+            showlegend=False,
+        )
+        st.plotly_chart(figure, use_container_width=True)
+
+        st.caption(
+            f"Based on {taste_profile['contributing_brews']} of "
+            f"{taste_profile['total_brews']} brew logs. "
+            "Weight per brew = max(Personal liking - 5, 0)."
+        )
+
+        missing_dimensions = [
+            dimension.title()
+            for dimension, value in profile_values.items()
+            if value is None
+        ]
+        if missing_dimensions:
+            st.warning(
+                "Add ratings for these dimensions to complete the radar: "
+                + ", ".join(missing_dimensions)
+            )
 
 
 with tab_ai:
@@ -894,6 +966,7 @@ with tab_ai:
             brew_logs.body,
             brew_logs.sweetness,
             brew_logs.balance,
+            brew_logs.aroma,
             brew_logs.score,
             brew_logs.taste_result,
             brew_logs.problem_tags,
