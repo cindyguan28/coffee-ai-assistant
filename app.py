@@ -925,11 +925,6 @@ with tab_map:
             )
             or "Not enough data"
         )
-        map_data["preferred_process_display"] = map_data["preferred_process"].apply(
-            lambda process: process.replace("_", " ").title()
-            if process
-            else "Not enough data"
-        )
         map_data["average_liking_display"] = map_data["average_liking"].apply(
             lambda liking: f"{liking:.1f}/10" if pd.notna(liking) else "Not rated yet"
         )
@@ -939,7 +934,6 @@ with tab_map:
             "brewed_coffee_count",
             "brew_count",
             "average_liking_display",
-            "preferred_process_display",
             "top_flavors",
         ]
         hover_template = (
@@ -948,8 +942,7 @@ with tab_map:
             "Beans brewed: %{customdata[2]}<br>"
             "Brew logs: %{customdata[3]}<br>"
             "Average liking: %{customdata[4]}<br>"
-            "Preferred process: %{customdata[5]}<br>"
-            "Top flavors: %{customdata[6]}<extra></extra>"
+            "Top flavors: %{customdata[5]}<extra></extra>"
         )
         figure = go.Figure()
 
@@ -1036,7 +1029,6 @@ with tab_map:
             "brewed_coffee_count",
             "brew_count",
             "average_liking",
-            "preferred_process_display",
             "top_flavors",
             "average_acidity",
             "average_sweetness",
@@ -1053,7 +1045,6 @@ with tab_map:
                     "brewed_coffee_count": "Beans brewed",
                     "brew_count": "Brew logs",
                     "average_liking": "Average liking",
-                    "preferred_process_display": "Preferred process",
                     "top_flavors": "Top flavor families",
                     "average_acidity": "Acidity",
                     "average_sweetness": "Sweetness",
