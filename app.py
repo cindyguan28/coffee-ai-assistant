@@ -1,15 +1,18 @@
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 from database.db import init_db, execute, fetch_all, fetch_one
 from ai.bean_profile_engine import generate_bean_profile
 from ai.ollama_client import ask_ollama
+from ai.taste_geography import aggregate_country_tastes
 from database.import_knowledge import (
     get_country_options,
     get_process_options,
     get_roast_level_options,
     get_flavor_note_options,
     get_roaster_options,
+    load_flavor_dictionary,
 )
 
 
@@ -31,8 +34,15 @@ init_db()
 st.title("☕ Coffee AI Assistant V2")
 st.caption("Personal coffee database + bean profile generation + brew log + local AI assistant")
 
-tab_beans, tab_profiles, tab_brew, tab_best, tab_ai = st.tabs(
-    ["Beans", "Bean Profiles", "Brew Logs", "Best Settings", "AI Assistant"]
+tab_beans, tab_profiles, tab_brew, tab_best, tab_map, tab_ai = st.tabs(
+    [
+        "Beans",
+        "Bean Profiles",
+        "Brew Logs",
+        "Best Settings",
+        "My Coffee World",
+        "AI Assistant",
+    ]
 )
 
 
@@ -862,6 +872,149 @@ with tab_brew:
     )
 
     st.dataframe(pd.DataFrame(brew_logs), use_container_width=True)
+
+
+with tab_map:
+    st.subheader("My Coffee World")
+    st.caption(
+        "Explore where your coffees come from and how much you enjoyed them. "
+        "The map uses country-level origins from your saved beans and personal Brew Logs."
+    )
+
+    geography_rows = fetch_all(
+        """
+        SELECT
+            beans.id AS bean_id,
+            beans.country,
+            beans.process,
+            beans.flavor_notes,
+            brew_logs.id AS brew_id,
+            brew_logs.score,
+            brew_logs.acidity,
+            brew_logs.sweetness,
+            brew_logs.bitterness,
+            brew_logs.body,
+            brew_logs.balance,
+            brew_logs.aroma
+        FROM beans
+        LEFT JOIN brew_logs ON brew_logs.bean_id = beans.id
+        ORDER BY beans.id DESC, brew_logs.id DESC
+        """
+    )
+    geography = aggregate_country_tastes(
+        geography_rows, load_flavor_dictionary()
+    )
+    mapped_countries = [
+        country
+        for country in geography["countries"]
+        if country["average_liking"] is not None
+    ]
+
+    if not geography["countries"]:
+        st.info(
+            "Add an origin country to a saved bean to start building your coffee world."
+        )
+    elif not mapped_countries:
+        st.info(
+            "Your origin countries are ready. Add a Brew Log with a personal score "
+            "to color them on the map."
+        )
+    else:
+        map_data = pd.DataFrame(mapped_countries)
+        map_data["top_flavors"] = map_data["top_flavor_families"].apply(
+            lambda families: ", ".join(
+                family.replace("_", " ").title() for family in families
+            )
+            or "Not enough data"
+        )
+        map_data["preferred_process_display"] = map_data["preferred_process"].apply(
+            lambda process: process.replace("_", " ").title()
+            if process
+            else "Not enough data"
+        )
+
+        figure = px.choropleth(
+            map_data,
+            locations="iso_alpha",
+            color="average_liking",
+            hover_name="country",
+            custom_data=[
+                "coffee_count",
+                "brew_count",
+                "preferred_process_display",
+                "top_flavors",
+            ],
+            color_continuous_scale="YlOrBr",
+            range_color=(1, 10),
+            labels={"average_liking": "Average liking"},
+            projection="natural earth",
+        )
+        figure.update_traces(
+            hovertemplate=(
+                "<b>%{hovertext}</b><br>"
+                "Average liking: %{z:.1f}/10<br>"
+                "Coffees tried: %{customdata[0]}<br>"
+                "Brew logs: %{customdata[1]}<br>"
+                "Preferred process: %{customdata[2]}<br>"
+                "Top flavors: %{customdata[3]}<extra></extra>"
+            )
+        )
+        figure.update_layout(
+            margin=dict(l=0, r=0, t=20, b=0),
+            coloraxis_colorbar=dict(title="Liking", tickvals=[1, 3, 5, 7, 10]),
+        )
+        st.plotly_chart(figure, width="stretch")
+
+        st.markdown("### Country details")
+        detail_columns = [
+            "country",
+            "coffee_count",
+            "brew_count",
+            "average_liking",
+            "preferred_process_display",
+            "top_flavors",
+            "average_acidity",
+            "average_sweetness",
+            "average_bitterness",
+            "average_body",
+            "average_balance",
+            "average_aroma",
+        ]
+        st.dataframe(
+            map_data[detail_columns].rename(
+                columns={
+                    "country": "Country",
+                    "coffee_count": "Coffees tried",
+                    "brew_count": "Brew logs",
+                    "average_liking": "Average liking",
+                    "preferred_process_display": "Preferred process",
+                    "top_flavors": "Top flavor families",
+                    "average_acidity": "Acidity",
+                    "average_sweetness": "Sweetness",
+                    "average_bitterness": "Bitterness",
+                    "average_body": "Body",
+                    "average_balance": "Balance",
+                    "average_aroma": "Aroma",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+        )
+
+    pending_countries = [
+        country["country"]
+        for country in geography["countries"]
+        if country["average_liking"] is None
+    ]
+    if pending_countries:
+        st.caption(
+            "Waiting for a personal score: " + ", ".join(pending_countries)
+        )
+    if geography["unmapped_origins"]:
+        st.warning(
+            "These origins could not be mapped yet: "
+            + ", ".join(geography["unmapped_origins"])
+        )
 
 
 with tab_ai:
