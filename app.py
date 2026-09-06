@@ -2,8 +2,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from database.db import init_db, execute, fetch_all, fetch_one
-from ai.bean_profile_engine import generate_bean_profile
+from database.db import init_db, execute, execute_insert, fetch_all, fetch_one
+from database.bean_profiles import generate_and_store_bean_profile
 from ai.coffee_summary import build_coffee_summary
 from ai.ollama_client import ask_ollama
 from ai.taste_profile import (
@@ -24,9 +24,9 @@ from database.import_knowledge import (
 
 def rerun_app():
     try:
-        st.experimental_rerun()
+        st.rerun()
     except AttributeError:
-        st.stop()
+        st.experimental_rerun()
 
 
 def render_reference_scale(label, score, description, help_text):
@@ -65,6 +65,19 @@ tab_beans, tab_profiles, tab_brew, tab_best, tab_taste, tab_map, tab_ai = st.tab
 
 
 with tab_beans:
+    bean_save_notice = st.session_state.pop("bean_save_notice", None)
+    if bean_save_notice:
+        if bean_save_notice["profile_generated"]:
+            st.success(
+                f"{bean_save_notice['bean_name']} was saved and its Bean Profile was generated."
+            )
+        else:
+            st.warning(
+                f"{bean_save_notice['bean_name']} was saved, but its Bean Profile could not "
+                "be generated. Retry under Manage saved coffee records → Generate Bean Profile. "
+                f"Details: {bean_save_notice['error']}"
+            )
+
     overview_beans = fetch_all(
         """
         SELECT
@@ -295,47 +308,63 @@ with tab_beans:
             if not name:
                 st.error("Bean name is required.")
             else:
-                execute(
-                    """
-                    INSERT INTO beans
-                    (
-                        name,
-                        roaster,
-                        country,
-                        process,
-                        roast_level,
-                        price,
-                        weblink,
-                        flavor_notes,
-                        acidity,
-                        body,
-                        sweetness,
-                        milk_compatibility,
-                        personal_interest,
-                        description_raw,
-                        notes
+                try:
+                    bean_id = execute_insert(
+                        """
+                        INSERT INTO beans
+                        (
+                            name,
+                            roaster,
+                            country,
+                            process,
+                            roast_level,
+                            price,
+                            weblink,
+                            flavor_notes,
+                            acidity,
+                            body,
+                            sweetness,
+                            milk_compatibility,
+                            personal_interest,
+                            description_raw,
+                            notes
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            name,
+                            roaster,
+                            country,
+                            process,
+                            roast_level,
+                            price,
+                            weblink,
+                            ",".join(selected_flavor_notes),
+                            acidity,
+                            body,
+                            sweetness,
+                            milk_compatibility,
+                            ",".join(selected_personal_interest),
+                            description_raw,
+                            notes,
+                        ],
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    [
-                        name,
-                        roaster,
-                        country,
-                        process,
-                        roast_level,
-                        price,
-                        weblink,
-                        ",".join(selected_flavor_notes),
-                        acidity,
-                        body,
-                        sweetness,
-                        milk_compatibility,
-                        ",".join(selected_personal_interest),
-                        description_raw,
-                        notes,
-                    ],
-                )
-                st.success("Bean saved.")
+                except Exception as error:
+                    st.error(f"Bean could not be saved: {error}")
+                else:
+                    notice = {
+                        "bean_name": name,
+                        "profile_generated": True,
+                        "error": "",
+                    }
+                    try:
+                        generate_and_store_bean_profile(bean_id)
+                    except Exception as error:
+                        notice["profile_generated"] = False
+                        notice["error"] = str(error)
+
+                    st.session_state["bean_save_notice"] = notice
+                    rerun_app()
 
     with st.expander("Manage saved coffee records"):
 
@@ -577,53 +606,13 @@ with tab_beans:
             selected_id = bean_options[selected_label]
 
             if st.button("Generate Bean Profile"):
-                bean = fetch_one("SELECT * FROM beans WHERE id = ?", [selected_id])
-                profile = generate_bean_profile(bean)
-
-                execute(
-                    """
-                    INSERT INTO bean_profiles
-                    (
-                        bean_id,
-                        predicted_acidity,
-                        predicted_body,
-                        predicted_sweetness,
-                        predicted_notes,
-                        recommended_method,
-                        recommended_ratio,
-                        recommended_temp,
-                        confidence,
-                        reasoning
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(bean_id) DO UPDATE SET
-                        predicted_acidity = excluded.predicted_acidity,
-                        predicted_body = excluded.predicted_body,
-                        predicted_sweetness = excluded.predicted_sweetness,
-                        predicted_notes = excluded.predicted_notes,
-                        recommended_method = excluded.recommended_method,
-                        recommended_ratio = excluded.recommended_ratio,
-                        recommended_temp = excluded.recommended_temp,
-                        confidence = excluded.confidence,
-                        reasoning = excluded.reasoning,
-                        generated_at = CURRENT_TIMESTAMP
-                    """,
-                    [
-                        selected_id,
-                        profile["predicted_acidity"],
-                        profile["predicted_body"],
-                        profile["predicted_sweetness"],
-                        profile["predicted_notes"],
-                        profile["recommended_method"],
-                        profile["recommended_ratio"],
-                        profile["recommended_temp"],
-                        profile["confidence"],
-                        profile["reasoning"],
-                    ],
-                )
-
-                st.success("Bean Profile generated.")
-                st.json(profile)
+                try:
+                    profile = generate_and_store_bean_profile(selected_id)
+                except Exception as error:
+                    st.error(f"Bean Profile could not be generated: {error}")
+                else:
+                    st.success("Bean Profile generated.")
+                    st.json(profile)
 
 
 with tab_profiles:

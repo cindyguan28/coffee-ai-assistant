@@ -167,6 +167,18 @@ def execute(query, params=None):
     conn.close()
 
 
+def execute_insert(query, params=None):
+    """Execute an insert and return the new row id after it is committed."""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(query, params or [])
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
 def fetch_all(query, params=None):
     conn = get_connection()
     conn.row_factory = sqlite3.Row
