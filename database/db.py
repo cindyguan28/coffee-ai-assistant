@@ -1,7 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("data/coffee.db")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = ROOT_DIR / "data" / "coffee.db"
 
 
 def get_connection():

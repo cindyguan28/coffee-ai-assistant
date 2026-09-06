@@ -2,7 +2,8 @@ import csv
 from pathlib import Path
 
 
-KNOWLEDGE_DIR = Path("knowledge")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+KNOWLEDGE_DIR = ROOT_DIR / "knowledge"
 
 
 def load_csv(filename: str) -> list[dict]:
@@ -69,12 +70,6 @@ def get_flavor_note_options() -> list[tuple[str, str]]:
 
     options.sort(key=lambda item: item[1].lower())
     return options
-
-
-def get_roaster_options() -> list[str]:
-    rows = load_roaster_profiles()
-    roasters = sorted({row["roaster"] for row in rows if row.get("roaster")})
-    return roasters
 
 
 def get_roaster_profile(roaster_name: str) -> dict | None:

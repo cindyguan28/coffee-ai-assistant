@@ -241,9 +241,21 @@ with tab_beans:
                 )
 
             with col3:
-                acidity = st.selectbox("Acidity", acidity_options)
-                body = st.selectbox("Body", body_options)
-                sweetness = st.selectbox("Sweetness", sweetness_options)
+                acidity = st.selectbox(
+                    "Acidity",
+                    acidity_options,
+                    help="Perceived brightness or liveliness; higher often feels more citrusy or fruity.",
+                )
+                body = st.selectbox(
+                    "Body",
+                    body_options,
+                    help="The perceived weight and texture of the coffee, from light to creamy or full-bodied.",
+                )
+                sweetness = st.selectbox(
+                    "Sweetness",
+                    sweetness_options,
+                    help="The perceived natural sweetness of the coffee.",
+                )
                 price = st.number_input(
                     "Price",
                     min_value=0.0,
@@ -251,7 +263,7 @@ with tab_beans:
                     format="%.2f",
                     help="Price per bag or package in your currency.",
                 )
-                weblink = st.text_input("Weblink", placeholder="https://")
+                weblink = st.text_input("Website", placeholder="https://")
 
             selected_flavor_notes = st.multiselect(
                 "Flavor notes",
@@ -427,9 +439,24 @@ with tab_beans:
                         )
 
                     with col3:
-                        edit_acidity = st.selectbox("Acidity", acidity_options, index=acidity_options.index(bean_to_edit.get("acidity")) if bean_to_edit.get("acidity") in acidity_options else 0)
-                        edit_body = st.selectbox("Body", body_options, index=body_options.index(bean_to_edit.get("body")) if bean_to_edit.get("body") in body_options else 0)
-                        edit_sweetness = st.selectbox("Sweetness", sweetness_options, index=sweetness_options.index(bean_to_edit.get("sweetness")) if bean_to_edit.get("sweetness") in sweetness_options else 0)
+                        edit_acidity = st.selectbox(
+                            "Acidity",
+                            acidity_options,
+                            index=acidity_options.index(bean_to_edit.get("acidity")) if bean_to_edit.get("acidity") in acidity_options else 0,
+                            help="Perceived brightness or liveliness; higher often feels more citrusy or fruity.",
+                        )
+                        edit_body = st.selectbox(
+                            "Body",
+                            body_options,
+                            index=body_options.index(bean_to_edit.get("body")) if bean_to_edit.get("body") in body_options else 0,
+                            help="The perceived weight and texture of the coffee, from light to creamy or full-bodied.",
+                        )
+                        edit_sweetness = st.selectbox(
+                            "Sweetness",
+                            sweetness_options,
+                            index=sweetness_options.index(bean_to_edit.get("sweetness")) if bean_to_edit.get("sweetness") in sweetness_options else 0,
+                            help="The perceived natural sweetness of the coffee.",
+                        )
                         edit_price = st.number_input(
                             "Price",
                             min_value=0.0,
@@ -438,7 +465,7 @@ with tab_beans:
                             value=bean_to_edit.get("price") or 0.0,
                             help="Price per bag or package in your currency.",
                         )
-                        edit_weblink = st.text_input("Weblink", value=bean_to_edit.get("weblink") or "", placeholder="https://")
+                        edit_weblink = st.text_input("Website", value=bean_to_edit.get("weblink") or "", placeholder="https://")
 
                     flavor_note_map = {option[0]: option for option in flavor_note_options}
                     edit_flavor_defaults = [flavor_note_map[note] for note in (bean_to_edit.get("flavor_notes") or "").split(",") if note and note in flavor_note_map]
@@ -845,17 +872,35 @@ with tab_brew:
             col10, col11, col12, col13, col14, col15 = st.columns(6)
 
             with col10:
-                acidity = st.slider("Acidity", 1, 5, 3)
+                acidity = st.slider(
+                    "Acidity", 1, 5, 3,
+                    help="Perceived brightness or liveliness; higher often feels more citrusy or fruity.",
+                )
             with col11:
-                bitterness = st.slider("Bitterness", 1, 5, 3)
+                bitterness = st.slider(
+                    "Bitterness", 1, 5, 3,
+                    help="The strength of bitter taste in this cup, independent of whether you liked it.",
+                )
             with col12:
-                body = st.slider("Body", 1, 5, 3)
+                body = st.slider(
+                    "Body", 1, 5, 3,
+                    help="The perceived weight and texture of this cup.",
+                )
             with col13:
-                sweetness = st.slider("Sweetness", 1, 5, 3)
+                sweetness = st.slider(
+                    "Sweetness", 1, 5, 3,
+                    help="The perceived natural sweetness in this cup.",
+                )
             with col14:
-                balance = st.slider("Balance", 1, 5, 3)
+                balance = st.slider(
+                    "Balance", 1, 5, 3,
+                    help="How harmoniously acidity, bitterness, sweetness and body work together.",
+                )
             with col15:
-                aroma = st.slider("Aroma", 1, 5, 3)
+                aroma = st.slider(
+                    "Aroma", 1, 5, 3,
+                    help="The intensity and pleasantness of the coffee's smell.",
+                )
 
             score = st.slider(
                 "Personal liking",
