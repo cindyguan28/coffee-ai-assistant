@@ -76,6 +76,7 @@ class TasteGeographyTest(unittest.TestCase):
         countries = {item["country"]: item for item in result["countries"]}
 
         self.assertEqual(countries["Ethiopia"]["coffee_count"], 2)
+        self.assertEqual(countries["Ethiopia"]["brewed_coffee_count"], 2)
         self.assertEqual(countries["Ethiopia"]["brew_count"], 3)
         self.assertEqual(countries["Ethiopia"]["average_liking"], 7)
         self.assertEqual(countries["Ethiopia"]["average_acidity"], 3)
@@ -89,13 +90,23 @@ class TasteGeographyTest(unittest.TestCase):
 
     def test_keeps_country_with_a_bean_but_no_brew_data(self):
         result = aggregate_country_tastes(
-            [{"bean_id": 4, "brew_id": None, "country": "Peru", "process": "washed"}],
+            [
+                {"bean_id": 4, "brew_id": None, "country": "Peru", "process": "washed"},
+                {
+                    "bean_id": 5,
+                    "brew_id": 13,
+                    "country": "Peru",
+                    "process": "natural",
+                    "score": None,
+                },
+            ],
             self.taxonomy,
         )
 
         peru = result["countries"][0]
-        self.assertEqual(peru["coffee_count"], 1)
-        self.assertEqual(peru["brew_count"], 0)
+        self.assertEqual(peru["coffee_count"], 2)
+        self.assertEqual(peru["brewed_coffee_count"], 1)
+        self.assertEqual(peru["brew_count"], 1)
         self.assertIsNone(peru["average_liking"])
 
 

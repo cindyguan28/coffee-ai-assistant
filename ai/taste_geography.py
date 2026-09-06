@@ -137,6 +137,7 @@ def aggregate_country_tastes(
                     "country": origin["country"],
                     "iso_alpha": origin["iso_alpha"],
                     "bean_ids": set(),
+                    "brewed_bean_ids": set(),
                     "brew_ids": set(),
                     "liking": [],
                     "sensory": {dimension: [] for dimension in SENSORY_DIMENSIONS},
@@ -161,6 +162,8 @@ def aggregate_country_tastes(
                 continue
 
             bucket["brew_ids"].add(brew_id)
+            if bean_id is not None:
+                bucket["brewed_bean_ids"].add(bean_id)
             score = _number(row.get("score"))
             if score is not None:
                 bucket["liking"].append(score)
@@ -214,6 +217,7 @@ def aggregate_country_tastes(
                 "country": bucket["country"],
                 "iso_alpha": bucket["iso_alpha"],
                 "coffee_count": len(bucket["bean_ids"]),
+                "brewed_coffee_count": len(bucket["brewed_bean_ids"]),
                 "brew_count": len(bucket["brew_ids"]),
                 "average_liking": _average(bucket["liking"]),
                 **{

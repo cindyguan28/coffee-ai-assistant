@@ -1,5 +1,5 @@
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from database.db import init_db, execute, fetch_all, fetch_one
@@ -904,23 +904,21 @@ with tab_map:
     geography = aggregate_country_tastes(
         geography_rows, load_flavor_dictionary()
     )
-    mapped_countries = [
-        country
-        for country in geography["countries"]
-        if country["average_liking"] is not None
-    ]
-
     if not geography["countries"]:
         st.info(
             "Add an origin country to a saved bean to start building your coffee world."
         )
-    elif not mapped_countries:
-        st.info(
-            "Your origin countries are ready. Add a Brew Log with a personal score "
-            "to color them on the map."
-        )
     else:
-        map_data = pd.DataFrame(mapped_countries)
+        map_mode = st.radio(
+            "Map view",
+            ["Coffees explored", "My preferences"],
+            horizontal=True,
+            help=(
+                "Coffees explored shows your saved bean collection. My preferences "
+                "uses personal liking from Brew Logs."
+            ),
+        )
+        map_data = pd.DataFrame(geography["countries"])
         map_data["top_flavors"] = map_data["top_flavor_families"].apply(
             lambda families: ", ".join(
                 family.replace("_", " ").title() for family in families
@@ -932,36 +930,102 @@ with tab_map:
             if process
             else "Not enough data"
         )
+        map_data["average_liking_display"] = map_data["average_liking"].apply(
+            lambda liking: f"{liking:.1f}/10" if pd.notna(liking) else "Not rated yet"
+        )
+        hover_columns = [
+            "country",
+            "coffee_count",
+            "brewed_coffee_count",
+            "brew_count",
+            "average_liking_display",
+            "preferred_process_display",
+            "top_flavors",
+        ]
+        hover_template = (
+            "<b>%{customdata[0]}</b><br>"
+            "Beans saved: %{customdata[1]}<br>"
+            "Beans brewed: %{customdata[2]}<br>"
+            "Brew logs: %{customdata[3]}<br>"
+            "Average liking: %{customdata[4]}<br>"
+            "Preferred process: %{customdata[5]}<br>"
+            "Top flavors: %{customdata[6]}<extra></extra>"
+        )
+        figure = go.Figure()
 
-        figure = px.choropleth(
-            map_data,
-            locations="iso_alpha",
-            color="average_liking",
-            hover_name="country",
-            custom_data=[
-                "coffee_count",
-                "brew_count",
-                "preferred_process_display",
-                "top_flavors",
-            ],
-            color_continuous_scale="YlOrBr",
-            range_color=(1, 10),
-            labels={"average_liking": "Average liking"},
-            projection="natural earth",
-        )
-        figure.update_traces(
-            hovertemplate=(
-                "<b>%{hovertext}</b><br>"
-                "Average liking: %{z:.1f}/10<br>"
-                "Coffees tried: %{customdata[0]}<br>"
-                "Brew logs: %{customdata[1]}<br>"
-                "Preferred process: %{customdata[2]}<br>"
-                "Top flavors: %{customdata[3]}<extra></extra>"
+        if map_mode == "Coffees explored":
+            figure.add_trace(
+                go.Choropleth(
+                    locations=map_data["iso_alpha"],
+                    z=map_data["coffee_count"],
+                    zmin=0,
+                    zmax=max(map_data["coffee_count"].max(), 1),
+                    colorscale="YlGnBu",
+                    colorbar=dict(title="Beans"),
+                    customdata=map_data[hover_columns],
+                    hovertemplate=hover_template,
+                    marker_line_color="white",
+                    marker_line_width=0.7,
+                )
             )
-        )
+            st.caption(
+                "Color shows the number of distinct beans saved from each country."
+            )
+        else:
+            unrated = map_data[map_data["average_liking"].isna()]
+            rated = map_data[map_data["average_liking"].notna()]
+            if not unrated.empty:
+                figure.add_trace(
+                    go.Choropleth(
+                        locations=unrated["iso_alpha"],
+                        z=[1] * len(unrated),
+                        zmin=0,
+                        zmax=1,
+                        colorscale=[[0, "#e5e7eb"], [1, "#e5e7eb"]],
+                        showscale=False,
+                        customdata=unrated[hover_columns],
+                        hovertemplate=hover_template,
+                        marker_line_color="white",
+                        marker_line_width=0.7,
+                        name="Not rated yet",
+                    )
+                )
+            if not rated.empty:
+                figure.add_trace(
+                    go.Choropleth(
+                        locations=rated["iso_alpha"],
+                        z=rated["average_liking"],
+                        zmin=1,
+                        zmax=10,
+                        colorscale="YlOrBr",
+                        colorbar=dict(title="Liking", tickvals=[1, 3, 5, 7, 10]),
+                        customdata=rated[hover_columns],
+                        hovertemplate=hover_template,
+                        marker_line_color="white",
+                        marker_line_width=0.7,
+                    )
+                )
+            if rated.empty:
+                st.info(
+                    "Your saved origins are shown in gray. Add a Brew Log with a "
+                    "personal score to start building your preference map."
+                )
+            else:
+                st.caption(
+                    "Color shows average personal liking. Gray countries have saved "
+                    "beans but no personal score yet."
+                )
+
         figure.update_layout(
             margin=dict(l=0, r=0, t=20, b=0),
-            coloraxis_colorbar=dict(title="Liking", tickvals=[1, 3, 5, 7, 10]),
+            geo=dict(
+                projection_type="natural earth",
+                showframe=False,
+                showcoastlines=True,
+                coastlinecolor="#d1d5db",
+                showland=True,
+                landcolor="#f8fafc",
+            ),
         )
         st.plotly_chart(figure, width="stretch")
 
@@ -969,6 +1033,7 @@ with tab_map:
         detail_columns = [
             "country",
             "coffee_count",
+            "brewed_coffee_count",
             "brew_count",
             "average_liking",
             "preferred_process_display",
@@ -984,7 +1049,8 @@ with tab_map:
             map_data[detail_columns].rename(
                 columns={
                     "country": "Country",
-                    "coffee_count": "Coffees tried",
+                    "coffee_count": "Beans saved",
+                    "brewed_coffee_count": "Beans brewed",
                     "brew_count": "Brew logs",
                     "average_liking": "Average liking",
                     "preferred_process_display": "Preferred process",
@@ -1001,15 +1067,6 @@ with tab_map:
             hide_index=True,
         )
 
-    pending_countries = [
-        country["country"]
-        for country in geography["countries"]
-        if country["average_liking"] is None
-    ]
-    if pending_countries:
-        st.caption(
-            "Waiting for a personal score: " + ", ".join(pending_countries)
-        )
     if geography["unmapped_origins"]:
         st.warning(
             "These origins could not be mapped yet: "
