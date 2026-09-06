@@ -1,6 +1,10 @@
 import unittest
 
-from ai.taste_profile import SENSORY_DIMENSIONS, calculate_liking_weighted_profile
+from ai.taste_profile import (
+    SENSORY_DIMENSIONS,
+    calculate_liking_weighted_profile,
+    calculate_preferred_flavor_families,
+)
 
 
 class TasteProfileTest(unittest.TestCase):
@@ -64,6 +68,34 @@ class TasteProfileTest(unittest.TestCase):
 
         self.assertEqual(result["total_brews"], 0)
         self.assertEqual(result["contributing_brews"], 0)
+
+    def test_flavor_families_use_the_same_liking_weight(self):
+        taxonomy = [
+            {"normalized_value": "lemon", "category": "citrus"},
+            {"normalized_value": "orange", "category": "citrus"},
+            {"normalized_value": "cocoa", "category": "chocolate"},
+            {"normalized_value": "balanced", "category": "balance"},
+        ]
+        logs = [
+            {"score": 9, "flavor_notes": "lemon,orange,balanced"},
+            {"score": 7, "flavor_notes": "cocoa"},
+            {"score": 5, "flavor_notes": "cocoa"},
+        ]
+
+        result = calculate_preferred_flavor_families(logs, taxonomy)
+
+        self.assertEqual([item["family"] for item in result], ["citrus", "chocolate"])
+        self.assertEqual(result[0]["weight"], 4)
+        self.assertEqual(result[0]["brew_count"], 1)
+        self.assertEqual(result[0]["share"], 0.667)
+
+    def test_flavor_families_handle_missing_tags(self):
+        result = calculate_preferred_flavor_families(
+            [{"score": 9, "flavor_notes": None}],
+            [{"normalized_value": "cocoa", "category": "chocolate"}],
+        )
+
+        self.assertEqual(result, [])
 
 
 if __name__ == "__main__":

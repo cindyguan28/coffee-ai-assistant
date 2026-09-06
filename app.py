@@ -6,13 +6,18 @@ from database.db import init_db, execute, fetch_all, fetch_one
 from ai.bean_profile_engine import generate_bean_profile
 from ai.coffee_summary import build_coffee_summary
 from ai.ollama_client import ask_ollama
-from ai.taste_profile import SENSORY_DIMENSIONS, calculate_liking_weighted_profile
+from ai.taste_profile import (
+    SENSORY_DIMENSIONS,
+    calculate_liking_weighted_profile,
+    calculate_preferred_flavor_families,
+)
 from database.import_knowledge import (
     get_country_options,
     get_process_options,
     get_roast_level_options,
     get_flavor_note_options,
     get_roaster_options,
+    load_flavor_dictionary,
 )
 
 
@@ -986,12 +991,24 @@ with tab_taste:
 
     taste_logs = fetch_all(
         """
-        SELECT acidity, sweetness, bitterness, body, balance, aroma, score
+        SELECT
+            brew_logs.acidity,
+            brew_logs.sweetness,
+            brew_logs.bitterness,
+            brew_logs.body,
+            brew_logs.balance,
+            brew_logs.aroma,
+            brew_logs.score,
+            beans.flavor_notes
         FROM brew_logs
-        ORDER BY id DESC
+        LEFT JOIN beans ON beans.id = brew_logs.bean_id
+        ORDER BY brew_logs.id DESC
         """
     )
     taste_profile = calculate_liking_weighted_profile(taste_logs)
+    flavor_families = calculate_preferred_flavor_families(
+        taste_logs, load_flavor_dictionary()
+    )
     profile_values = taste_profile["dimensions"]
 
     if not taste_logs:
@@ -1039,6 +1056,26 @@ with tab_taste:
             st.warning(
                 "Add ratings for these dimensions to complete the radar: "
                 + ", ".join(missing_dimensions)
+            )
+
+        st.markdown("### Preferred flavor families")
+        if flavor_families:
+            top_families = flavor_families[:3]
+            family_columns = st.columns(len(top_families))
+            for column, family in zip(family_columns, top_families):
+                with column:
+                    st.metric(
+                        family["family"].replace("_", " ").title(),
+                        f"{family['share']:.0%}",
+                        help=(
+                            f"Found in {family['brew_count']} liked brew(s). "
+                            "Share is calculated from liking-weighted flavor families."
+                        ),
+                    )
+        else:
+            st.info(
+                "Add flavor notes to the beans in your liked brew logs to reveal "
+                "your preferred flavor families."
             )
 
 
