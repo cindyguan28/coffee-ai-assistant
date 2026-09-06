@@ -11,6 +11,7 @@ from ai.taste_profile import (
     calculate_liking_weighted_profile,
     calculate_preferred_flavor_families,
 )
+from ai.taste_geography import aggregate_country_tastes
 from database.import_knowledge import (
     get_country_options,
     get_process_options,
@@ -50,8 +51,16 @@ init_db()
 st.title("☕ Coffee AI Assistant V2")
 st.caption("Personal coffee database + bean profile generation + brew log + local AI assistant")
 
-tab_beans, tab_profiles, tab_brew, tab_best, tab_taste, tab_ai = st.tabs(
-    ["Beans", "Bean Profiles", "Brew Logs", "Best Settings", "My Taste", "AI Assistant"]
+tab_beans, tab_profiles, tab_brew, tab_best, tab_taste, tab_map, tab_ai = st.tabs(
+    [
+        "Beans",
+        "Bean Profiles",
+        "Brew Logs",
+        "Best Settings",
+        "My Taste",
+        "My Coffee World",
+        "AI Assistant",
+    ]
 )
 
 
@@ -1077,6 +1086,197 @@ with tab_taste:
                 "Add flavor notes to the beans in your liked brew logs to reveal "
                 "your preferred flavor families."
             )
+
+
+with tab_map:
+    st.subheader("My Coffee World")
+    st.caption(
+        "Explore where your coffees come from and how much you enjoyed them. "
+        "The map uses country-level origins from your saved beans and personal Brew Logs."
+    )
+
+    geography_rows = fetch_all(
+        """
+        SELECT
+            beans.id AS bean_id,
+            beans.country,
+            beans.process,
+            beans.flavor_notes,
+            brew_logs.id AS brew_id,
+            brew_logs.score,
+            brew_logs.acidity,
+            brew_logs.sweetness,
+            brew_logs.bitterness,
+            brew_logs.body,
+            brew_logs.balance,
+            brew_logs.aroma
+        FROM beans
+        LEFT JOIN brew_logs ON brew_logs.bean_id = beans.id
+        ORDER BY beans.id DESC, brew_logs.id DESC
+        """
+    )
+    geography = aggregate_country_tastes(
+        geography_rows, load_flavor_dictionary()
+    )
+    if not geography["countries"]:
+        st.info(
+            "Add an origin country to a saved bean to start building your coffee world."
+        )
+    else:
+        map_mode = st.radio(
+            "Map view",
+            ["Coffees explored", "My preferences"],
+            horizontal=True,
+            help=(
+                "Coffees explored shows your saved bean collection. My preferences "
+                "uses personal liking from Brew Logs."
+            ),
+        )
+        map_data = pd.DataFrame(geography["countries"])
+        map_data["top_flavors"] = map_data["top_flavor_families"].apply(
+            lambda families: ", ".join(
+                family.replace("_", " ").title() for family in families
+            )
+            or "Not enough data"
+        )
+        map_data["average_liking_display"] = map_data["average_liking"].apply(
+            lambda liking: f"{liking:.1f}/10" if pd.notna(liking) else "Not rated yet"
+        )
+        hover_columns = [
+            "country",
+            "coffee_count",
+            "brewed_coffee_count",
+            "brew_count",
+            "average_liking_display",
+            "top_flavors",
+        ]
+        hover_template = (
+            "<b>%{customdata[0]}</b><br>"
+            "Beans saved: %{customdata[1]}<br>"
+            "Beans brewed: %{customdata[2]}<br>"
+            "Brew logs: %{customdata[3]}<br>"
+            "Average liking: %{customdata[4]}<br>"
+            "Top flavors: %{customdata[5]}<extra></extra>"
+        )
+        figure = go.Figure()
+
+        if map_mode == "Coffees explored":
+            figure.add_trace(
+                go.Choropleth(
+                    locations=map_data["iso_alpha"],
+                    z=map_data["coffee_count"],
+                    zmin=0,
+                    zmax=max(map_data["coffee_count"].max(), 1),
+                    colorscale="YlGnBu",
+                    colorbar=dict(title="Beans"),
+                    customdata=map_data[hover_columns],
+                    hovertemplate=hover_template,
+                    marker_line_color="white",
+                    marker_line_width=0.7,
+                )
+            )
+            st.caption(
+                "Color shows the number of distinct beans saved from each country."
+            )
+        else:
+            unrated = map_data[map_data["average_liking"].isna()]
+            rated = map_data[map_data["average_liking"].notna()]
+            if not unrated.empty:
+                figure.add_trace(
+                    go.Choropleth(
+                        locations=unrated["iso_alpha"],
+                        z=[1] * len(unrated),
+                        zmin=0,
+                        zmax=1,
+                        colorscale=[[0, "#e5e7eb"], [1, "#e5e7eb"]],
+                        showscale=False,
+                        customdata=unrated[hover_columns],
+                        hovertemplate=hover_template,
+                        marker_line_color="white",
+                        marker_line_width=0.7,
+                        name="Not rated yet",
+                    )
+                )
+            if not rated.empty:
+                figure.add_trace(
+                    go.Choropleth(
+                        locations=rated["iso_alpha"],
+                        z=rated["average_liking"],
+                        zmin=1,
+                        zmax=10,
+                        colorscale="YlOrBr",
+                        colorbar=dict(title="Liking", tickvals=[1, 3, 5, 7, 10]),
+                        customdata=rated[hover_columns],
+                        hovertemplate=hover_template,
+                        marker_line_color="white",
+                        marker_line_width=0.7,
+                    )
+                )
+            if rated.empty:
+                st.info(
+                    "Your saved origins are shown in gray. Add a Brew Log with a "
+                    "personal score to start building your preference map."
+                )
+            else:
+                st.caption(
+                    "Color shows average personal liking. Gray countries have saved "
+                    "beans but no personal score yet."
+                )
+
+        figure.update_layout(
+            margin=dict(l=0, r=0, t=20, b=0),
+            geo=dict(
+                projection_type="natural earth",
+                showframe=False,
+                showcoastlines=True,
+                coastlinecolor="#d1d5db",
+                showland=True,
+                landcolor="#f8fafc",
+            ),
+        )
+        st.plotly_chart(figure, width="stretch")
+
+        st.markdown("### Country details")
+        detail_columns = [
+            "country",
+            "coffee_count",
+            "brewed_coffee_count",
+            "brew_count",
+            "average_liking",
+            "top_flavors",
+            "average_acidity",
+            "average_sweetness",
+            "average_bitterness",
+            "average_body",
+            "average_balance",
+            "average_aroma",
+        ]
+        st.dataframe(
+            map_data[detail_columns].rename(
+                columns={
+                    "country": "Country",
+                    "coffee_count": "Beans saved",
+                    "brewed_coffee_count": "Beans brewed",
+                    "brew_count": "Brew logs",
+                    "average_liking": "Average liking",
+                    "top_flavors": "Top flavor families",
+                    "average_acidity": "Acidity",
+                    "average_sweetness": "Sweetness",
+                    "average_bitterness": "Bitterness",
+                    "average_body": "Body",
+                    "average_balance": "Balance",
+                    "average_aroma": "Aroma",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+        )
+
+    if geography["unmapped_origins"]:
+        st.warning(
+            "These origins could not be mapped yet: "
+            + ", ".join(geography["unmapped_origins"])
+        )
 
 
 with tab_ai:
