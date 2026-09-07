@@ -60,7 +60,7 @@ export default function Home() {
           <a href="#features">What it does</a>
           <a href="#journey">How it works</a>
         </div>
-        <a className="nav-action" href="#space">
+        <a className="nav-action" href="/login">
           Enter my space <Arrow />
         </a>
       </nav>
@@ -73,7 +73,7 @@ export default function Home() {
             Remember every bean. Learn from every brew. Slowly discover the taste that is unmistakably yours.
           </p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#space">Create my coffee space <Arrow /></a>
+            <a className="button button-primary" href="/login?mode=signup">Create my coffee space <Arrow /></a>
             <a className="button button-quiet" href="#journey">See how it works</a>
           </div>
           <p className="privacy-note"><span>●</span> Private by default · Built around your own coffee journey</p>
@@ -159,7 +159,7 @@ export default function Home() {
         <CoffeeMark />
         <p>There is no right way to love coffee.</p>
         <h2>There is only <em>your way.</em></h2>
-        <a className="button button-primary" href="#top">Begin with one bean <Arrow /></a>
+        <a className="button button-primary" href="/login?mode=signup">Begin with one bean <Arrow /></a>
       </section>
 
       <footer className="footer shell">
