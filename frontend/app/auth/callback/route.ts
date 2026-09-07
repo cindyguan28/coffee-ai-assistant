@@ -1,5 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { safeRedirectPath } from "../../../lib/auth/validation";
+import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -7,8 +9,14 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
-  const next = requestUrl.searchParams.get("next") ?? "/space";
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/space";
+  const safeNext = safeRedirectPath(requestUrl.searchParams.get("next"));
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.redirect(
+      new URL("/login?error=Authentication%20is%20not%20configured.", requestUrl.origin),
+    );
+  }
+
   const supabase = await createClient();
 
   if (code) {
@@ -18,7 +26,10 @@ export async function GET(request: Request) {
 
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    if (!error) return NextResponse.redirect(new URL(safeNext, requestUrl.origin));
+    if (!error) {
+      const destination = type === "recovery" ? "/reset-password" : safeNext;
+      return NextResponse.redirect(new URL(destination, requestUrl.origin));
+    }
   }
 
   return NextResponse.redirect(

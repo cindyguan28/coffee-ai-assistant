@@ -3,81 +3,97 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
-import { isSupabaseConfigured } from "../../lib/supabase/config";
+import { getSiteUrl, isSupabaseConfigured } from "../../lib/supabase/config";
+import {
+  authMessageUrl,
+  safeRedirectPath,
+  validateCredentials,
+  validateNewPassword,
+} from "../../lib/auth/validation";
 
-function loginError(message: string, mode = "login"): never {
-  redirect(`/login?mode=${mode}&error=${encodeURIComponent(message)}`);
-}
-
-function readCredentials(formData: FormData, mode: "login" | "signup") {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
-
-  if (!email || !email.includes("@")) {
-    loginError("Enter a valid email address.", mode);
-  }
-  if (password.length < 8) {
-    loginError("Password must be at least 8 characters.", mode);
-  }
-
-  return { email, password };
+function loginError(message: string, extra?: Record<string, string>): never {
+  redirect(authMessageUrl("/login", "error", message, extra));
 }
 
 export async function login(formData: FormData) {
+  const next = safeRedirectPath(formData.get("next"));
   if (!isSupabaseConfigured()) {
-    loginError("Connect a Supabase project before signing in.");
+    loginError("Connect a Supabase project before signing in.", { next });
   }
 
+  const credentials = validateCredentials(formData.get("email"), formData.get("password"));
+  if (!credentials.ok) loginError(credentials.message, { next });
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(readCredentials(formData, "login"));
+  const { error } = await supabase.auth.signInWithPassword(credentials);
 
   if (error) {
-    loginError("The email or password is incorrect.");
+    loginError("The email or password is incorrect, or the email is not confirmed.", { next });
   }
 
   revalidatePath("/", "layout");
-  redirect("/space");
+  redirect(next);
 }
 
 export async function signup(formData: FormData) {
+  const next = safeRedirectPath(formData.get("next"));
   if (!isSupabaseConfigured()) {
-    loginError("Connect a Supabase project before creating an account.", "signup");
+    loginError("Connect a Supabase project before creating an account.", { mode: "signup", next });
   }
 
-  const credentials = readCredentials(formData, "signup");
+  const credentials = validateCredentials(formData.get("email"), formData.get("password"));
+  if (!credentials.ok) loginError(credentials.message, { mode: "signup", next });
+
+  const password = validateNewPassword(formData.get("password"), formData.get("confirmPassword"));
+  if (!password.ok) loginError(password.message, { mode: "signup", next });
+
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signUp({
-    ...credentials,
-    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
+    email: credentials.email,
+    password: credentials.password,
+    options: {
+      emailRedirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
   });
 
   if (error) {
-    loginError("We could not create that account. Try another email.", "signup");
+    loginError("We could not create that account. Check the details and try again.", {
+      mode: "signup",
+      next,
+    });
   }
 
   if (!data.session) {
-    redirect("/login?message=Check%20your%20email%20to%20confirm%20your%20coffee%20space.");
+    redirect(
+      authMessageUrl(
+        "/login",
+        "message",
+        "Check your email to confirm your account, then return here to sign in.",
+        { next },
+      ),
+    );
   }
 
   revalidatePath("/", "layout");
-  redirect("/space");
+  redirect(next);
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(formData: FormData) {
+  const next = safeRedirectPath(formData.get("next"));
   if (!isSupabaseConfigured()) {
-    loginError("Connect a Supabase project before signing in with Google.");
+    loginError("Connect a Supabase project before signing in with Google.", { next });
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: `${siteUrl}/auth/callback` },
+    options: {
+      redirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
   });
 
   if (error || !data.url) {
-    loginError("Google sign-in is not available yet.");
+    loginError("Google sign-in is not available. Try email instead.", { next });
   }
 
   redirect(data.url);

@@ -26,12 +26,16 @@ export async function updateSession(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const signedIn = Boolean(data?.claims);
-  const isPrivateRoute = request.nextUrl.pathname.startsWith("/space");
+  const isPrivateRoute =
+    request.nextUrl.pathname.startsWith("/space") ||
+    request.nextUrl.pathname.startsWith("/reset-password");
 
   if (!signedIn && isPrivateRoute) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.pathname = request.nextUrl.pathname.startsWith("/reset-password")
+      ? "/forgot-password"
+      : "/login";
+    loginUrl.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 

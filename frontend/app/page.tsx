@@ -165,7 +165,7 @@ export default function Home() {
       <footer className="footer shell">
         <a className="brand" href="#top"><CoffeeMark /><span>Mylot</span></a>
         <p>Your coffee memories, kept close.</p>
-        <span>Private beta · 2026</span>
+        <span>Public preview · 2026</span>
       </footer>
     </main>
   );
