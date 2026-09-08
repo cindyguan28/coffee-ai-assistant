@@ -181,13 +181,26 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-form label { font-size: 11px; font-weight: 700; margin: 14px 0 7px; }
 .bean-form input, .bean-form select, .bean-form textarea { width: 100%; border: 1px solid var(--line); background: var(--paper); padding: 12px; font: inherit; }
 .bean-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.bean-form .auth-submit { margin-top: 22px; }
+.bean-form-row-three { grid-template-columns: repeat(3, 1fr); }
+.option-fieldset { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.option-fieldset legend { font-size: 11px; font-weight: 700; margin-bottom: 10px; }
+.option-fieldset legend span { color: var(--muted); font-weight: 400; }
+.option-chips { display: flex; flex-wrap: wrap; gap: 7px; max-height: 155px; overflow-y: auto; padding: 2px; }
+.bean-form .option-chip { margin: 0; cursor: pointer; }
+.option-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.option-chip span { display: block; border: 1px solid var(--line); background: var(--paper); padding: 7px 9px; color: var(--muted); font-size: 10px; }
+.option-chip input:checked + span { border-color: var(--coffee); background: var(--coffee); color: white; }
+.bean-form-actions { display: flex; align-items: center; gap: 20px; margin-top: 22px; }
+.bean-form-actions .auth-submit { margin: 0; }
+.text-link, .bean-edit { color: var(--coffee); border-bottom: 1px solid; font-size: 10px; }
 .bean-list { display: grid; gap: 14px; }
 .bean-item { background: var(--cream); border: 1px solid var(--line); padding: 24px; position: relative; }
+.bean-item.is-editing { border-color: var(--coffee); }
 .bean-item > div:first-child { display: flex; justify-content: space-between; }
 .bean-tags { display: flex; gap: 8px; margin: 16px 0; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .bean-delete { background: transparent; border: 0; border-bottom: 1px solid; padding: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }
+.bean-actions { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
 .bean-empty { color: var(--muted); padding: 35px 0; }
 .brew-numbers, .sensory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
 .sensory-grid { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
