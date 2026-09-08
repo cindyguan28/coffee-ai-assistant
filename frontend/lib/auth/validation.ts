@@ -68,3 +68,9 @@ export function authMessageUrl(
   const params = new URLSearchParams({ [kind]: message, ...extra });
   return `${pathname}?${params.toString()}`;
 }
+
+export function isMissingPkceVerifier(error: unknown) {
+  if (!error || typeof error !== "object" || !("message" in error)) return false;
+  const message = String(error.message).toLowerCase();
+  return message.includes("code verifier") || message.includes("code_verifier");
+}

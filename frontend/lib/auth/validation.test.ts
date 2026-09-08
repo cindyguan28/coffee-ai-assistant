@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   authMessageUrl,
+  isMissingPkceVerifier,
   safeRedirectPath,
   validateCredentials,
   validateEmail,
@@ -45,5 +46,13 @@ describe("authMessageUrl", () => {
   it("encodes user-facing messages and preserves extra state", () => {
     const result = authMessageUrl("/login", "error", "Try again & retry", { next: "/space" });
     expect(result).toBe("/login?error=Try+again+%26+retry&next=%2Fspace");
+  });
+});
+
+describe("PKCE errors", () => {
+  it("recognizes a missing verifier without treating other failures as cross-device confirmation", () => {
+    expect(isMissingPkceVerifier(new Error("both auth code and code verifier should be non-empty"))).toBe(true);
+    expect(isMissingPkceVerifier({ message: "invalid code_verifier" })).toBe(true);
+    expect(isMissingPkceVerifier(new Error("code expired"))).toBe(false);
   });
 });

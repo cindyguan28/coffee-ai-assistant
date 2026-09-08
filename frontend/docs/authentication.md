@@ -12,6 +12,26 @@ Mylot uses Supabase Auth as its managed identity backend and Next.js Server Acti
    - `https://<your-vercel-domain>/auth/callback`
 5. Optional: enable Google under **Authentication → Providers → Google**, then add Supabase's displayed callback URL to the Google OAuth client.
 
+### Cross-device email confirmation
+
+The callback route accepts `token_hash`, which allows someone to register on a computer and confirm on a phone without relying on the original browser's PKCE verifier. In **Authentication → Email Templates → Confirm signup**, use this link for the confirmation button:
+
+```html
+<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">
+  Confirm your email
+</a>
+```
+
+The application always supplies a `RedirectTo` value that already contains a `next` query parameter, so the token parameters begin with `&`. Newly generated messages use the updated template; previously sent links do not change.
+
+For password recovery, use the equivalent link in the Reset password template:
+
+```html
+<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery">
+  Reset your password
+</a>
+```
+
 Supabase's Auth rate limits should remain enabled. Before a wider launch, enable CAPTCHA/Turnstile in Supabase and add the corresponding client token to the signup flow.
 
 ## 2. Configure local development
