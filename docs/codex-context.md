@@ -2,6 +2,10 @@
 
 This document is the canonical development brief for the next two product releases of `coffee-ai-assistant`. Codex should read it before planning or implementing work related to taste profiles or origin maps.
 
+## Current cloud data architecture
+
+The implemented Public Preview authentication, ownership, schema boundaries, RLS model, environment separation, and planned Coffee Catalog boundary are documented in [`docs/data-architecture.md`](data-architecture.md). That document is authoritative for current cloud data work. Earlier release-specific statements below—such as multi-user authentication being out of scope or showing preferred process on the map—describe the original release scope and have been superseded by the Public Preview decisions.
+
 ## Current repository state
 
 - `feature/enrichment_engine` has been merged into `main` through pull request #1.
