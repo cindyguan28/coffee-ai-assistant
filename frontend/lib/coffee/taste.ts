@@ -12,6 +12,15 @@ const FAMILY_BY_NOTE: Record<string, string> = {
   almond: "Nutty", hazelnut: "Nutty", nuts: "Nutty", nutty: "Nutty",
 };
 
+export function extractFlavorFamilies(flavorNotes?: string | null) {
+  return [...new Set(
+    (flavorNotes ?? "")
+      .split(",")
+      .map((note) => FAMILY_BY_NOTE[note.trim().toLowerCase()])
+      .filter((family): family is string => Boolean(family)),
+  )];
+}
+
 export function calculateTasteProfile(logs: TasteLog[]) {
   const sums = Object.fromEntries(SENSORY_DIMENSIONS.map((dimension) => [dimension, 0])) as Record<SensoryDimension, number>;
   const weights = { ...sums };
@@ -51,7 +60,7 @@ export function calculateFlavorFamilies(logs: TasteLog[]) {
   for (const log of logs) {
     const weight = Math.max((typeof log.score === "number" ? log.score : 0) - 5, 0);
     if (!weight) continue;
-    const families = new Set((log.flavor_notes ?? "").split(",").map((note) => FAMILY_BY_NOTE[note.trim().toLowerCase()]).filter(Boolean));
+    const families = extractFlavorFamilies(log.flavor_notes);
     families.forEach((family) => { weights[family] = (weights[family] ?? 0) + weight; counts[family] = (counts[family] ?? 0) + 1; });
   }
   return Object.entries(weights).map(([family, weight]) => ({ family, weight, brewCount: counts[family] })).sort((a, b) => b.weight - a.weight || a.family.localeCompare(b.family));

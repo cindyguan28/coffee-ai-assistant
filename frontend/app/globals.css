@@ -214,6 +214,31 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .flavor-families article { background: var(--cream); border: 1px solid var(--line); padding: 18px; }
 .flavor-families h3 { font: 500 20px var(--font-serif), serif; margin: 0 0 8px; }
 .flavor-families article p { color: var(--muted); font-size: 10px; margin: 0; }
+.world-page { width: min(1100px, calc(100% - 48px)); }
+.world-toolbar { display: flex; align-items: end; justify-content: space-between; margin: 48px 0 18px; }
+.world-toolbar span, .country-detail span { color: var(--coffee); font-size: 9px; letter-spacing: .15em; font-weight: 800; }
+.world-toolbar h2 { font-size: 32px; margin-top: 8px; }
+.world-toggle { display: flex; border: 1px solid var(--line); padding: 3px; background: var(--cream); }
+.world-toggle button { border: 0; background: transparent; color: var(--muted); padding: 10px 14px; cursor: pointer; font: 700 11px var(--font-sans), sans-serif; }
+.world-toggle button[aria-pressed="true"] { color: white; background: var(--coffee); }
+.world-map-wrap { background: var(--cream); border: 1px solid var(--line); padding: 18px; }
+.world-map { display: block; width: 100%; height: auto; }
+.world-country { stroke: #fffdf8; stroke-width: .7; outline: none; }
+.world-country-active { cursor: pointer; transition: opacity .16s ease, stroke-width .16s ease; }
+.world-country-active:hover, .world-country-active:focus { opacity: .75; stroke: var(--coffee-dark); stroke-width: 1.5; }
+.world-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 18px; color: var(--muted); font-size: 10px; }
+.world-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.world-legend i { width: 12px; height: 12px; display: inline-block; border: 1px solid var(--line); }
+.legend-none { background: #e9e1d5; }
+.legend-known { background: #627052; }
+.legend-unrated { background: #d7d1c6; }
+.country-detail { display: grid; grid-template-columns: .8fr 1.2fr; gap: 50px; background: var(--coffee-dark); color: var(--paper); padding: clamp(28px, 5vw, 54px); }
+.country-detail h2 { font-size: 46px; margin: 15px 0 10px; }
+.country-detail p { color: #cfbfae; line-height: 1.55; }
+.country-detail dl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin: 0; background: rgba(255,255,255,.15); }
+.country-detail dl div { background: var(--coffee-dark); padding: 18px; }
+.country-detail dt { color: #cfbfae; font-size: 10px; margin-bottom: 8px; }
+.country-detail dd { margin: 0; font: 500 22px var(--font-serif), serif; }
 
 @media (max-width: 800px) {
   .shell { width: min(100% - 28px, 1180px); }
@@ -235,6 +260,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .brew-numbers { grid-template-columns: repeat(2, 1fr); }
   .taste-layout { grid-template-columns: 1fr; gap: 35px; }
   .flavor-families > div { grid-template-columns: repeat(2, 1fr); }
+  .world-toolbar { align-items: start; flex-direction: column; gap: 18px; }
+  .country-detail { grid-template-columns: 1fr; gap: 25px; }
 }
 
 @media (max-width: 520px) {
