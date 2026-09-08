@@ -7,6 +7,12 @@ function stringValue(formData: FormData, field: string, maxLength = 2000) {
   return value ? value.slice(0, maxLength) : null;
 }
 
+function stringList(formData: FormData, field: string, maxLength = 500) {
+  const values = formData.getAll(field).map(String).map((value) => value.trim()).filter(Boolean);
+  const unique = [...new Set(values)];
+  return unique.length ? unique.join(",").slice(0, maxLength) : null;
+}
+
 function numberValue(
   formData: FormData,
   field: string,
@@ -65,7 +71,7 @@ export function validateBrewLog(formData: FormData): BrewValidation {
       grinder_type: stringValue(formData, "grinder_type", 200),
       milk_type: stringValue(formData, "milk_type", 100),
       taste_result: stringValue(formData, "taste_result", 500),
-      problem_tags: stringValue(formData, "problem_tags", 500),
+      problem_tags: stringList(formData, "problem_tags", 500),
       next_adjustment: stringValue(formData, "next_adjustment", 1000),
       notes: stringValue(formData, "notes", 2000),
       ...numbers,

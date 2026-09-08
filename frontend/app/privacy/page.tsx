@@ -9,7 +9,7 @@ export default function PrivacyPage() {
     <h1>Your coffee data<br /><em>stays yours.</em></h1>
     <section>
       <h2>What we store</h2>
-      <p>Your account email, the coffees you add, generated bean profiles, and brew logs. This is the information needed to provide your private Coffee Space, My Taste, and Coffee World.</p>
+      <p>Your account email, the coffees you add, generated bean profiles, and Brew Journal entries. This is the information needed to provide your private Coffee Space, My Taste, and Coffee World.</p>
       <h2>How it is protected</h2>
       <p>Authentication and storage use Supabase. Every coffee record is linked to your account and protected by database Row Level Security, so signed-in users can access only their own records.</p>
       <h2>What we do not do</h2>

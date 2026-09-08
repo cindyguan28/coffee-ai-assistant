@@ -7,6 +7,12 @@ function form(values: Record<string, string>) {
   return data;
 }
 
+function formWithProblems(values: Record<string, string>, problems: string[]) {
+  const data = form(values);
+  problems.forEach((problem) => data.append("problem_tags", problem));
+  return data;
+}
+
 const valid = { bean_id: "bean-1", brew_date: "2026-09-08", score: "8.5" };
 
 describe("validateBrewLog", () => {
@@ -14,6 +20,12 @@ describe("validateBrewLog", () => {
     const result = validateBrewLog(form(valid));
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.score).toBe(8.5);
+  });
+
+  it("preserves multiple guided problem tags", () => {
+    const result = validateBrewLog(formWithProblems(valid, ["too_sour", "too_weak"]));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.problem_tags).toBe("too_sour,too_weak");
   });
 
   it.each([

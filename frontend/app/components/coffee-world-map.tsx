@@ -73,7 +73,7 @@ export function CoffeeWorldMap({ summaries }: { summaries: CountrySummary[] }) {
       <dl>
         <div><dt>Saved coffees</dt><dd>{selected.coffeeCount}</dd></div>
         <div><dt>Brewed coffees</dt><dd>{selected.brewedCoffeeCount}</dd></div>
-        <div><dt>Brew logs</dt><dd>{selected.brewCount}</dd></div>
+        <div><dt>Journal entries</dt><dd>{selected.brewCount}</dd></div>
         <div><dt>Top flavors</dt><dd>{selected.topFlavorFamilies.join(" · ") || "Add flavor notes"}</dd></div>
       </dl>
     </section>}

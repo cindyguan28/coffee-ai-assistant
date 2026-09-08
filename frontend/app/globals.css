@@ -182,6 +182,14 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-form input, .bean-form select, .bean-form textarea { width: 100%; border: 1px solid var(--line); background: var(--paper); padding: 12px; font: inherit; }
 .bean-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .bean-form .auth-submit { margin-top: 22px; }
+.option-fieldset, .sensory-fieldset { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.option-fieldset legend, .sensory-fieldset legend { font-size: 11px; font-weight: 700; margin-bottom: 10px; }
+.option-fieldset legend span, .sensory-fieldset legend span { color: var(--muted); font-weight: 400; }
+.option-chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px; }
+.bean-form .option-chip { margin: 0; cursor: pointer; }
+.option-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.option-chip span { display: block; border: 1px solid var(--line); background: var(--paper); padding: 7px 9px; color: var(--muted); font-size: 10px; }
+.option-chip input:checked + span { border-color: var(--coffee); background: var(--coffee); color: white; }
 .bean-list { display: grid; gap: 14px; }
 .bean-item { background: var(--cream); border: 1px solid var(--line); padding: 24px; position: relative; }
 .bean-item > div:first-child { display: flex; justify-content: space-between; }
@@ -194,6 +202,13 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .brew-numbers label, .sensory-grid label, .brew-details > label { display: grid; }
 .brew-details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
 .brew-details summary { color: var(--coffee); font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+.sensory-fieldset > p { color: var(--muted); font-size: 10px; margin: 0 0 12px; }
+.sensory-sliders { display: grid; gap: 8px; }
+.range-field { display: grid; gap: 7px; margin-top: 18px; }
+.range-field > span, .range-field small { display: flex; justify-content: space-between; align-items: center; }
+.range-field output { color: var(--coffee); font-weight: 800; }
+.range-field input[type="range"] { accent-color: var(--coffee); padding: 0; border: 0; }
+.range-field small { color: var(--muted); font-size: 9px; font-weight: 400; }
 .brew-item > div:first-child { display: flex; justify-content: space-between; }
 .brew-item strong { font: 500 24px var(--font-serif), serif; color: var(--coffee); }
 .brew-actions { display: flex; gap: 16px; align-items: center; }
