@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFlavorFamilies, calculateTasteProfile } from "./taste";
+import { calculateFlavorFamilies, calculateTasteProfile, explainTasteDimension } from "./taste";
 
 describe("calculateTasteProfile", () => {
   it("matches the liking-weighted Python behavior", () => {
@@ -27,4 +27,12 @@ describe("calculateFlavorFamilies", () => {
       { family: "Chocolate", weight: 2, brewCount: 1 },
     ]);
   });
+});
+
+describe("explainTasteDimension", () => {
+  it("explains that a value is a sensory average, not a quality score", () => {
+    expect(explainTasteDimension("acidity", 3)).toContain("weighted average");
+    expect(explainTasteDimension("acidity", 3)).toContain("soft (1) to bright (5)");
+  });
+  it("handles missing ratings", () => expect(explainTasteDimension("aroma", null)).toContain("Not enough"));
 });
