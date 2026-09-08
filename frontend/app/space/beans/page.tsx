@@ -65,6 +65,10 @@ function beanProfile(bean: Bean) {
   return Array.isArray(bean.bean_profiles) ? bean.bean_profiles[0] : bean.bean_profiles;
 }
 
+function missingPackageWeight(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes("package_weight_g")));
+}
+
 export default async function BeansPage({ searchParams }: BeansPageProps) {
   const params = await searchParams;
   if (!isSupabaseConfigured()) {
@@ -73,12 +77,22 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const withPackageWeight = await supabase
     .from("beans")
     .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method)")
     .eq("user_id", userId!)
     .order("created_at", { ascending: false });
-  const beans = (data ?? []) as Bean[];
+  const legacy = missingPackageWeight(withPackageWeight.error)
+    ? await supabase
+      .from("beans")
+      .select("id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method)")
+      .eq("user_id", userId!)
+      .order("created_at", { ascending: false })
+    : null;
+  const error = legacy ? legacy.error : withPackageWeight.error;
+  const beans = (legacy
+    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null }))
+    : (withPackageWeight.data ?? [])) as Bean[];
   const editingBean = beans.find((bean) => bean.id === params.edit);
   const flavors = selectedFlavors(editingBean);
   const customFlavors = (editingBean?.flavor_notes ?? "")
