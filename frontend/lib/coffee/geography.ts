@@ -8,9 +8,25 @@ export type CountrySummary = {
   coffeeCount: number;
   brewedCoffeeCount: number;
   brewCount: number;
+  ratedBrewCount: number;
   averageLiking: number | null;
   topFlavorFamilies: string[];
 };
+
+export type CoffeeWorldMode = "explored" | "preference";
+
+export function countryNarrative(summary: CountrySummary, mode: CoffeeWorldMode) {
+  if (mode === "explored") {
+    const coffee = summary.coffeeCount === 1 ? "coffee" : "coffees";
+    const entry = summary.brewCount === 1 ? "journal entry" : "journal entries";
+    return `You have saved ${summary.coffeeCount} ${coffee} from ${summary.country} and recorded ${summary.brewCount} ${entry}. This view shows exploration; liking scores do not change it.`;
+  }
+  if (summary.averageLiking === null) {
+    return `${summary.country} is in your collection, but it has no scored journal entries yet. Add a liking score to include it in your Preference view.`;
+  }
+  const entry = summary.ratedBrewCount === 1 ? "scored journal entry" : "scored journal entries";
+  return `Across ${summary.ratedBrewCount} ${entry}, coffees from ${summary.country} average ${summary.averageLiking}/10. This view reflects what you personally enjoyed.`;
+}
 
 const COUNTRY_ALIASES: Record<string, string> = {
   bolivia: "Bolivia",
@@ -112,6 +128,7 @@ export function aggregateCoffeeWorld(beans: GeographyBean[], brews: GeographyBre
     coffeeCount: summary.beanIds.size,
     brewedCoffeeCount: summary.brewedBeanIds.size,
     brewCount: summary.brewIds.size,
+    ratedBrewCount: summary.scores.length,
     averageLiking: summary.scores.length
       ? Number((summary.scores.reduce((total, score) => total + score, 0) / summary.scores.length).toFixed(2))
       : null,
