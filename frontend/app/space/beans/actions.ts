@@ -23,6 +23,14 @@ function revalidateCoffeeSpace() {
   revalidatePath("/space/world");
 }
 
+function missingPackageWeight(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes("package_weight_g")));
+}
+
+function withoutPackageWeight<T extends Record<string, unknown>>(bean: T) {
+  return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "package_weight_g"));
+}
+
 export async function addBean(formData: FormData) {
   const userId = await requireCurrentUserId();
   const validation = validateBean(formData);
@@ -30,7 +38,10 @@ export async function addBean(formData: FormData) {
 
   const bean = { user_id: userId, ...validation.value };
   const supabase = await createClient();
-  const { data, error } = await supabase.from("beans").insert(bean).select("id").single();
+  let { data, error } = await supabase.from("beans").insert(bean).select("id").single();
+  if (missingPackageWeight(error)) {
+    ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(bean)).select("id").single());
+  }
   if (error || !data) redirect(message("error", "The bean could not be saved. Try again."));
 
   const profile = generateBeanProfile(bean);
@@ -52,13 +63,22 @@ export async function updateBean(formData: FormData) {
   if (!validation.ok) redirect(message("error", validation.message));
 
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("beans")
     .update(validation.value)
     .eq("id", beanId)
     .eq("user_id", userId)
     .select("id")
     .single();
+  if (missingPackageWeight(error)) {
+    ({ data, error } = await supabase
+      .from("beans")
+      .update(withoutPackageWeight(validation.value))
+      .eq("id", beanId)
+      .eq("user_id", userId)
+      .select("id")
+      .single());
+  }
   if (error || !data) redirect(message("error", "The bean could not be updated."));
 
   const profile = generateBeanProfile(validation.value);
