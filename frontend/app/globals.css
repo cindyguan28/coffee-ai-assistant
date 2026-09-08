@@ -197,6 +197,23 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .brew-item strong { font: 500 24px var(--font-serif), serif; color: var(--coffee); }
 .brew-actions { display: flex; gap: 16px; align-items: center; }
 .brew-actions a { color: var(--coffee); font-size: 10px; border-bottom: 1px solid; }
+.taste-layout { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(320px, 1.1fr); gap: 70px; align-items: center; }
+.radar-wrap { background: var(--cream); border: 1px solid var(--line); padding: 30px; }
+.taste-radar { width: 100%; overflow: visible; }
+.radar-grid, .radar-axis { fill: none; stroke: rgba(111,61,37,.18); stroke-width: 1; }
+.radar-data { fill: rgba(217,119,69,.34); stroke: var(--coffee); stroke-width: 2; }
+.radar-label { fill: var(--muted); font: 9px var(--font-sans), sans-serif; text-anchor: middle; text-transform: capitalize; }
+.taste-summary > span, .flavor-families > span { color: var(--coffee); font-size: 9px; letter-spacing: .15em; font-weight: 800; }
+.taste-summary h2 { font-size: 42px; margin: 18px 0; }
+.taste-summary > p, .flavor-families > p { color: var(--muted); line-height: 1.6; }
+.dimension-list { margin-top: 28px; border-top: 1px solid var(--line); }
+.dimension-list div { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); text-transform: capitalize; font-size: 12px; }
+.dimension-list b { color: var(--coffee); }
+.flavor-families { margin-top: 70px; }
+.flavor-families > div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
+.flavor-families article { background: var(--cream); border: 1px solid var(--line); padding: 18px; }
+.flavor-families h3 { font: 500 20px var(--font-serif), serif; margin: 0 0 8px; }
+.flavor-families article p { color: var(--muted); font-size: 10px; margin: 0; }
 
 @media (max-width: 800px) {
   .shell { width: min(100% - 28px, 1180px); }
@@ -216,6 +233,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .space-links { display: none; }
   .beans-layout { grid-template-columns: 1fr; }
   .brew-numbers { grid-template-columns: repeat(2, 1fr); }
+  .taste-layout { grid-template-columns: 1fr; gap: 35px; }
+  .flavor-families > div { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 520px) {

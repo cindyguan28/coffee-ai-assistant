@@ -18,6 +18,7 @@ export default async function SpaceLayout({ children }: { children: ReactNode })
           <Link href="/space">Overview</Link>
           <Link href="/space/beans">My Beans</Link>
           <Link href="/space/brews">Brew Logs</Link>
+          <Link href="/space/taste">My Taste</Link>
         </div>
         {configured && userId ? (
           <form action={logout}><button className="space-logout" type="submit">Sign out</button></form>
