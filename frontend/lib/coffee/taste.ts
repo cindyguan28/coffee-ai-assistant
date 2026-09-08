@@ -2,6 +2,21 @@ export const SENSORY_DIMENSIONS = ["acidity", "sweetness", "bitterness", "body",
 export type SensoryDimension = (typeof SENSORY_DIMENSIONS)[number];
 export type TasteLog = Partial<Record<SensoryDimension, number | null>> & { score?: number | null; flavor_notes?: string | null };
 
+export const TASTE_DIMENSION_GUIDE: Record<SensoryDimension, { low: string; high: string; meaning: string }> = {
+  acidity: { low: "soft", high: "bright", meaning: "the brightness or lively fruit-like quality you perceived" },
+  sweetness: { low: "subtle", high: "pronounced", meaning: "the natural sweetness you perceived" },
+  bitterness: { low: "gentle", high: "strong", meaning: "the strength of bitter taste you perceived" },
+  body: { low: "light", high: "full", meaning: "the weight and texture of the cup" },
+  balance: { low: "uneven", high: "harmonious", meaning: "how well acidity, bitterness, sweetness and body worked together" },
+  aroma: { low: "delicate", high: "intense", meaning: "the strength of the coffee's aroma" },
+};
+
+export function explainTasteDimension(dimension: SensoryDimension, value: number | null) {
+  if (value === null) return `Not enough ${dimension} ratings yet.`;
+  const guide = TASTE_DIMENSION_GUIDE[dimension];
+  return `${value}/5 is your weighted average for ${guide.meaning}. The scale runs from ${guide.low} (1) to ${guide.high} (5).`;
+}
+
 const FAMILY_BY_NOTE: Record<string, string> = {
   lemon: "Citrus", orange: "Citrus", bergamot: "Citrus", citrus: "Citrus",
   strawberry: "Berry", blueberry: "Berry", raspberry: "Berry", berry: "Berry", blackcurrant: "Berry",

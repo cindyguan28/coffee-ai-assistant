@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TasteRadar } from "../../components/taste-radar";
 import { getCurrentUserId } from "../../../lib/auth/user";
-import { calculateFlavorFamilies, calculateTasteProfile, type TasteLog } from "../../../lib/coffee/taste";
+import { calculateFlavorFamilies, calculateTasteProfile, explainTasteDimension, type SensoryDimension, type TasteLog } from "../../../lib/coffee/taste";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 
@@ -23,7 +23,7 @@ export default async function TastePage() {
 
   return <section className="space-welcome taste-page"><p className="kicker"><span /> Understand yourself</p><h1>My Taste</h1>
     {!hasProfile ? <div className="space-first-step"><h2>Your taste appears through the cups you enjoy.</h2><p>Add sensory ratings and a liking score above five to your Brew Journal. Missing details stay missing instead of being guessed.</p><Link className="button button-primary" href="/space/brews">Add journal entry ↗</Link></div> : <>
-      <div className="taste-layout"><TasteRadar values={profile.dimensions} /><div className="taste-summary"><span>LIKING-WEIGHTED PROFILE</span><h2>{profile.contributingBrews} brews shape this view.</h2><p>Higher-liked brews influence the profile more strongly. Scores of five or below do not define your preference.</p><div className="dimension-list">{Object.entries(profile.dimensions).map(([dimension, value]) => <div key={dimension}><span>{dimension}</span><b>{value === null ? "Not enough data" : `${value} / 5`}</b></div>)}</div></div></div>
+      <div className="taste-layout"><TasteRadar values={profile.dimensions} /><div className="taste-summary"><span>LIKING-WEIGHTED PROFILE</span><h2>{profile.contributingBrews} {profile.contributingBrews === 1 ? "brew shapes" : "brews shape"} this view.</h2><p>This is not another liking score. It summarizes the sensory character of cups you enjoyed: higher-liked cups influence the result more, while scores of five or below do not define your preference.</p><div className="taste-example"><b>For example: Acidity 3/5</b><p>means the cups you enjoy have medium perceived brightness. It does not mean the coffee is only “3 out of 5 good.”</p></div><div className="dimension-list">{Object.entries(profile.dimensions).map(([dimension, value]) => <div key={dimension}><span><b>{dimension}</b><small>{explainTasteDimension(dimension as SensoryDimension, value)}</small></span><strong>{value === null ? "—" : `${value} / 5`}</strong></div>)}</div><details className="taste-method"><summary>How is this calculated?</summary><p>For every journal entry above 5/10, weight = liking score − 5. Each dimension is the weighted average of your own 1–5 ratings. Missing ratings are ignored, never guessed.</p></details></div></div>
       <div className="flavor-families"><span>FLAVORS IN COFFEES YOU ENJOY</span>{families.length ? <div>{families.map((family) => <article key={family.family}><h3>{family.family}</h3><p>{family.brewCount} contributing {family.brewCount === 1 ? "brew" : "brews"}</p></article>)}</div> : <p>Add flavor notes to your Beans to see preferred families.</p>}</div>
     </>}
   </section>;

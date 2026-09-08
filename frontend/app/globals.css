@@ -223,8 +223,15 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .taste-summary h2 { font-size: 42px; margin: 18px 0; }
 .taste-summary > p, .flavor-families > p { color: var(--muted); line-height: 1.6; }
 .dimension-list { margin-top: 28px; border-top: 1px solid var(--line); }
-.dimension-list div { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); text-transform: capitalize; font-size: 12px; }
-.dimension-list b { color: var(--coffee); }
+.dimension-list > div { display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.dimension-list > div > span { display: grid; gap: 4px; text-transform: none; }
+.dimension-list > div > span > b { color: var(--ink); text-transform: capitalize; }
+.dimension-list small { color: var(--muted); line-height: 1.45; max-width: 390px; }
+.dimension-list strong { color: var(--coffee); white-space: nowrap; }
+.taste-example { background: var(--cream); border-left: 3px solid var(--coffee); padding: 15px 16px; margin-top: 22px; }
+.taste-example p { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 5px 0 0; }
+.taste-method { margin-top: 18px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.taste-method summary { color: var(--coffee); cursor: pointer; font-weight: 700; }
 .flavor-families { margin-top: 70px; }
 .flavor-families > div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
 .flavor-families article { background: var(--cream); border: 1px solid var(--line); padding: 18px; }
