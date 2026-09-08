@@ -35,7 +35,7 @@ export default async function CoffeeSpacePage() {
         <>
           <div className="space-stats">
             <div><strong>{beansResult.count ?? 0}</strong><span>beans remembered</span></div>
-            <div><strong>{brewsResult.count ?? 0}</strong><span>brews logged</span></div>
+            <div><strong>{brewsResult.count ?? 0}</strong><span>journal entries</span></div>
           </div>
           {beansResult.data?.length ? (
             <div className="space-recent">

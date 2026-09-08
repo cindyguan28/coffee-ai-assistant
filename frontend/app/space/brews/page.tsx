@@ -1,22 +1,39 @@
 import Link from "next/link";
 import { getCurrentUserId } from "../../../lib/auth/user";
+import {
+  BREW_METHOD_OPTIONS,
+  DRINK_TYPE_OPTIONS,
+  GRINDER_TYPE_OPTIONS,
+  MILK_TYPE_OPTIONS,
+  NEXT_ADJUSTMENT_OPTIONS,
+  PROBLEM_TAG_OPTIONS,
+  SENSORY_DIMENSIONS,
+  TASTE_RESULT_OPTIONS,
+  type GuidedOption,
+} from "../../../lib/coffee/brew-options";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
+import { RangeField } from "../../components/range-field";
 import { SubmitButton } from "../../components/submit-button";
 import { addBrewLog, deleteBrewLog, updateBrewLog } from "./actions";
 
 type PageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
 type Log = Record<string, string | number | null>;
 
-const sensory = ["acidity", "sweetness", "bitterness", "body", "balance", "aroma"];
 const today = () => new Date().toISOString().slice(0, 10);
+function options(items: GuidedOption[], current?: string) {
+  const legacy = current && !items.some((option) => option.value === current)
+    ? [{ value: current, label: current.replaceAll("_", " ") }]
+    : [];
+  return [...legacy, ...items].map((option) => <option key={option.value} value={option.value}>{option.label}</option>);
+}
 
 export const dynamic = "force-dynamic";
 
 export default async function BrewsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   if (!isSupabaseConfigured()) {
-    return <section className="space-welcome"><h1>Brew Logs</h1><div className="auth-notice">Connect Supabase to start your cloud brew journal.</div></section>;
+    return <section className="space-welcome"><h1>Brew Journal</h1><div className="auth-notice">Connect Supabase to start your private Brew Journal.</div></section>;
   }
   const userId = await getCurrentUserId();
   const supabase = await createClient();
@@ -27,59 +44,82 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   const logs = (logsResult.data ?? []) as unknown as Array<Log & { beans?: { name?: string; roaster?: string } | null }>;
   const editing = params.edit ? logs.find((log) => log.id === params.edit) : undefined;
   const value = (field: string) => editing?.[field] ?? "";
+  const numberValue = (field: string, fallback: number) => value(field) === "" || value(field) === null ? fallback : Number(value(field));
+  const selectedProblems = new Set(String(value("problem_tags")).split(",").map((item) => item.trim()).filter(Boolean));
 
   return (
     <section className="space-welcome brews-page">
-      <p className="kicker"><span /> Remember the cup</p><h1>Brew Logs</h1>
+      <p className="kicker"><span /> Remember the cup</p><h1>Brew Journal</h1>
       {params.error && <div className="auth-error" role="alert">{params.error}</div>}
       {params.message && <div className="auth-success" role="status">{params.message}</div>}
-      {beansResult.error || logsResult.error ? <div className="auth-notice">Apply the Supabase migration to activate cloud logging.</div> : !beansResult.data?.length ? (
-        <div className="space-first-step"><h2>Add a Bean before logging a brew.</h2><Link className="button button-primary" href="/space/beans">Add a coffee ↗</Link></div>
+      {beansResult.error || logsResult.error ? <div className="auth-notice">Apply the Supabase migration to activate your private journal.</div> : !beansResult.data?.length ? (
+        <div className="space-first-step"><h2>Add a Bean before creating a journal entry.</h2><Link className="button button-primary" href="/space/beans">Add a coffee ↗</Link></div>
       ) : (
         <div className="beans-layout">
           <form className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
-            <h2>{editing ? "Edit this brew" : "Log a brew"}</h2>
-            <p>Save the essentials now. Add sensory detail when it is useful.</p>
+            <h2>{editing ? "Edit journal entry" : "Add journal entry"}</h2>
+            <p>Record how the cup tasted. Recipe and equipment details are optional.</p>
             {editing && <input type="hidden" name="log_id" value={String(editing.id)} />}
             <label htmlFor="bean_id">Coffee *</label>
             <select id="bean_id" name="bean_id" defaultValue={String(value("bean_id"))} required>
               <option value="">Choose a bean</option>{beansResult.data.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}</option>)}
             </select>
+            <label htmlFor="brew_date">Date *</label>
+            <input id="brew_date" name="brew_date" type="date" defaultValue={String(value("brew_date") || today())} required />
+
+            <RangeField name="score" label="How much did you like it?" min={0} max={10} step={0.5} defaultValue={numberValue("score", 8)} suffix="/10" lowLabel="Not for me" highLabel="Loved it" />
+
             <div className="bean-form-row">
-              <div><label htmlFor="brew_date">Date *</label><input id="brew_date" name="brew_date" type="date" defaultValue={String(value("brew_date") || today())} required /></div>
-              <div><label htmlFor="score">Did you like it? *</label><input id="score" name="score" type="number" min="0" max="10" step="0.5" defaultValue={String(value("score"))} placeholder="0–10" required /></div>
+              <div><label htmlFor="brew_method">Method</label><select id="brew_method" name="brew_method" defaultValue={String(value("brew_method"))}><option value="">Choose</option>{options(BREW_METHOD_OPTIONS, String(value("brew_method")))}</select></div>
+              <div><label htmlFor="drink_type">Drink</label><select id="drink_type" name="drink_type" defaultValue={String(value("drink_type"))}><option value="">Choose</option>{options(DRINK_TYPE_OPTIONS, String(value("drink_type")))}</select></div>
             </div>
-            <div className="bean-form-row">
-              <div><label htmlFor="brew_method">Method</label><select id="brew_method" name="brew_method" defaultValue={String(value("brew_method"))}><option value="">Choose</option><option>Espresso</option><option>V60</option><option>Aeropress</option><option>French Press</option><option>Moka Pot</option></select></div>
-              <div><label htmlFor="drink_type">Drink</label><select id="drink_type" name="drink_type" defaultValue={String(value("drink_type"))}><option value="">Choose</option><option>Black</option><option>Espresso</option><option>Americano</option><option>Cappuccino</option><option>Latte</option></select></div>
-            </div>
-            <div className="brew-numbers">
-              <label>Dose (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={String(value("default_dose_g"))} /></label>
-              <label>Yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={String(value("espresso_volume_ml"))} /></label>
-              <label>Time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={String(value("extraction_time_sec"))} /></label>
-              <label>Grind<input name="grind_setting" type="number" min="0" step="1" defaultValue={String(value("grind_setting"))} /></label>
-            </div>
-            <details className="brew-details"><summary>Add sensory detail</summary>
-              <div className="sensory-grid">{sensory.map((dimension) => <label key={dimension}>{dimension}<input name={dimension} type="number" min="1" max="5" step="1" defaultValue={String(value(dimension))} placeholder="1–5" /></label>)}</div>
+
+            <fieldset className="sensory-fieldset">
+              <legend>Taste evaluation <span>1 = low, 5 = high intensity</span></legend>
+              <p>These describe the cup; a higher number does not automatically mean better.</p>
+              <div className="sensory-sliders">
+                {SENSORY_DIMENSIONS.map((dimension) => (
+                  <RangeField key={dimension.name} name={dimension.name} label={dimension.label} min={1} max={5} defaultValue={numberValue(dimension.name, 3)} suffix="/5" lowLabel={dimension.hint} highLabel={dimension.high} />
+                ))}
+              </div>
+            </fieldset>
+
+            <label htmlFor="taste_result">Quick taste result</label>
+            <select id="taste_result" name="taste_result" defaultValue={String(value("taste_result"))}><option value="">Choose if useful</option>{options(TASTE_RESULT_OPTIONS, String(value("taste_result")))}</select>
+
+            <fieldset className="option-fieldset">
+              <legend>Problem tags <span>Select all that apply</span></legend>
+              <div className="option-chips">
+                {PROBLEM_TAG_OPTIONS.map((option) => <label className="option-chip" key={option.value}><input type="checkbox" name="problem_tags" value={option.value} defaultChecked={selectedProblems.has(option.value)} /><span>{option.label}</span></label>)}
+              </div>
+            </fieldset>
+
+            <label htmlFor="next_adjustment">Try next time</label>
+            <select id="next_adjustment" name="next_adjustment" defaultValue={String(value("next_adjustment"))}><option value="">No adjustment yet</option>{options(NEXT_ADJUSTMENT_OPTIONS, String(value("next_adjustment")))}</select>
+
+            <details className="brew-details"><summary>Recipe &amp; equipment details (optional)</summary>
+              <div className="brew-numbers">
+                <label>Dose (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={String(value("default_dose_g"))} /></label>
+                <label>Yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={String(value("espresso_volume_ml"))} /></label>
+                <label>Time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={String(value("extraction_time_sec"))} /></label>
+                <label>Grind<input name="grind_setting" type="number" min="0" step="1" defaultValue={String(value("grind_setting"))} /></label>
+              </div>
               <label>Machine<input name="machine_model" defaultValue={String(value("machine_model"))} /></label>
-              <label>Grinder<input name="grinder_type" defaultValue={String(value("grinder_type"))} /></label>
+              <label>Grinder<select name="grinder_type" defaultValue={String(value("grinder_type"))}><option value="">Choose</option>{options(GRINDER_TYPE_OPTIONS, String(value("grinder_type")))}</select></label>
               <label>Milk (ml)<input name="milk_ml" type="number" min="0" step="1" defaultValue={String(value("milk_ml"))} /></label>
-              <label>Milk type<input name="milk_type" defaultValue={String(value("milk_type"))} /></label>
-              <label>What did it taste like?<textarea name="taste_result" rows={2} defaultValue={String(value("taste_result"))} /></label>
-              <label>Problems/tags<input name="problem_tags" defaultValue={String(value("problem_tags"))} /></label>
-              <label>Next adjustment<textarea name="next_adjustment" rows={2} defaultValue={String(value("next_adjustment"))} /></label>
-              <label>Notes<textarea name="notes" rows={3} defaultValue={String(value("notes"))} /></label>
+              <label>Milk type<select name="milk_type" defaultValue={String(value("milk_type"))}><option value="">None / choose</option>{options(MILK_TYPE_OPTIONS, String(value("milk_type")))}</select></label>
             </details>
-            <SubmitButton pendingLabel={editing ? "Updating brew…" : "Saving brew…"}>{editing ? "Update brew" : "Save brew"}</SubmitButton>
+            <label htmlFor="notes">Notes</label><textarea id="notes" name="notes" rows={3} defaultValue={String(value("notes"))} placeholder="Anything you want to remember about this cup." />
+            <SubmitButton pendingLabel={editing ? "Updating entry…" : "Saving entry…"}>{editing ? "Update entry" : "Save to journal"}</SubmitButton>
             {editing && <Link className="auth-back" href="/space/brews">Cancel editing</Link>}
           </form>
-          <div className="bean-list"><span>{logs.length} BREWS</span>
+          <div className="bean-list"><span>{logs.length} JOURNAL ENTRIES</span>
             {logs.map((log) => <article className="bean-item brew-item" key={String(log.id)}>
-              <div><div><h2>{log.beans?.name || "Coffee"}</h2><p>{String(log.brew_date || "")}{log.brew_method ? ` · ${log.brew_method}` : ""}</p></div><strong>{String(log.score)}/10</strong></div>
-              <p>{String(log.taste_result || log.notes || "No tasting note yet.")}</p>
+              <div><div><h2>{log.beans?.name || "Coffee"}</h2><p>{String(log.brew_date || "")}{log.brew_method ? ` · ${String(log.brew_method).replaceAll("_", " ")}` : ""}</p></div><strong>{String(log.score)}/10</strong></div>
+              <p>{String(log.taste_result || log.notes || "No tasting note yet.").replaceAll("_", " ")}</p>
               <div className="brew-actions"><Link href={`/space/brews?edit=${log.id}`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={String(log.id)} /><button className="bean-delete" type="submit">Remove</button></form></div>
             </article>)}
-            {!logs.length && <p className="bean-empty">Your first brew can be as simple as a Bean, a date, and whether you liked it.</p>}
+            {!logs.length && <p className="bean-empty">Your first entry can be as simple as a Bean, a date, and whether you liked it.</p>}
           </div>
         </div>
       )}

@@ -17,7 +17,7 @@ export default async function SpaceLayout({ children }: { children: ReactNode })
         <div className="space-links">
           <Link href="/space">Overview</Link>
           <Link href="/space/beans">My Beans</Link>
-          <Link href="/space/brews">Brew Logs</Link>
+          <Link href="/space/brews">Brew Journal</Link>
           <Link href="/space/taste">My Taste</Link>
           <Link href="/space/world">Coffee World</Link>
         </div>
