@@ -188,6 +188,15 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .bean-delete { background: transparent; border: 0; border-bottom: 1px solid; padding: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }
 .bean-empty { color: var(--muted); padding: 35px 0; }
+.brew-numbers, .sensory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.sensory-grid { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
+.brew-numbers label, .sensory-grid label, .brew-details > label { display: grid; }
+.brew-details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
+.brew-details summary { color: var(--coffee); font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+.brew-item > div:first-child { display: flex; justify-content: space-between; }
+.brew-item strong { font: 500 24px var(--font-serif), serif; color: var(--coffee); }
+.brew-actions { display: flex; gap: 16px; align-items: center; }
+.brew-actions a { color: var(--coffee); font-size: 10px; border-bottom: 1px solid; }
 
 @media (max-width: 800px) {
   .shell { width: min(100% - 28px, 1180px); }
@@ -206,6 +215,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .auth-panel { padding: 50px 28px 70px; }
   .space-links { display: none; }
   .beans-layout { grid-template-columns: 1fr; }
+  .brew-numbers { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 520px) {
