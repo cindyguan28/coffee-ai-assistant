@@ -39,6 +39,11 @@ See [docs/authentication.md](docs/authentication.md) for Supabase and Vercel con
 - `/reset-password` — choose a new password after opening a valid recovery link
 - `/auth/callback` — OAuth, email confirmation, and recovery callback
 - `/space` — protected personal coffee space
+- `/space/beans` — private Bean library and generated profiles
+- `/space/brews` — private Brew Log CRUD
+- `/space/taste` — liking-weighted personal taste radar
+- `/space/world` — personal exploration and preference map
+- `/privacy` — public-preview privacy information
 
 ## Verification
 
@@ -47,3 +52,5 @@ npm run lint
 npm test
 npm run build
 ```
+
+For Preview deployment, environment setup, two-user isolation testing, and rollback, see [docs/public-preview.md](docs/public-preview.md).

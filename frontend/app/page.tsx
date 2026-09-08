@@ -165,7 +165,7 @@ export default function Home() {
       <footer className="footer shell">
         <a className="brand" href="#top"><CoffeeMark /><span>Mylot</span></a>
         <p>Your coffee memories, kept close.</p>
-        <span>Public preview · 2026</span>
+        <span><a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span>
       </footer>
     </main>
   );

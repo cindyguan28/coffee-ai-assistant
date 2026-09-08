@@ -148,6 +148,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .auth-switch a { color: var(--coffee); font-weight: 700; border-bottom: 1px solid; }
 .auth-forgot { justify-self: end; color: var(--coffee); font-size: 11px; font-weight: 700; margin: -7px 0 18px; border-bottom: 1px solid; }
 .auth-legal { color: var(--muted); font-size: 10px; line-height: 1.55; text-align: center; margin: 18px 0 0; }
+.auth-legal a, .legal-page a:not(.button) { color: var(--coffee); text-decoration: underline; }
 .auth-back { display: block; text-align: center; color: var(--muted); font-size: 11px; margin-top: 30px; }
 
 .space-page { min-height: 100vh; background: var(--paper); }
@@ -239,6 +240,15 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .country-detail dl div { background: var(--coffee-dark); padding: 18px; }
 .country-detail dt { color: #cfbfae; font-size: 10px; margin-bottom: 8px; }
 .country-detail dd { margin: 0; font: 500 22px var(--font-serif), serif; }
+.legal-page, .error-page { width: min(850px, calc(100% - 48px)); margin: auto; padding: 70px 0 110px; }
+.legal-page > .kicker { margin-top: 90px; }
+.legal-page h1, .error-page h1 { font-size: clamp(48px, 8vw, 88px); }
+.legal-page section { max-width: 720px; border-top: 1px solid var(--line); margin: 50px 0; padding-top: 15px; }
+.legal-page section h2 { font-size: 25px; margin: 35px 0 10px; }
+.legal-page section p, .error-page > p { color: var(--muted); line-height: 1.75; }
+.error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+.error-page .button { margin-top: 25px; cursor: pointer; }
+.error-page code { background: var(--paper-deep); padding: 8px 10px; font-size: 11px; }
 
 @media (max-width: 800px) {
   .shell { width: min(100% - 28px, 1180px); }

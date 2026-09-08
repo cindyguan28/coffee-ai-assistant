@@ -92,7 +92,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Link>
       </p>
       <p className="auth-legal">
-        By continuing, you create a private account. Nothing is published to the community without your action.
+        By continuing, you create a private account. Nothing is published to the community without your action. <Link href="/privacy">Read the preview privacy note.</Link>
       </p>
       <Link className="auth-back" href="/">← Back to the introduction</Link>
     </AuthShell>
