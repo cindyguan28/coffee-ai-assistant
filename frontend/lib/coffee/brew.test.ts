@@ -80,5 +80,7 @@ describe("brewFieldVisibility", () => {
     expect(brewFieldVisibility("espresso_machine", "espresso").water).toBe(false);
     expect(brewFieldVisibility("automatic_machine", "espresso").dose).toBe(false);
     expect(brewFieldVisibility("automatic_machine", "espresso", false, true).dose).toBe(true);
+    expect(brewFieldVisibility("espresso_machine", "espresso", false, false, true).water).toBe(true);
+    expect(brewFieldVisibility("", "", false, false, false, true).observedExtraction).toBe(true);
   });
 });

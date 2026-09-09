@@ -62,4 +62,12 @@ describe("journal organization", () => {
   it("combines milk type and amount into one history fact", () => {
     expect(journalDetailFacts({ id: "x", milk_type: "oat_milk", milk_ml: 80 })).toEqual([["Milk", "oat_milk · 80 ml"]]);
   });
+
+  it("puts the Bean with the most recently added entry first", () => {
+    const groups = groupJournalEntries([
+      { id: "new", bean_id: "old-date", brew_date: "2026-01-01", created_at: "2026-09-10T12:00:00Z", beans: { name: "Recently logged" } },
+      { id: "old", bean_id: "new-date", brew_date: "2026-09-09", created_at: "2026-09-09T12:00:00Z", beans: { name: "Previously logged" } },
+    ], "bean");
+    expect(groups.map((group) => group.label)).toEqual(["Recently logged", "Previously logged"]);
+  });
 });

@@ -56,9 +56,9 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   const numberValue = (field: string, fallback: number) => value(field) === "" || value(field) === null ? fallback : Number(value(field));
   const selectedProblems = new Set(String(value("problem_tags")).split(",").map((item) => item.trim()).filter(Boolean));
   const equipment = profileResult.data ?? legacyEquipmentResult?.data;
-  const machineModel = String(value("machine_model") || equipment?.default_machine_model || "");
-  const grinderType = String(value("grinder_type") || equipment?.default_grinder_type || "");
-  const brewMethod = String(value("brew_method") || profileResult.data?.default_brew_method || "");
+  const machineModel = editing ? String(value("machine_model")) : String(equipment?.default_machine_model || "");
+  const grinderType = editing ? String(value("grinder_type")) : String(equipment?.default_grinder_type || "");
+  const brewMethod = editing ? String(value("brew_method")) : String(profileResult.data?.default_brew_method || "");
   const sensoryValue = (field: string) => value(field) === "" || value(field) === null ? null : Number(value(field));
 
   return (
@@ -80,9 +80,9 @@ export default async function BrewsPage({ searchParams }: PageProps) {
                 <SubmitButton pendingLabel="Saving equipment…">Save equipment</SubmitButton>
               </form></details>}
           </section>
-          <details className="journal-composer" id="journal-composer" open={Boolean(editing) || !logs.length}>
+          <details key={editing ? `edit-${editing.id}` : "new-entry"} className="journal-composer" id="journal-composer" open={Boolean(editing) || !logs.length}>
             <summary><span>{editing ? "EDITING ENTRY" : "NEW ENTRY"}</span><b>{editing ? "Edit journal entry" : "+ Add journal entry"}</b><small>{editing ? "Update this recipe" : "Open the compact composer"}</small></summary>
-            <form className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
+            <form key={editing ? `edit-form-${editing.id}` : "new-form"} className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
             <h2>{editing ? "Edit journal entry" : "Add journal entry"}</h2>
             <p>Choose the coffee, record its grind setting, then describe the cup. Everything under Recipe details is optional.</p>
             {editing && <input type="hidden" name="log_id" value={String(editing.id)} />}
@@ -100,12 +100,12 @@ export default async function BrewsPage({ searchParams }: PageProps) {
 
             <RangeField name="score" label="How much did you like it?" min={0} max={10} step={0.5} defaultValue={numberValue("score", 8)} suffix="/10" lowLabel="Not for me" highLabel="Loved it" />
 
-            <SensoryCapture initialValues={{
+            <SensoryCapture key={editing ? `sensory-${editing.id}` : "sensory-new"} initialValues={{
               acidity: sensoryValue("acidity"), bitterness: sensoryValue("bitterness"), sweetness: sensoryValue("sweetness"),
               aroma: sensoryValue("aroma"), body: sensoryValue("body"), balance: sensoryValue("balance"),
             }} />
 
-            <BrewContextFields methods={BREW_METHOD_OPTIONS} drinks={DRINK_TYPE_OPTIONS} milks={MILK_TYPE_OPTIONS} pairings={MILK_PAIRING_OPTIONS} initial={{
+            <BrewContextFields key={editing ? `context-${editing.id}` : "context-new"} methods={BREW_METHOD_OPTIONS} drinks={DRINK_TYPE_OPTIONS} milks={MILK_TYPE_OPTIONS} pairings={MILK_PAIRING_OPTIONS} initial={{
               brewMethod, drinkType: String(value("drink_type")), milkType: String(value("milk_type")), milkMl: String(value("milk_ml")), milkPairing: String(value("milk_pairing")),
               dose: String(value("default_dose_g")), yieldMl: String(value("espresso_volume_ml")), timeSec: String(value("extraction_time_sec")), waterTemp: String(value("water_temp_c")),
             }} />

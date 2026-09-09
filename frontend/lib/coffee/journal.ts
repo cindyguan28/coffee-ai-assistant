@@ -2,6 +2,7 @@ export type JournalEntry = {
   id: string;
   bean_id?: string | null;
   brew_date?: string | null;
+  created_at?: string | null;
   machine_model?: string | null;
   grinder_type?: string | null;
   default_dose_g?: number | null;
@@ -82,7 +83,8 @@ export function groupJournalEntries(entries: JournalEntry[], mode: JournalGroupM
     grouped.set(key, [...(grouped.get(key) ?? []), entry]);
   }
 
-  return [...grouped.entries()].map(([key, groupEntries]) => {
+  const groups = [...grouped.entries()].map(([key, groupEntries]) => {
+    groupEntries.sort((a, b) => String(b.brew_date ?? "").localeCompare(String(a.brew_date ?? "")) || String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")));
     const scores = groupEntries.flatMap((entry) => entry.score === null || entry.score === undefined ? [] : [Number(entry.score)]).filter(Number.isFinite);
     const dates = groupEntries.map((entry) => entry.brew_date).filter((date): date is string => Boolean(date));
     return {
@@ -95,6 +97,12 @@ export function groupJournalEntries(entries: JournalEntry[], mode: JournalGroupM
       latestDate: dates.sort().at(-1) ?? null,
     };
   });
+  if (mode === "bean") groups.sort((a, b) => {
+    const latestCreated = (group: JournalGroup) => group.entries.map((entry) => entry.created_at ?? "").sort().at(-1) ?? "";
+    return latestCreated(b).localeCompare(latestCreated(a));
+  });
+  if (mode === "date") groups.sort((a, b) => b.key.localeCompare(a.key));
+  return groups;
 }
 
 export function bestEntryId(entries: JournalEntry[]) {

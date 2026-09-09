@@ -32,7 +32,7 @@ export function BrewContextFields({ methods, drinks, milks, pairings, initial }:
 }) {
   const [method, setMethod] = useState(initial.brewMethod);
   const [drink, setDrink] = useState(initial.drinkType);
-  const visibility = brewFieldVisibility(method, drink, Boolean(initial.milkType || initial.milkMl || initial.milkPairing), Boolean(initial.dose));
+  const visibility = brewFieldVisibility(method, drink, Boolean(initial.milkType || initial.milkMl || initial.milkPairing), Boolean(initial.dose), Boolean(initial.waterTemp), Boolean(initial.yieldMl || initial.timeSec));
 
   return <>
     <div className="bean-form-row">
@@ -42,7 +42,7 @@ export function BrewContextFields({ methods, drinks, milks, pairings, initial }:
 
     {visibility.milk && <div className="bean-form-row bean-form-row-three contextual-fields">
       <div><label htmlFor="milk_type">Milk</label><select id="milk_type" name="milk_type" defaultValue={initial.milkType}><option value="">Choose milk</option><OptionList items={milks} current={initial.milkType} /></select></div>
-      <div><label htmlFor="milk_ml">Milk amount (ml)</label><input id="milk_ml" name="milk_ml" type="number" min="0" step="1" defaultValue={initial.milkMl} placeholder="Optional" /></div>
+      <div><label htmlFor="milk_ml">Milk amount (ml)</label><input id="milk_ml" name="milk_ml" type="number" min="0" step="1" defaultValue={initial.milkMl} placeholder="e.g. 80" /></div>
       <div><label htmlFor="milk_pairing">Milk pairing</label><select id="milk_pairing" name="milk_pairing" defaultValue={initial.milkPairing}><option value="">Not rated</option><OptionList items={pairings} current={initial.milkPairing} /></select><small>How well did this milk complement the Bean?</small></div>
     </div>}
 
@@ -50,9 +50,9 @@ export function BrewContextFields({ methods, drinks, milks, pairings, initial }:
       <summary>{method ? "Settings and observed results" : "Recipe details"} (optional)</summary>
       <p className="brew-details-help">Settings are choices you can repeat. Yield and time are what actually happened in this cup.</p>
       <div className="brew-numbers">
-        {visibility.dose && <label>Dose setting (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={initial.dose} /></label>}
-        {visibility.observedExtraction && <label>Actual yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={initial.yieldMl} /></label>}
-        {visibility.observedExtraction && <label>Actual time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={initial.timeSec} /></label>}
+        {visibility.dose && <label>Dose setting (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={initial.dose} placeholder="e.g. 9" /></label>}
+        {visibility.observedExtraction && <label>Actual yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={initial.yieldMl} placeholder="e.g. 20" /></label>}
+        {visibility.observedExtraction && <label>Actual time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={initial.timeSec} placeholder="e.g. 25" /></label>}
         {visibility.water && <label>Water (°C)<input name="water_temp_c" type="number" min="0" max="100" step="0.1" defaultValue={initial.waterTemp} /></label>}
       </div>
     </details>}

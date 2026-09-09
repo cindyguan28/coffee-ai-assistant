@@ -5,14 +5,14 @@ export type BrewValidation =
 const MILK_DRINKS = new Set(["cappuccino", "flat_white", "caffe_latte", "latte_macchiato", "espresso_macchiato", "cortado", "mocha", "milk_coffee"]);
 const WATER_METHODS = new Set(["v60", "aeropress", "french_press"]);
 
-export function brewFieldVisibility(method: string, drink: string, hasMilkData = false, hasDoseData = false) {
+export function brewFieldVisibility(method: string, drink: string, hasMilkData = false, hasDoseData = false, hasWaterData = false, hasObservedData = false) {
   const normalizedMethod = method.trim().toLowerCase().replaceAll("-", "_").replaceAll(" ", "_");
   const normalizedDrink = drink.trim().toLowerCase().replaceAll("-", "_").replaceAll(" ", "_");
   return {
     milk: MILK_DRINKS.has(normalizedDrink) || hasMilkData,
-    water: WATER_METHODS.has(normalizedMethod),
+    water: WATER_METHODS.has(normalizedMethod) || hasWaterData,
     dose: normalizedMethod !== "automatic_machine" || hasDoseData,
-    observedExtraction: Boolean(normalizedMethod),
+    observedExtraction: Boolean(normalizedMethod) || hasObservedData,
   };
 }
 
