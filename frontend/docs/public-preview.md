@@ -32,6 +32,25 @@ NEXT_PUBLIC_SITE_URL=https://your-preview-domain.vercel.app
 
 5. Confirm `https://<preview-domain>/api/health` returns HTTP 200 with `"status":"ready"`.
 
+## Production domain cutover (not active during Public Preview)
+
+Keep the Public Preview on its Vercel preview URL until a production launch is explicitly approved. At launch, use this canonical domain topology:
+
+- `https://beanmemo.com` — canonical production origin
+- `https://www.beanmemo.com` — permanent redirect to `https://beanmemo.com`
+- `https://beanmemo.app` — permanent redirect to `https://beanmemo.com`
+- `https://www.beanmemo.app` — permanent redirect to `https://beanmemo.com`
+
+Both domains are registered with Cloudflare. Configure the apex and `www` hostnames in Cloudflare and complete Vercel's domain verification before enabling redirects. Keep TLS enabled end to end, preserve query strings and paths when redirecting, and do not create redirect chains.
+
+For the production cutover:
+
+1. Attach `beanmemo.com` to the Vercel production environment and make it the primary domain.
+2. Attach the three alias hostnames and configure each to redirect directly to `https://beanmemo.com`.
+3. Set `NEXT_PUBLIC_SITE_URL=https://beanmemo.com` in the Vercel Production environment and redeploy.
+4. In Supabase Authentication URL Configuration, set the Site URL to `https://beanmemo.com` and allow `https://beanmemo.com/auth/callback`. Preserve the preview callback only while preview authentication testing still needs it.
+5. Verify HTTPS, redirect status, path/query preservation, authentication callbacks, `robots.txt`, `sitemap.xml`, canonical metadata, and `/api/health` before announcing the launch.
+
 ## 3. Automated verification
 
 With the deployed URL:
