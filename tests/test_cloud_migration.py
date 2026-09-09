@@ -2,6 +2,7 @@ import sqlite3
 import unittest
 
 from scripts.export_sqlite_bundle import build_bundle
+from scripts.import_supabase_bundle import _request_headers
 
 
 USER_ID = "11111111-1111-4111-8111-111111111111"
@@ -68,7 +69,15 @@ class CloudMigrationBundleTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_bundle(self.connection, "not-a-uuid")
 
+    def test_current_secret_key_is_not_sent_as_bearer_token(self):
+        headers = _request_headers("sb_secret_example")
+        self.assertEqual(headers["apikey"], "sb_secret_example")
+        self.assertNotIn("Authorization", headers)
+
+    def test_legacy_service_role_jwt_remains_supported(self):
+        headers = _request_headers("eyJlegacy")
+        self.assertEqual(headers["Authorization"], "Bearer eyJlegacy")
+
 
 if __name__ == "__main__":
     unittest.main()
-
