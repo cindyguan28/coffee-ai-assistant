@@ -17,6 +17,17 @@ export type BeanPayload = {
 
 export type BeanValidation = { ok: true; value: BeanPayload } | { ok: false; message: string };
 
+export function normalizeGuidedValue(value: string) {
+  return value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+}
+
+export function compatibleGuidedValue(value: string | null | undefined, options: readonly string[]) {
+  const saved = String(value ?? "").trim();
+  if (!saved) return "";
+  const normalized = normalizeGuidedValue(saved);
+  return options.find((option) => normalizeGuidedValue(option) === normalized) ?? saved;
+}
+
 function text(formData: FormData, field: string, maxLength = 500) {
   return String(formData.get(field) ?? "").trim().slice(0, maxLength) || null;
 }

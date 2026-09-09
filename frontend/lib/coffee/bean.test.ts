@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateBean } from "./bean";
+import { compatibleGuidedValue, normalizeGuidedValue, validateBean } from "./bean";
 
 describe("Bean validation", () => {
   it("accepts guided and custom metadata and deduplicates flavor labels", () => {
@@ -16,5 +16,12 @@ describe("Bean validation", () => {
     expect(validateBean(new FormData()).ok).toBe(false);
     const form = new FormData(); form.set("name", "Coffee"); form.set("package_weight_g", "0");
     expect(validateBean(form)).toEqual({ ok: false, message: "Enter a valid package weight above zero." });
+  });
+
+  it("matches legacy enum values without erasing their meaning", () => {
+    expect(normalizeGuidedValue("  GOOD_with-Milk ")).toBe("good with milk");
+    expect(compatibleGuidedValue("medium_dark", ["Light", "Medium dark"])).toBe("Medium dark");
+    expect(compatibleGuidedValue("good_with_milk", ["Good with milk"])).toBe("Good with milk");
+    expect(compatibleGuidedValue("roaster_custom_value", ["Known"])).toBe("roaster_custom_value");
   });
 });
