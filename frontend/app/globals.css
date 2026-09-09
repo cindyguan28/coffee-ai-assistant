@@ -225,6 +225,19 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-profile span { color: var(--coffee); font-size: 8px; letter-spacing: .15em; font-weight: 800; }
 .bean-profile h3 { font: 500 21px var(--font-serif), serif; margin: 5px 0 12px; }
 .bean-profile-heading button { border: 0; border-bottom: 1px solid; background: transparent; color: var(--coffee); cursor: pointer; padding: 4px 0; font-size: 9px; }
+.bean-reference-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; border-block: 1px solid var(--line); padding: 16px 0; }
+.bean-reference > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.bean-reference dt { color: var(--ink); font-size: 10px; font-weight: 700; }
+.bean-reference dd { color: var(--coffee); font: 500 16px var(--font-serif), serif; margin: 0; }
+.bean-reference progress { appearance: none; border: 0; display: block; height: 5px; margin: 8px 0; width: 100%; }
+.bean-reference progress::-webkit-progress-bar { background: var(--paper-deep); }
+.bean-reference progress::-webkit-progress-value { background: var(--coffee); }
+.bean-reference progress::-moz-progress-bar { background: var(--coffee); }
+.bean-reference small { color: var(--muted); font-size: 9px; text-transform: capitalize; }
+.bean-preparation { background: var(--paper-deep); margin-top: 16px; padding: 13px; }
+.bean-preparation > span { font-size: 7px; }
+.bean-preparation h4 { font: 500 18px var(--font-serif), serif; margin: 5px 0 0; }
+.bean-preparation p { color: var(--muted); font-size: 10px; }
 .bean-profile dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin: 0 0 14px; }
 .bean-profile dl div { background: var(--paper); padding: 10px; }
 .bean-profile dt { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
@@ -353,6 +366,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .hero { padding-bottom: 70px; }
   .space-preview { padding: 18px; }
   .now-card { grid-template-columns: 92px 1fr; gap: 15px; }
+  .bean-reference-grid { grid-template-columns: 1fr; gap: 12px; }
   .bag { width: 84px; height: 122px; }
   .preview-topline h2 { font-size: 20px; }
   .footer { align-items: flex-start; gap: 22px; flex-direction: column; }

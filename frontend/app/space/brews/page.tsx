@@ -48,16 +48,20 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   const [beansResult, logsResult, profileResult] = await Promise.all([
     supabase.from("beans").select("id,name,roaster").eq("user_id", userId!).order("name"),
     supabase.from("brew_logs").select("*,beans(name,roaster)").eq("user_id", userId!).order("brew_date", { ascending: false }).limit(50),
-    supabase.from("user_profiles").select("default_machine_model,default_grinder_type").eq("user_id", userId!).maybeSingle(),
+    supabase.from("user_profiles").select("default_machine_model,default_grinder_type,default_brew_method").eq("user_id", userId!).maybeSingle(),
   ]);
+  const legacyEquipmentResult = profileResult.error
+    ? await supabase.from("user_profiles").select("default_machine_model,default_grinder_type").eq("user_id", userId!).maybeSingle()
+    : null;
   const logs = (logsResult.data ?? []) as unknown as Array<Log & { beans?: { name?: string; roaster?: string } | null }>;
   const editing = params.edit ? logs.find((log) => log.id === params.edit) : undefined;
   const value = (field: string) => editing?.[field] ?? "";
   const numberValue = (field: string, fallback: number) => value(field) === "" || value(field) === null ? fallback : Number(value(field));
   const selectedProblems = new Set(String(value("problem_tags")).split(",").map((item) => item.trim()).filter(Boolean));
-  const equipment = profileResult.data;
+  const equipment = profileResult.data ?? legacyEquipmentResult?.data;
   const machineModel = String(value("machine_model") || equipment?.default_machine_model || "");
   const grinderType = String(value("grinder_type") || equipment?.default_grinder_type || "");
+  const brewMethod = String(value("brew_method") || profileResult.data?.default_brew_method || "");
 
   return (
     <section className="space-welcome brews-page">
@@ -70,10 +74,12 @@ export default async function BrewsPage({ searchParams }: PageProps) {
         <div className="beans-layout">
           <div className="journal-entry-column">
             <section className="equipment-card">
-              <div><span>MY EQUIPMENT</span><h2>{equipment?.default_machine_model || "Save your machine once"}</h2><p>{equipment?.default_grinder_type ? equipment.default_grinder_type.replaceAll("_", " ") : "It will be attached to new journal entries automatically."}</p></div>
-              {profileResult.error ? <p>Apply the latest database migration to save equipment defaults.</p> : <details open={!equipment?.default_machine_model}><summary>{equipment?.default_machine_model ? "Edit equipment" : "Add equipment"}</summary><form action={updateEquipment}>
+              <div><span>MY EQUIPMENT</span><h2>{equipment?.default_machine_model || "Save your machine once"}</h2><p>{[equipment?.default_grinder_type, profileResult.data?.default_brew_method].filter(Boolean).map((item) => String(item).replaceAll("_", " ")).join(" · ") || "It will be attached to new journal entries automatically."}</p></div>
+              {legacyEquipmentResult?.error ? <p>Apply the latest database migration to save equipment defaults.</p> : <details open={!equipment?.default_machine_model}><summary>{equipment?.default_machine_model ? "Edit equipment" : "Add equipment"}</summary><form action={updateEquipment}>
                 <label htmlFor="default_machine_model">Machine</label><input id="default_machine_model" name="default_machine_model" defaultValue={equipment?.default_machine_model ?? ""} placeholder="e.g. Sage Barista Express" />
                 <label htmlFor="default_grinder_type">Grinder type</label><select id="default_grinder_type" name="default_grinder_type" defaultValue={equipment?.default_grinder_type ?? ""}><option value="">Choose</option>{options(GRINDER_TYPE_OPTIONS, equipment?.default_grinder_type ?? "")}</select>
+                <label htmlFor="default_brew_method">Usual brew method</label><select id="default_brew_method" name="default_brew_method" defaultValue={profileResult.data?.default_brew_method ?? ""}><option value="">No default</option>{options(BREW_METHOD_OPTIONS, profileResult.data?.default_brew_method ?? "")}</select>
+                {profileResult.error && <small>Apply the newest migration before saving a usual brew method.</small>}
                 <SubmitButton pendingLabel="Saving equipment…">Save equipment</SubmitButton>
               </form></details>}
             </section>
@@ -95,7 +101,7 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             <RangeField name="score" label="How much did you like it?" min={0} max={10} step={0.5} defaultValue={numberValue("score", 8)} suffix="/10" lowLabel="Not for me" highLabel="Loved it" />
 
             <div className="bean-form-row">
-              <div><label htmlFor="brew_method">Method</label><select id="brew_method" name="brew_method" defaultValue={String(value("brew_method"))}><option value="">Choose</option>{options(BREW_METHOD_OPTIONS, String(value("brew_method")))}</select></div>
+              <div><label htmlFor="brew_method">Method</label><select id="brew_method" name="brew_method" defaultValue={brewMethod}><option value="">Choose</option>{options(BREW_METHOD_OPTIONS, brewMethod)}</select></div>
               <div><label htmlFor="drink_type">Drink</label><select id="drink_type" name="drink_type" defaultValue={String(value("drink_type"))}><option value="">Choose</option>{options(DRINK_TYPE_OPTIONS, String(value("drink_type")))}</select></div>
             </div>
 

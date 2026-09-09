@@ -10,6 +10,7 @@ This runbook deploys the Next.js application from `release/public-preview`. The 
    - `202609080002_bean_package_weight.sql` — optional Bean package size.
    - `202609090001_user_brew_setup.sql` — reusable machine and grinder defaults.
    - `202609090002_brew_water_temperature.sql` — optional per-entry brew-water temperature.
+   - `202609090003_user_preferred_brew_method.sql` — usual brew method for equipment-aware Bean guidance.
    These migrations are additive/idempotent; do not import local coffee records or remove existing cloud records.
 3. In **Authentication → Providers → Email**, enable public email signup and keep email confirmation enabled.
 4. In **Authentication → URL Configuration**, set the Vercel Preview URL as the Site URL and allow `https://<preview-domain>/auth/callback` as a redirect URL.

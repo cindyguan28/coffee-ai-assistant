@@ -27,10 +27,11 @@ export async function updateEquipment(formData: FormData) {
   const userId = await requireCurrentUserId();
   const machine = String(formData.get("default_machine_model") ?? "").trim().slice(0, 200) || null;
   const grinder = String(formData.get("default_grinder_type") ?? "").trim().slice(0, 200) || null;
+  const method = String(formData.get("default_brew_method") ?? "").trim().slice(0, 100) || null;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_profiles")
-    .update({ default_machine_model: machine, default_grinder_type: grinder })
+    .update({ default_machine_model: machine, default_grinder_type: grinder, default_brew_method: method })
     .eq("user_id", userId)
     .select("user_id")
     .single();
