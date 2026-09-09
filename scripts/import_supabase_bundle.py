@@ -19,6 +19,18 @@ def _chunks(rows: list[dict], size: int = 100):
         yield rows[index:index + size]
 
 
+def _request_headers(secret_key: str) -> dict[str, str]:
+    """Support current sb_secret keys and legacy service-role JWTs safely."""
+    headers = {
+        "apikey": secret_key,
+        "Content-Type": "application/json",
+        "Prefer": "resolution=ignore-duplicates,return=minimal",
+    }
+    if secret_key.startswith("eyJ"):
+        headers["Authorization"] = f"Bearer {secret_key}"
+    return headers
+
+
 def import_bundle(bundle: dict, supabase_url: str, service_key: str) -> dict[str, int]:
     if bundle.get("format") != "mylot-supabase-import-v1":
         raise ValueError("Unsupported or missing bundle format.")
@@ -34,12 +46,7 @@ def import_bundle(bundle: dict, supabase_url: str, service_key: str) -> dict[str
                 f"{supabase_url.rstrip('/')}/rest/v1/{table}?{query}",
                 data=json.dumps(batch).encode("utf-8"),
                 method="POST",
-                headers={
-                    "apikey": service_key,
-                    "Authorization": f"Bearer {service_key}",
-                    "Content-Type": "application/json",
-                    "Prefer": "resolution=ignore-duplicates,return=minimal",
-                },
+                headers=_request_headers(service_key),
             )
             try:
                 with urlopen(request, timeout=30) as response:
@@ -56,11 +63,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("bundle", type=Path)
     parser.add_argument("--supabase-url", default=os.environ.get("SUPABASE_URL"))
-    parser.add_argument("--service-key", default=os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
+    parser.add_argument(
+        "--service-key",
+        default=os.environ.get("SUPABASE_SECRET_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY"),
+        help="Supabase sb_secret key or legacy service-role JWT",
+    )
     args = parser.parse_args()
 
     if not args.supabase_url or not args.service_key:
-        parser.error("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or pass both flags.")
+        parser.error("Set SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY), or pass both flags.")
     if not args.bundle.is_file():
         parser.error(f"Bundle not found: {args.bundle}")
 
@@ -71,4 +82,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
