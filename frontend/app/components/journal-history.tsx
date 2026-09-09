@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { bestEntryId, filterJournalEntries, groupJournalEntries, showsWaterTemperature, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
+import { bestEntryId, filterJournalEntries, groupJournalEntries, journalDetailFacts, showsWaterTemperature, type EquipmentDefaults, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
 import { deleteBrewLog } from "../space/brews/actions";
 
 function display(value: string | number | null | undefined) {
@@ -13,7 +13,7 @@ function present(value: unknown) {
   return value !== null && value !== undefined && value !== "";
 }
 
-export function JournalHistory({ entries }: { entries: JournalEntry[] }) {
+export function JournalHistory({ entries, equipmentDefaults = {} }: { entries: JournalEntry[]; equipmentDefaults?: EquipmentDefaults }) {
   const [mode, setMode] = useState<JournalGroupMode>("bean");
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -35,15 +35,7 @@ export function JournalHistory({ entries }: { entries: JournalEntry[] }) {
           {group.entries.map((entry) => {
             const expanded = expandedId === entry.id;
             const showWater = showsWaterTemperature(entry.brew_method);
-            const secondaryFacts = [
-              ["Machine", entry.machine_model], ["Grinder", entry.grinder_type],
-              ["Dose", present(entry.default_dose_g) ? `${entry.default_dose_g} g` : null],
-              ["Yield", present(entry.espresso_volume_ml) ? `${entry.espresso_volume_ml} ml` : null],
-              ["Time", present(entry.extraction_time_sec) ? `${entry.extraction_time_sec} sec` : null],
-              ["Water", present(entry.water_temp_c) ? `${entry.water_temp_c}°C` : null],
-              ["Drink", entry.drink_type], ["Milk", entry.milk_type],
-              ["Milk amount", present(entry.milk_ml) ? `${entry.milk_ml} ml` : null], ["Milk pairing", entry.milk_pairing],
-            ].filter((fact) => present(fact[1]));
+            const secondaryFacts = journalDetailFacts(entry, equipmentDefaults);
             const problems = display(entry.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
             return <article className={`journal-row${expanded ? " is-expanded" : ""}`} key={entry.id}>
               <button className={`journal-row-summary${mode !== "bean" ? " has-bean" : ""}${showWater ? " has-water" : ""}`} type="button" aria-expanded={expanded} onClick={() => setExpandedId(expanded ? null : entry.id)}>

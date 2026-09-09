@@ -19,7 +19,10 @@ describe("validateBrewLog", () => {
   it("accepts a compact brew log", () => {
     const result = validateBrewLog(form(valid));
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.value.score).toBe(8.5);
+    if (result.ok) {
+      expect(result.value.score).toBe(8.5);
+      expect(result.value).toMatchObject({ acidity: null, bitterness: null, sweetness: null, body: null, balance: null, aroma: null });
+    }
   });
 
   it("preserves multiple guided problem tags", () => {
