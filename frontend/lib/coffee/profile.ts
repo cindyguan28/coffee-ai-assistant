@@ -24,19 +24,16 @@ export function generateBeanProfile(bean: BeanProfileInput) {
   let acidity = origin?.acidity ?? "unknown";
   let body = origin?.body ?? "medium";
   let sweetness = origin?.sweetness ?? "medium";
-  let method = "V60";
-  let ratio = "1:16";
-  let temp = "92";
+  let temp: string | null = null;
 
   if (roast.includes("dark")) {
     acidity = "low";
     body = "full";
-    method = "Espresso";
-    ratio = "1:2";
     temp = "90";
   } else if (roast.includes("light")) {
-    method = "V60";
     temp = "94";
+  } else if (roast) {
+    temp = "92";
   }
   if (process.includes("natural")) sweetness = "high";
   if (process.includes("washed") && acidity === "unknown") acidity = "medium-high";
@@ -47,8 +44,8 @@ export function generateBeanProfile(bean: BeanProfileInput) {
     predicted_body: body,
     predicted_sweetness: sweetness,
     predicted_notes: notes.join(","),
-    recommended_method: method,
-    recommended_ratio: ratio,
+    recommended_method: null,
+    recommended_ratio: null,
     recommended_temp: temp,
     confidence: Math.min(1, Number((matchedSignals / 4).toFixed(3))),
     reasoning: matchedSignals

@@ -12,14 +12,16 @@ describe("generateBeanProfile", () => {
     expect(profile.predicted_acidity).toBe("high");
     expect(profile.predicted_sweetness).toBe("high");
     expect(profile.predicted_notes).toContain("Jasmine");
-    expect(profile.recommended_method).toBe("V60");
+    expect(profile.recommended_method).toBeNull();
+    expect(profile.recommended_temp).toBe("94");
     expect(profile.confidence).toBe(1);
   });
 
   it("returns safe defaults when only a name is known", () => {
     const profile = generateBeanProfile({});
     expect(profile.predicted_acidity).toBe("unknown");
-    expect(profile.recommended_ratio).toBe("1:16");
+    expect(profile.recommended_ratio).toBeNull();
+    expect(profile.recommended_temp).toBeNull();
     expect(profile.confidence).toBe(0);
   });
 });
