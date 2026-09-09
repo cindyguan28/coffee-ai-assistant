@@ -22,14 +22,14 @@ export function SensoryCapture({ initialValues }: { initialValues: SensoryValues
     <legend>Your quick taste <span>1 = low, 5 = high intensity</span></legend>
     <p>Describe what you perceived—not whether it was good. These explicit ratings help shape My Taste.</p>
     <div className="sensory-primary">
-      <RangeField name="acidity" label="Acidity" min={1} max={5} defaultValue={initialValues.acidity ?? 3} suffix="/5" lowLabel="Soft" highLabel="Bright / tangy" />
-      <RangeField name="bitterness" label="Bitterness" min={1} max={5} defaultValue={initialValues.bitterness ?? 3} suffix="/5" lowLabel="Gentle" highLabel="Strong" />
-      <RangeField name="sweetness" label="Natural sweetness" min={1} max={5} defaultValue={initialValues.sweetness ?? 3} suffix="/5" lowLabel="Hard to notice" highLabel="Clearly sweet" />
+      <RangeField name="acidity" label="Acidity" min={1} max={5} defaultValue={initialValues.acidity ?? null} suffix="/5" lowLabel="Soft" highLabel="Bright / tangy" />
+      <RangeField name="bitterness" label="Bitterness" min={1} max={5} defaultValue={initialValues.bitterness ?? null} suffix="/5" lowLabel="Gentle" highLabel="Strong" />
+      <RangeField name="sweetness" label="Natural sweetness" min={1} max={5} defaultValue={initialValues.sweetness ?? null} suffix="/5" lowLabel="Hard to notice" highLabel="Clearly sweet" />
     </div>
-    {!advanced ? <button className="sensory-more" type="button" onClick={() => setAdvanced(true)}>+ Describe aroma and mouthfeel</button> : <div className="sensory-advanced">
-      <RangeField name="aroma" label="Aroma" min={1} max={5} defaultValue={initialValues.aroma ?? 3} suffix="/5" lowLabel="Subtle" highLabel="Very aromatic" />
-      <RangeField name="body" label="Mouthfeel" min={1} max={5} defaultValue={initialValues.body ?? 3} suffix="/5" lowLabel="Light / tea-like" highLabel="Rich / creamy" />
-      <label className="balance-field" htmlFor="balance"><span>Overall balance <small>Optional</small></span><select id="balance" name="balance" defaultValue={initialValues.balance ?? ""}><option value="">Not rated</option><option value="1">Very uneven</option><option value="2">Somewhat uneven</option><option value="3">Neutral</option><option value="4">Mostly balanced</option><option value="5">Harmonious</option></select></label>
+    {!advanced ? <button className="sensory-more" type="button" onClick={() => setAdvanced(true)}>+ Describe aroma and body</button> : <div className="sensory-advanced">
+      <RangeField name="aroma" label="Aroma" min={1} max={5} defaultValue={initialValues.aroma ?? null} suffix="/5" lowLabel="Subtle" highLabel="Very aromatic" />
+      <RangeField name="body" label="Body" min={1} max={5} defaultValue={initialValues.body ?? null} suffix="/5" lowLabel="Light mouthfeel" highLabel="Rich mouthfeel" />
+      <label className="balance-field" htmlFor="balance"><span>Balance <small>Optional</small></span><select id="balance" name="balance" defaultValue={initialValues.balance ?? ""}><option value="">Not rated</option><option value="1">Very uneven</option><option value="2">Somewhat uneven</option><option value="3">Neutral</option><option value="4">Mostly balanced</option><option value="5">Harmonious</option></select></label>
     </div>}
   </fieldset>;
 }
