@@ -59,6 +59,7 @@ export function validateBrewLog(formData: FormData): BrewValidation {
     numbers[field] = result.value;
   }
   if (numbers.score === null) return { ok: false, message: "Add a liking score from 0 to 10." };
+  if (numbers.grind_setting === null) return { ok: false, message: "Add the grind setting used for this cup." };
 
   return {
     ok: true,

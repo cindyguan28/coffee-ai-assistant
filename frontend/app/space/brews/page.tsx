@@ -15,7 +15,7 @@ import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { RangeField } from "../../components/range-field";
 import { SubmitButton } from "../../components/submit-button";
-import { addBrewLog, deleteBrewLog, updateBrewLog } from "./actions";
+import { addBrewLog, deleteBrewLog, updateBrewLog, updateEquipment } from "./actions";
 
 type PageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
 type Log = Record<string, string | number | null>;
@@ -37,15 +37,19 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   }
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const [beansResult, logsResult] = await Promise.all([
+  const [beansResult, logsResult, profileResult] = await Promise.all([
     supabase.from("beans").select("id,name,roaster").eq("user_id", userId!).order("name"),
     supabase.from("brew_logs").select("*,beans(name,roaster)").eq("user_id", userId!).order("brew_date", { ascending: false }).limit(50),
+    supabase.from("user_profiles").select("default_machine_model,default_grinder_type").eq("user_id", userId!).maybeSingle(),
   ]);
   const logs = (logsResult.data ?? []) as unknown as Array<Log & { beans?: { name?: string; roaster?: string } | null }>;
   const editing = params.edit ? logs.find((log) => log.id === params.edit) : undefined;
   const value = (field: string) => editing?.[field] ?? "";
   const numberValue = (field: string, fallback: number) => value(field) === "" || value(field) === null ? fallback : Number(value(field));
   const selectedProblems = new Set(String(value("problem_tags")).split(",").map((item) => item.trim()).filter(Boolean));
+  const equipment = profileResult.data;
+  const machineModel = String(value("machine_model") || equipment?.default_machine_model || "");
+  const grinderType = String(value("grinder_type") || equipment?.default_grinder_type || "");
 
   return (
     <section className="space-welcome brews-page">
@@ -56,16 +60,29 @@ export default async function BrewsPage({ searchParams }: PageProps) {
         <div className="space-first-step"><h2>Add a Bean before creating a journal entry.</h2><Link className="button button-primary" href="/space/beans">Add a coffee ↗</Link></div>
       ) : (
         <div className="beans-layout">
-          <form className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
+          <div className="journal-entry-column">
+            <section className="equipment-card">
+              <div><span>MY EQUIPMENT</span><h2>{equipment?.default_machine_model || "Save your machine once"}</h2><p>{equipment?.default_grinder_type ? equipment.default_grinder_type.replaceAll("_", " ") : "It will be attached to new journal entries automatically."}</p></div>
+              {profileResult.error ? <p>Apply the latest database migration to save equipment defaults.</p> : <details open={!equipment?.default_machine_model}><summary>{equipment?.default_machine_model ? "Edit equipment" : "Add equipment"}</summary><form action={updateEquipment}>
+                <label htmlFor="default_machine_model">Machine</label><input id="default_machine_model" name="default_machine_model" defaultValue={equipment?.default_machine_model ?? ""} placeholder="e.g. Sage Barista Express" />
+                <label htmlFor="default_grinder_type">Grinder type</label><select id="default_grinder_type" name="default_grinder_type" defaultValue={equipment?.default_grinder_type ?? ""}><option value="">Choose</option>{options(GRINDER_TYPE_OPTIONS, equipment?.default_grinder_type ?? "")}</select>
+                <SubmitButton pendingLabel="Saving equipment…">Save equipment</SubmitButton>
+              </form></details>}
+            </section>
+            <form className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
             <h2>{editing ? "Edit journal entry" : "Add journal entry"}</h2>
-            <p>Record how the cup tasted. Recipe and equipment details are optional.</p>
+            <p>Choose the coffee, record its grind setting, then describe the cup. Everything under Recipe details is optional.</p>
             {editing && <input type="hidden" name="log_id" value={String(editing.id)} />}
+            <input type="hidden" name="machine_model" value={machineModel} />
+            <input type="hidden" name="grinder_type" value={grinderType} />
             <label htmlFor="bean_id">Coffee *</label>
             <select id="bean_id" name="bean_id" defaultValue={String(value("bean_id"))} required>
               <option value="">Choose a bean</option>{beansResult.data.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}</option>)}
             </select>
-            <label htmlFor="brew_date">Date *</label>
-            <input id="brew_date" name="brew_date" type="date" defaultValue={String(value("brew_date") || today())} required />
+            <div className="bean-form-row">
+              <div><label htmlFor="brew_date">Date *</label><input id="brew_date" name="brew_date" type="date" defaultValue={String(value("brew_date") || today())} required /></div>
+              <div><label htmlFor="grind_setting">Grind setting *</label><input id="grind_setting" name="grind_setting" type="number" min="0" max="1000" step="1" defaultValue={String(value("grind_setting"))} placeholder="e.g. 10" required /><small>Use the number shown on your grinder.</small></div>
+            </div>
 
             <RangeField name="score" label="How much did you like it?" min={0} max={10} step={0.5} defaultValue={numberValue("score", 8)} suffix="/10" lowLabel="Not for me" highLabel="Loved it" />
 
@@ -97,29 +114,27 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             <label htmlFor="next_adjustment">Try next time</label>
             <select id="next_adjustment" name="next_adjustment" defaultValue={String(value("next_adjustment"))}><option value="">No adjustment yet</option>{options(NEXT_ADJUSTMENT_OPTIONS, String(value("next_adjustment")))}</select>
 
-            <details className="brew-details"><summary>Recipe &amp; equipment details (optional)</summary>
+            <details className="brew-details"><summary>Recipe details (optional)</summary>
               <div className="brew-numbers">
                 <label>Dose (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={String(value("default_dose_g"))} /></label>
                 <label>Yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={String(value("espresso_volume_ml"))} /></label>
                 <label>Time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={String(value("extraction_time_sec"))} /></label>
-                <label>Grind<input name="grind_setting" type="number" min="0" step="1" defaultValue={String(value("grind_setting"))} /></label>
               </div>
-              <label>Machine<input name="machine_model" defaultValue={String(value("machine_model"))} /></label>
-              <label>Grinder<select name="grinder_type" defaultValue={String(value("grinder_type"))}><option value="">Choose</option>{options(GRINDER_TYPE_OPTIONS, String(value("grinder_type")))}</select></label>
               <label>Milk (ml)<input name="milk_ml" type="number" min="0" step="1" defaultValue={String(value("milk_ml"))} /></label>
               <label>Milk type<select name="milk_type" defaultValue={String(value("milk_type"))}><option value="">None / choose</option>{options(MILK_TYPE_OPTIONS, String(value("milk_type")))}</select></label>
             </details>
             <label htmlFor="notes">Notes</label><textarea id="notes" name="notes" rows={3} defaultValue={String(value("notes"))} placeholder="Anything you want to remember about this cup." />
             <SubmitButton pendingLabel={editing ? "Updating entry…" : "Saving entry…"}>{editing ? "Update entry" : "Save to journal"}</SubmitButton>
             {editing && <Link className="auth-back" href="/space/brews">Cancel editing</Link>}
-          </form>
+            </form>
+          </div>
           <div className="bean-list"><span>{logs.length} JOURNAL ENTRIES</span>
             {logs.map((log) => <article className="bean-item brew-item" key={String(log.id)}>
               <div><div><h2>{log.beans?.name || "Coffee"}</h2><p>{String(log.brew_date || "")}{log.brew_method ? ` · ${String(log.brew_method).replaceAll("_", " ")}` : ""}</p></div><strong>{String(log.score)}/10</strong></div>
               <p>{String(log.taste_result || log.notes || "No tasting note yet.").replaceAll("_", " ")}</p>
               <div className="brew-actions"><Link href={`/space/brews?edit=${log.id}`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={String(log.id)} /><button className="bean-delete" type="submit">Remove</button></form></div>
             </article>)}
-            {!logs.length && <p className="bean-empty">Your first entry can be as simple as a Bean, a date, and whether you liked it.</p>}
+            {!logs.length && <p className="bean-empty">Your first entry only needs a Bean, date, grind setting, and liking score.</p>}
           </div>
         </div>
       )}
