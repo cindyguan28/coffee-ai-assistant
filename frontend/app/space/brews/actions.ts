@@ -31,10 +31,6 @@ async function ownedBeanExists(beanId: string, userId: string) {
   return Boolean(data);
 }
 
-function missingColumn(error: { code?: string; message?: string } | null, column: string) {
-  return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes(column)));
-}
-
 export async function updateEquipment(formData: FormData) {
   const userId = await requireCurrentUserId();
   const machine = String(formData.get("default_machine_model") ?? "").trim().slice(0, 200) || null;
