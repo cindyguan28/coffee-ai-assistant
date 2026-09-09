@@ -5,7 +5,11 @@ This runbook deploys the Next.js application from `release/public-preview`. The 
 ## 1. Supabase
 
 1. Create a Supabase project in the closest region to the first testers.
-2. Open **SQL Editor**, paste `../../supabase/migrations/202609070001_public_preview.sql`, and run it once.
+2. Open **SQL Editor** and apply every file in `../../supabase/migrations/` in filename order. For an existing Preview database, apply only the newer files that have not been run yet. The current order is:
+   - `202609070001_public_preview.sql` — initial private user data model and RLS.
+   - `202609080002_bean_package_weight.sql` — optional Bean package size.
+   - `202609090001_user_brew_setup.sql` — reusable machine and grinder defaults.
+   These migrations are additive/idempotent; do not import local coffee records or remove existing cloud records.
 3. In **Authentication → Providers → Email**, enable public email signup and keep email confirmation enabled.
 4. In **Authentication → URL Configuration**, set the Vercel Preview URL as the Site URL and allow `https://<preview-domain>/auth/callback` as a redirect URL.
 5. Copy the project URL and publishable key. Never use a service-role key in the browser.
