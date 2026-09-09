@@ -47,8 +47,8 @@ export async function addBean(formData: FormData) {
   const profile = generateBeanProfile(bean);
   const { error: profileError } = await supabase.from("bean_profiles").insert({ bean_id: data.id, ...profile });
   if (profileError) {
-    await supabase.from("beans").delete().eq("id", data.id).eq("user_id", userId);
-    redirect(message("error", "The bean profile could not be generated, so nothing was saved."));
+    revalidateCoffeeSpace();
+    redirect(message("error", `${bean.name} was saved, but its Bean Profile could not be generated. Use Generate profile to retry.`));
   }
 
   revalidateCoffeeSpace();
@@ -90,6 +90,31 @@ export async function updateBean(formData: FormData) {
 
   revalidateCoffeeSpace();
   redirect(message("message", `${validation.value.name} and its Bean Profile were updated.`));
+}
+
+export async function regenerateBeanProfile(formData: FormData) {
+  const userId = await requireCurrentUserId();
+  const beanId = text(formData, "beanId", 100);
+  if (!beanId) redirect(message("error", "Bean not found."));
+
+  const supabase = await createClient();
+  const { data: bean, error: beanError } = await supabase
+    .from("beans")
+    .select("name,country,process,roast_level,flavor_notes")
+    .eq("id", beanId)
+    .eq("user_id", userId)
+    .single();
+  if (beanError || !bean) redirect(message("error", "Bean not found or not accessible."));
+
+  const profile = generateBeanProfile(bean);
+  const { error } = await supabase.from("bean_profiles").upsert(
+    { bean_id: beanId, ...profile, generated_at: new Date().toISOString() },
+    { onConflict: "bean_id" },
+  );
+  if (error) redirect(message("error", "The Bean Profile could not be generated. Try again."));
+
+  revalidateCoffeeSpace();
+  redirect(message("message", `${bean.name} Bean Profile generated.`));
 }
 
 export async function deleteBean(formData: FormData) {

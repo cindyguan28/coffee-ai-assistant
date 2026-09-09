@@ -14,7 +14,7 @@ import {
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SubmitButton } from "../../components/submit-button";
-import { addBean, deleteBean, updateBean } from "./actions";
+import { addBean, deleteBean, regenerateBeanProfile, updateBean } from "./actions";
 
 type BeansPageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
 
@@ -41,12 +41,20 @@ type Bean = {
     predicted_sweetness: string | null;
     predicted_notes: string | null;
     recommended_method: string | null;
+    recommended_ratio: string | null;
+    recommended_temp: string | null;
+    confidence: number | null;
+    reasoning: string | null;
   } | Array<{
     predicted_acidity: string | null;
     predicted_body: string | null;
     predicted_sweetness: string | null;
     predicted_notes: string | null;
     recommended_method: string | null;
+    recommended_ratio: string | null;
+    recommended_temp: string | null;
+    confidence: number | null;
+    reasoning: string | null;
   }> | null;
 };
 
@@ -79,13 +87,13 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
   const supabase = await createClient();
   const withPackageWeight = await supabase
     .from("beans")
-    .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method)")
+    .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
     .eq("user_id", userId!)
     .order("created_at", { ascending: false });
   const legacy = missingPackageWeight(withPackageWeight.error)
     ? await supabase
       .from("beans")
-      .select("id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method)")
+      .select("id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
       .eq("user_id", userId!)
       .order("created_at", { ascending: false })
     : null;
@@ -200,8 +208,20 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               return (
                 <article className={`bean-item${bean.id === editingBean?.id ? " is-editing" : ""}`} key={bean.id}>
                   <div><h2>{bean.name}</h2><p>{[bean.roaster, bean.country].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
-                  <div className="bean-tags"><span>{bean.roast_level || "Roast unknown"}</span><span>{profile?.recommended_method || "Profile ready"}</span></div>
-                  <p>{profile?.predicted_notes?.split(",").filter(Boolean).join(" · ") || bean.flavor_notes || "Add a journal entry to learn more."}</p>
+                  <div className="bean-tags"><span>{bean.roast_level || "Roast unknown"}</span><span>{profile ? "Profile generated" : "Profile missing"}</span></div>
+                  {profile ? <section className="bean-profile">
+                    <div className="bean-profile-heading"><div><span>BEAN PROFILE</span><h3>Taste &amp; preparation</h3></div><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button type="submit">Regenerate</button></form></div>
+                    <dl>
+                      <div><dt>Acidity</dt><dd>{profile.predicted_acidity || "Unknown"}</dd></div>
+                      <div><dt>Body</dt><dd>{profile.predicted_body || "Unknown"}</dd></div>
+                      <div><dt>Sweetness</dt><dd>{profile.predicted_sweetness || "Unknown"}</dd></div>
+                      <div><dt>Method</dt><dd>{profile.recommended_method || "Explore"}</dd></div>
+                      <div><dt>Ratio</dt><dd>{profile.recommended_ratio || "—"}</dd></div>
+                      <div><dt>Water</dt><dd>{profile.recommended_temp ? `${profile.recommended_temp}°C` : "—"}</dd></div>
+                    </dl>
+                    <p><b>Main flavors:</b> {profile.predicted_notes?.split(",").filter(Boolean).join(" · ") || bean.flavor_notes || "Not enough information yet"}</p>
+                    <p>{profile.reasoning || "Generated from the Bean information you provided."}</p>
+                  </section> : <section className="bean-profile bean-profile-missing"><span>BEAN PROFILE</span><h3>Profile not generated yet</h3><p>Your Bean is safe. Generate its acidity, body, sweetness, flavors and starting preparation.</p><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button className="button button-primary" type="submit">Generate profile</button></form></section>}
                   {(price || bean.package_weight_g) && <p>{[price && `Price ${price}`, bean.package_weight_g && `${bean.package_weight_g} g`].filter(Boolean).join(" · ")}</p>}
                   <div className="bean-actions">
                     <Link className="bean-edit" href={`/space/beans?edit=${bean.id}`}>Edit</Link>
