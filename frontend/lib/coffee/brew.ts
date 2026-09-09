@@ -72,6 +72,7 @@ export function validateBrewLog(formData: FormData): BrewValidation {
       machine_model: stringValue(formData, "machine_model", 200),
       grinder_type: stringValue(formData, "grinder_type", 200),
       milk_type: stringValue(formData, "milk_type", 100),
+      milk_pairing: stringValue(formData, "milk_pairing", 100),
       taste_result: stringValue(formData, "taste_result", 500),
       problem_tags: stringList(formData, "problem_tags", 500),
       next_adjustment: stringValue(formData, "next_adjustment", 1000),

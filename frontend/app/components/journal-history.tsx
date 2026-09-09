@@ -41,7 +41,8 @@ export function JournalHistory({ entries }: { entries: JournalEntry[] }) {
               ["Yield", present(entry.espresso_volume_ml) ? `${entry.espresso_volume_ml} ml` : null],
               ["Time", present(entry.extraction_time_sec) ? `${entry.extraction_time_sec} sec` : null],
               ["Water", present(entry.water_temp_c) ? `${entry.water_temp_c}°C` : null],
-              ["Drink", entry.drink_type], ["Milk", present(entry.milk_ml) ? `${entry.milk_ml} ml` : entry.milk_type],
+              ["Drink", entry.drink_type], ["Milk", entry.milk_type],
+              ["Milk amount", present(entry.milk_ml) ? `${entry.milk_ml} ml` : null], ["Milk pairing", entry.milk_pairing],
             ].filter((fact) => present(fact[1]));
             const problems = display(entry.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
             return <article className={`journal-row${expanded ? " is-expanded" : ""}`} key={entry.id}>

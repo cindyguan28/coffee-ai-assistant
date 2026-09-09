@@ -11,13 +11,20 @@ export const BREW_METHOD_OPTIONS = choices([
   "espresso_machine", "automatic_machine", "moka_pot", "v60", "aeropress", "french_press", "other",
 ]);
 export const DRINK_TYPE_OPTIONS = choices([
-  "espresso", "lungo", "americano", "cappuccino", "latte", "flat_white", "milk_coffee", "other",
+  "espresso", "ristretto", "lungo", "americano", "filter_coffee", "cappuccino", "flat_white",
+  "caffe_latte", "latte_macchiato", "espresso_macchiato", "cortado", "mocha", "iced_coffee",
+  "cold_brew", "milk_coffee", "other",
 ]);
 export const GRINDER_TYPE_OPTIONS = choices([
   "built_in_grinder", "external_electric_grinder", "manual_grinder", "pre_ground", "unknown",
 ]);
 export const MILK_TYPE_OPTIONS = choices([
-  "whole_milk", "low_fat_milk", "lactose_free_milk", "oat_milk", "soy_milk", "almond_milk", "other",
+  "whole_milk", "semi_skimmed_milk", "skimmed_milk", "lactose_free_milk", "oat_milk",
+  "barista_oat_milk", "soy_milk", "almond_milk", "coconut_milk", "rice_milk", "pea_milk",
+  "cashew_milk", "other",
+]);
+export const MILK_PAIRING_OPTIONS = choices([
+  "excellent_match", "good_match", "neutral", "not_a_good_match",
 ]);
 export const TASTE_RESULT_OPTIONS = choices([
   "excellent", "good", "okay", "too_sour", "too_bitter", "too_weak", "too_strong", "watery",
