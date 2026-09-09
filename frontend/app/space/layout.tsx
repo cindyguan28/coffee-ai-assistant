@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getCurrentUserId } from "../../lib/auth/user";
 import { isSupabaseConfigured } from "../../lib/supabase/config";
 import { logout } from "./actions";
+import { MobileSpaceNav } from "../components/mobile-space-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ export default async function SpaceLayout({ children }: { children: ReactNode })
         )}
       </nav>
       {children}
+      {configured && userId && <MobileSpaceNav />}
     </main>
   );
 }

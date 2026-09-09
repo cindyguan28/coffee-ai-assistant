@@ -37,6 +37,12 @@ export default async function CoffeeSpacePage() {
             <div><strong>{beansResult.count ?? 0}</strong><span>beans remembered</span></div>
             <div><strong>{brewsResult.count ?? 0}</strong><span>journal entries</span></div>
           </div>
+          <nav className="space-feature-grid" aria-label="Your coffee tools">
+            <Link href="/space/beans"><span>01</span><strong>My Beans</strong><small>Your shelf and Bean Profiles</small><b>Open →</b></Link>
+            <Link href="/space/brews"><span>02</span><strong>Brew Journal</strong><small>Log and compare every cup</small><b>Open →</b></Link>
+            <Link href="/space/taste"><span>03</span><strong>My Taste</strong><small>See your personal taste pattern</small><b>Open →</b></Link>
+            <Link href="/space/world"><span>04</span><strong>Coffee World</strong><small>Explore the origins you know</small><b>Open →</b></Link>
+          </nav>
           {beansResult.data?.length ? (
             <div className="space-recent">
               <span>RECENT BEANS</span>
