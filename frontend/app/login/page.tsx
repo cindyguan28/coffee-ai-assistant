@@ -20,7 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (configured) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getClaims();
-    if (data?.claims) redirect(next);
+    if (data?.claims && !isSignup) redirect(next);
   }
 
   return (
@@ -40,6 +40,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       )}
       {params.error && <div className="auth-error" role="alert">{params.error}</div>}
       {params.message && <div className="auth-success" role="status">{params.message}</div>}
+      {configured && isSignup && (
+        <div className="auth-notice">
+          Creating a new account signs out any account currently open in this browser.
+        </div>
+      )}
 
       <form className="auth-form" action={isSignup ? signup : login}>
         <input name="next" type="hidden" value={next} />

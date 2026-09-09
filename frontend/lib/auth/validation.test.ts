@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  authExchangeMatchesSession,
   authMessageUrl,
   isMissingPkceVerifier,
   safeRedirectPath,
@@ -54,5 +55,17 @@ describe("PKCE errors", () => {
     expect(isMissingPkceVerifier(new Error("both auth code and code verifier should be non-empty"))).toBe(true);
     expect(isMissingPkceVerifier({ message: "invalid code_verifier" })).toBe(true);
     expect(isMissingPkceVerifier(new Error("code expired"))).toBe(false);
+  });
+});
+
+describe("auth callback session isolation", () => {
+  it("accepts only the session created for the confirmed user", () => {
+    expect(authExchangeMatchesSession("gmail-user", "gmail-user")).toBe(true);
+    expect(authExchangeMatchesSession("gmail-user", "163-user")).toBe(false);
+  });
+
+  it("rejects a missing exchange user or missing authenticated session", () => {
+    expect(authExchangeMatchesSession(undefined, "163-user")).toBe(false);
+    expect(authExchangeMatchesSession("gmail-user", null)).toBe(false);
   });
 });

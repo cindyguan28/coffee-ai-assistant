@@ -1,6 +1,11 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { authMessageUrl, isMissingPkceVerifier, safeRedirectPath } from "../../../lib/auth/validation";
+import {
+  authExchangeMatchesSession,
+  authMessageUrl,
+  isMissingPkceVerifier,
+  safeRedirectPath,
+} from "../../../lib/auth/validation";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 
@@ -19,9 +24,21 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
 
+  async function exchangeCreatedExpectedSession(exchangedUserId: string | null | undefined) {
+    const { data, error } = await supabase.auth.getUser();
+    return !error && authExchangeMatchesSession(exchangedUserId, data.user?.id);
+  }
+
+  async function clearStaleSession() {
+    await supabase.auth.signOut({ scope: "local" });
+  }
+
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(safeNext, requestUrl.origin));
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && await exchangeCreatedExpectedSession(data.user?.id)) {
+      return NextResponse.redirect(new URL(safeNext, requestUrl.origin));
+    }
+    await clearStaleSession();
     if (isMissingPkceVerifier(error)) {
       return NextResponse.redirect(
         new URL(
@@ -38,12 +55,15 @@ export async function GET(request: Request) {
   }
 
   if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    if (!error) {
+    const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    if (!error && await exchangeCreatedExpectedSession(data.user?.id)) {
       const destination = type === "recovery" ? "/reset-password" : safeNext;
       return NextResponse.redirect(new URL(destination, requestUrl.origin));
     }
+    await clearStaleSession();
   }
+
+  await clearStaleSession();
 
   return NextResponse.redirect(
     new URL("/login?error=The%20sign-in%20link%20is%20invalid%20or%20expired.", requestUrl.origin),

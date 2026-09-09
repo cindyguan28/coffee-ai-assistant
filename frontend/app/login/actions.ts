@@ -48,6 +48,16 @@ export async function signup(formData: FormData) {
   if (!password.ok) loginError(password.message, { mode: "signup", next });
 
   const supabase = await createClient();
+  // A signup is an account transition. Remove any existing browser session first so
+  // a failed or cross-device confirmation can never fall back to another user's space.
+  const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+  if (signOutError) {
+    loginError("We could not safely switch accounts. Sign out and try again.", {
+      mode: "signup",
+      next,
+    });
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email: credentials.email,
     password: credentials.password,
@@ -85,6 +95,11 @@ export async function signInWithGoogle(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+  if (signOutError) {
+    loginError("We could not safely switch accounts. Sign out and try again.", { next });
+  }
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {

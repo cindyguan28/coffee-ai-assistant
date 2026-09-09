@@ -74,3 +74,10 @@ export function isMissingPkceVerifier(error: unknown) {
   const message = String(error.message).toLowerCase();
   return message.includes("code verifier") || message.includes("code_verifier");
 }
+
+export function authExchangeMatchesSession(
+  exchangedUserId: string | null | undefined,
+  sessionUserId: string | null | undefined,
+) {
+  return Boolean(exchangedUserId && sessionUserId && exchangedUserId === sessionUserId);
+}
