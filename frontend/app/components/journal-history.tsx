@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { bestEntryId, filterJournalEntries, groupJournalEntries, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
+import { bestEntryId, filterJournalEntries, groupJournalEntries, showsWaterTemperature, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
 import { deleteBrewLog } from "../space/brews/actions";
 
 function display(value: string | number | null | undefined) {
@@ -34,21 +34,23 @@ export function JournalHistory({ entries }: { entries: JournalEntry[] }) {
         <div className="journal-rows">
           {group.entries.map((entry) => {
             const expanded = expandedId === entry.id;
+            const showWater = showsWaterTemperature(entry.brew_method);
             const secondaryFacts = [
               ["Machine", entry.machine_model], ["Grinder", entry.grinder_type],
               ["Dose", present(entry.default_dose_g) ? `${entry.default_dose_g} g` : null],
               ["Yield", present(entry.espresso_volume_ml) ? `${entry.espresso_volume_ml} ml` : null],
               ["Time", present(entry.extraction_time_sec) ? `${entry.extraction_time_sec} sec` : null],
+              ["Water", present(entry.water_temp_c) ? `${entry.water_temp_c}°C` : null],
               ["Drink", entry.drink_type], ["Milk", present(entry.milk_ml) ? `${entry.milk_ml} ml` : entry.milk_type],
             ].filter((fact) => present(fact[1]));
             const problems = display(entry.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
             return <article className={`journal-row${expanded ? " is-expanded" : ""}`} key={entry.id}>
-              <button className={`journal-row-summary${mode !== "bean" ? " has-bean" : ""}`} type="button" aria-expanded={expanded} onClick={() => setExpandedId(expanded ? null : entry.id)}>
+              <button className={`journal-row-summary${mode !== "bean" ? " has-bean" : ""}${showWater ? " has-water" : ""}`} type="button" aria-expanded={expanded} onClick={() => setExpandedId(expanded ? null : entry.id)}>
                 <span className="journal-row-date">{entry.brew_date || "No date"}</span>
                 {mode !== "bean" && <span className="journal-row-bean"><b>{entry.beans?.name || "Coffee"}</b><small>{entry.beans?.roaster}</small></span>}
                 <span><small>Grind</small><b>{present(entry.grind_setting) ? entry.grind_setting : "—"}</b></span>
                 <span><small>Method</small><b>{entry.brew_method ? display(entry.brew_method) : "—"}</b></span>
-                <span><small>Water</small><b>{present(entry.water_temp_c) ? `${entry.water_temp_c}°C` : "—"}</b></span>
+                {showWater && <span><small>Water</small><b>{present(entry.water_temp_c) ? `${entry.water_temp_c}°C` : "—"}</b></span>}
                 <span className="journal-row-score"><b>{present(entry.score) ? `${entry.score}/10` : "—"}</b>{entry.id === bestId && <small>Best so far</small>}</span>
                 <i aria-hidden="true">{expanded ? "−" : "+"}</i>
               </button>
