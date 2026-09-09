@@ -28,6 +28,14 @@ function options(items: GuidedOption[], current?: string) {
   return [...legacy, ...items].map((option) => <option key={option.value} value={option.value}>{option.label}</option>);
 }
 
+function display(value: string | number | null | undefined) {
+  return String(value ?? "").replaceAll("_", " ");
+}
+
+function isPresent(value: string | number | null | undefined) {
+  return value !== null && value !== undefined && value !== "";
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function BrewsPage({ searchParams }: PageProps) {
@@ -119,6 +127,7 @@ export default async function BrewsPage({ searchParams }: PageProps) {
                 <label>Dose (g)<input name="default_dose_g" type="number" min="0" step="0.1" defaultValue={String(value("default_dose_g"))} /></label>
                 <label>Yield (ml)<input name="espresso_volume_ml" type="number" min="0" step="0.1" defaultValue={String(value("espresso_volume_ml"))} /></label>
                 <label>Time (sec)<input name="extraction_time_sec" type="number" min="0" step="0.1" defaultValue={String(value("extraction_time_sec"))} /></label>
+                <label>Water (°C)<input name="water_temp_c" type="number" min="0" max="100" step="0.1" defaultValue={String(value("water_temp_c"))} /></label>
               </div>
               <label>Milk (ml)<input name="milk_ml" type="number" min="0" step="1" defaultValue={String(value("milk_ml"))} /></label>
               <label>Milk type<select name="milk_type" defaultValue={String(value("milk_type"))}><option value="">None / choose</option>{options(MILK_TYPE_OPTIONS, String(value("milk_type")))}</select></label>
@@ -129,11 +138,29 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             </form>
           </div>
           <div className="bean-list"><span>{logs.length} JOURNAL ENTRIES</span>
-            {logs.map((log) => <article className="bean-item brew-item" key={String(log.id)}>
-              <div><div><h2>{log.beans?.name || "Coffee"}</h2><p>{String(log.brew_date || "")}{log.brew_method ? ` · ${String(log.brew_method).replaceAll("_", " ")}` : ""}</p></div><strong>{String(log.score)}/10</strong></div>
-              <p>{String(log.taste_result || log.notes || "No tasting note yet.").replaceAll("_", " ")}</p>
-              <div className="brew-actions"><Link href={`/space/brews?edit=${log.id}`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={String(log.id)} /><button className="bean-delete" type="submit">Remove</button></form></div>
-            </article>)}
+            {logs.map((log) => {
+              const facts = [
+                ["Grind", log.grind_setting],
+                ["Method", log.brew_method],
+                ["Water", isPresent(log.water_temp_c) ? `${log.water_temp_c}°C` : null],
+                ["Machine", log.machine_model],
+                ["Grinder", log.grinder_type],
+                ["Dose", isPresent(log.default_dose_g) ? `${log.default_dose_g} g` : null],
+                ["Yield", isPresent(log.espresso_volume_ml) ? `${log.espresso_volume_ml} ml` : null],
+                ["Time", isPresent(log.extraction_time_sec) ? `${log.extraction_time_sec} sec` : null],
+              ].filter((fact) => isPresent(fact[1]));
+              const problems = display(log.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
+              return <article className="bean-item brew-item" key={String(log.id)}>
+                <div className="brew-item-heading"><div><span>{display(log.brew_date)}</span><h2>{log.beans?.name || "Coffee"}</h2><p>{log.beans?.roaster || "Your recipe"}</p></div><strong>{String(log.score)}/10</strong></div>
+                <dl className="brew-facts">
+                  {facts.map(([label, fact]) => <div key={String(label)}><dt>{label}</dt><dd>{display(fact)}</dd></div>)}
+                </dl>
+                {(log.taste_result || log.notes) && <div className="brew-observation">{log.taste_result && <b>{display(log.taste_result)}</b>}{log.notes && <p>{String(log.notes)}</p>}</div>}
+                {problems.length > 0 && <div className="brew-problems"><span>Observed</span>{problems.map((problem) => <b key={problem}>{display(problem)}</b>)}</div>}
+                {log.next_adjustment && <p className="brew-next"><span>Next time</span>{display(log.next_adjustment)}</p>}
+                <div className="brew-actions"><Link href={`/space/brews?edit=${log.id}`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={String(log.id)} /><button className="bean-delete" type="submit">Remove</button></form></div>
+              </article>;
+            })}
             {!logs.length && <p className="bean-empty">Your first entry only needs a Bean, date, grind setting, and liking score.</p>}
           </div>
         </div>

@@ -33,11 +33,19 @@ describe("validateBrewLog", () => {
     [{ ...valid, brew_date: "today" }, "date"],
     [{ ...valid, score: "11" }, "score"],
     [{ ...valid, acidity: "6" }, "acidity"],
+    [{ ...valid, water_temp_c: "101" }, "water temp"],
     [{ ...valid, grind_setting: "1.5" }, "grind"],
     [{ ...valid, grind_setting: "" }, "grind"],
   ])("rejects invalid input", (values, message) => {
     const result = validateBrewLog(form(values));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.message.toLowerCase()).toContain(message.toLowerCase());
+  });
+
+  it("keeps water temperature optional and stores it when supplied", () => {
+    const withoutTemperature = validateBrewLog(form(valid));
+    const withTemperature = validateBrewLog(form({ ...valid, water_temp_c: "93.5" }));
+    expect(withoutTemperature.ok && withoutTemperature.value.water_temp_c).toBeNull();
+    expect(withTemperature.ok && withTemperature.value.water_temp_c).toBe(93.5);
   });
 });
