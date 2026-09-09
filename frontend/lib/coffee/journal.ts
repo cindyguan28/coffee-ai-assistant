@@ -13,6 +13,7 @@ export type JournalEntry = {
   extraction_time_sec?: number | null;
   milk_ml?: number | null;
   milk_type?: string | null;
+  milk_pairing?: string | null;
   score?: number | null;
   taste_result?: string | null;
   problem_tags?: string | null;
@@ -44,6 +45,8 @@ function searchable(entry: JournalEntry) {
     entry.brew_method,
     entry.drink_type,
     entry.machine_model,
+    entry.milk_type,
+    entry.milk_pairing,
     entry.taste_result,
     entry.problem_tags,
     entry.next_adjustment,

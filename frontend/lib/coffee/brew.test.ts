@@ -48,4 +48,19 @@ describe("validateBrewLog", () => {
     expect(withoutTemperature.ok && withoutTemperature.value.water_temp_c).toBeNull();
     expect(withTemperature.ok && withTemperature.value.water_temp_c).toBe(93.5);
   });
+
+  it("stores drink, milk type and per-cup milk pairing independently", () => {
+    const result = validateBrewLog(form({
+      ...valid,
+      drink_type: "cortado",
+      milk_type: "barista_oat_milk",
+      milk_pairing: "excellent_match",
+    }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toMatchObject({
+      drink_type: "cortado",
+      milk_type: "barista_oat_milk",
+      milk_pairing: "excellent_match",
+    });
+  });
 });

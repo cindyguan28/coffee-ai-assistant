@@ -5,6 +5,7 @@ import {
   DRINK_TYPE_OPTIONS,
   GRINDER_TYPE_OPTIONS,
   MILK_TYPE_OPTIONS,
+  MILK_PAIRING_OPTIONS,
   NEXT_ADJUSTMENT_OPTIONS,
   PROBLEM_TAG_OPTIONS,
   SENSORY_DIMENSIONS,
@@ -100,6 +101,11 @@ export default async function BrewsPage({ searchParams }: PageProps) {
               <div><label htmlFor="drink_type">Drink</label><select id="drink_type" name="drink_type" defaultValue={String(value("drink_type"))}><option value="">Choose</option>{options(DRINK_TYPE_OPTIONS, String(value("drink_type")))}</select></div>
             </div>
 
+            <div className="bean-form-row">
+              <div><label htmlFor="milk_type">Milk</label><select id="milk_type" name="milk_type" defaultValue={String(value("milk_type"))}><option value="">No milk / choose</option>{options(MILK_TYPE_OPTIONS, String(value("milk_type")))}</select></div>
+              <div><label htmlFor="milk_pairing">Milk pairing</label><select id="milk_pairing" name="milk_pairing" defaultValue={String(value("milk_pairing"))}><option value="">Not rated</option>{options(MILK_PAIRING_OPTIONS, String(value("milk_pairing")))}</select><small>How well did this milk complement the Bean?</small></div>
+            </div>
+
             <fieldset className="sensory-fieldset">
               <legend>Taste evaluation <span>1 = low, 5 = high intensity</span></legend>
               <p>These describe the cup; a higher number does not automatically mean better.</p>
@@ -131,7 +137,6 @@ export default async function BrewsPage({ searchParams }: PageProps) {
                 <label>Water (°C)<input name="water_temp_c" type="number" min="0" max="100" step="0.1" defaultValue={String(value("water_temp_c"))} /></label>
               </div>
               <label>Milk (ml)<input name="milk_ml" type="number" min="0" step="1" defaultValue={String(value("milk_ml"))} /></label>
-              <label>Milk type<select name="milk_type" defaultValue={String(value("milk_type"))}><option value="">None / choose</option>{options(MILK_TYPE_OPTIONS, String(value("milk_type")))}</select></label>
             </details>
             <label htmlFor="notes">Notes</label><textarea id="notes" name="notes" rows={3} defaultValue={String(value("notes"))} placeholder="Anything you want to remember about this cup." />
             <SubmitButton pendingLabel={editing ? "Updating entry…" : "Saving entry…"}>{editing ? "Update entry" : "Save to journal"}</SubmitButton>

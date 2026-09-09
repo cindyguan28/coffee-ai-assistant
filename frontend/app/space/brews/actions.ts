@@ -25,6 +25,12 @@ function withoutField(value: Record<string, string | number | null>, field: stri
   return Object.fromEntries(Object.entries(value).filter(([key]) => key !== field));
 }
 
+const OPTIONAL_MIGRATION_FIELDS = ["water_temp_c", "milk_pairing"] as const;
+
+function missingOptionalField(error: { code?: string; message?: string } | null) {
+  return OPTIONAL_MIGRATION_FIELDS.find((field) => missingColumn(error, field));
+}
+
 async function ownedBeanExists(beanId: string, userId: string) {
   const supabase = await createClient();
   const { data } = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
@@ -64,10 +70,14 @@ export async function addBrewLog(formData: FormData) {
   if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
-  let { error } = await supabase.from("brew_logs").insert({ ...validated.value, user_id: userId });
-  if (missingColumn(error, "water_temp_c")) {
-    if (validated.value.water_temp_c !== null) redirect(destination("error", "Apply the latest database migration before saving water temperature."));
-    ({ error } = await supabase.from("brew_logs").insert({ ...withoutField(validated.value, "water_temp_c"), user_id: userId }));
+  let payload = validated.value;
+  let { error } = await supabase.from("brew_logs").insert({ ...payload, user_id: userId });
+  for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
+    const field = missingOptionalField(error);
+    if (!field) break;
+    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    payload = withoutField(payload, field);
+    ({ error } = await supabase.from("brew_logs").insert({ ...payload, user_id: userId }));
   }
   if (error) redirect(destination("error", "The journal entry could not be saved. Try again."));
   revalidateCoffeeSpace();
@@ -83,10 +93,14 @@ export async function updateBrewLog(formData: FormData) {
   if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
-  let { error } = await supabase.from("brew_logs").update(validated.value).eq("id", logId).eq("user_id", userId);
-  if (missingColumn(error, "water_temp_c")) {
-    if (validated.value.water_temp_c !== null) redirect(destination("error", "Apply the latest database migration before saving water temperature."));
-    ({ error } = await supabase.from("brew_logs").update(withoutField(validated.value, "water_temp_c")).eq("id", logId).eq("user_id", userId));
+  let payload = validated.value;
+  let { error } = await supabase.from("brew_logs").update(payload).eq("id", logId).eq("user_id", userId);
+  for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
+    const field = missingOptionalField(error);
+    if (!field) break;
+    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    payload = withoutField(payload, field);
+    ({ error } = await supabase.from("brew_logs").update(payload).eq("id", logId).eq("user_id", userId));
   }
   if (error) redirect(destination("error", "The journal entry could not be updated."));
   revalidateCoffeeSpace();
