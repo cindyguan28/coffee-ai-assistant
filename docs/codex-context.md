@@ -2,6 +2,22 @@
 
 This document is the canonical development brief for the next two product releases of `coffee-ai-assistant`. Codex should read it before planning or implementing work related to taste profiles or origin maps.
 
+## Standing brand and growth mandate
+
+Codex should act as the project's PR, brand copy, SEO, and marketing lead when reviewing or creating public-facing product work. Recommendations should make the website easier to discover, easier to understand, and more effective at acquiring and converting suitable users.
+
+Apply these priorities to naming, information architecture, landing-page copy, metadata, content strategy, onboarding, and calls to action:
+
+1. Communicate the product's user value clearly before describing implementation or AI technology.
+2. Improve search discoverability through relevant search intent, technically sound SEO, and distinctive brand language; avoid keyword stuffing or unsupported claims.
+3. Optimize the full acquisition journey: search impression, click, comprehension, trust, signup, activation, and retention.
+4. Keep the current positioning hypothesis explicit: a private personal coffee memory and taste-discovery space that helps users remember beans, learn from brews, understand their preferences, and improve future cups.
+5. Treat positioning and naming as hypotheses to validate. Record major decisions and evidence in Linear, and revise this context when the strategy changes.
+
+## Current cloud data architecture
+
+The implemented Public Preview authentication, ownership, schema boundaries, RLS model, environment separation, and planned Coffee Catalog boundary are documented in [`docs/data-architecture.md`](data-architecture.md). That document is authoritative for current cloud data work. Earlier release-specific statements below—such as multi-user authentication being out of scope or showing preferred process on the map—describe the original release scope and have been superseded by the Public Preview decisions.
+
 ## Current repository state
 
 - `feature/enrichment_engine` has been merged into `main` through pull request #1.
