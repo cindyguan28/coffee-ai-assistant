@@ -130,7 +130,14 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
       {error ? (
         <div className="auth-notice">Apply the latest Supabase migration before adding coffee data.</div>
       ) : (
-        <div className="beans-layout">
+        <div className="beans-layout beans-workspace">
+          <details key={editingBean?.id ?? (beans.length ? "add-bean" : "first-bean")} className="bean-composer" open={Boolean(editingBean) || !beans.length}>
+            <summary>
+              <span>{editingBean ? "EDITING BEAN" : "NEW BEAN"}</span>
+              <strong>{editingBean ? `Edit ${editingBean.name}` : "Add a coffee"}</strong>
+              <small>{editingBean ? "Update its details and profile" : "Open only when you need it"}</small>
+              <i aria-hidden="true">+</i>
+            </summary>
           <form key={editingBean?.id ?? "new-bean"} className="bean-form" action={editingBean ? updateBean : addBean}>
             <h2>{editingBean ? `Edit ${editingBean.name}` : "Add a coffee"}</h2>
             <p>Choose a suggestion or type your own. Only the coffee name is required.</p>
@@ -195,6 +202,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               {editingBean && <Link className="text-link" href="/space/beans">Cancel</Link>}
             </div>
           </form>
+          </details>
 
           <div className="bean-list">
             <span>{beans.length} COFFEES</span>
