@@ -202,6 +202,19 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .bean-delete { background: transparent; border: 0; border-bottom: 1px solid; padding: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }
 .bean-actions { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+.bean-profile { background: var(--paper); border: 1px solid var(--line); padding: 18px; margin: 18px 0; }
+.bean-profile-heading { display: flex; align-items: start; justify-content: space-between; gap: 15px; }
+.bean-profile span { color: var(--coffee); font-size: 8px; letter-spacing: .15em; font-weight: 800; }
+.bean-profile h3 { font: 500 21px var(--font-serif), serif; margin: 5px 0 12px; }
+.bean-profile-heading button { border: 0; border-bottom: 1px solid; background: transparent; color: var(--coffee); cursor: pointer; padding: 4px 0; font-size: 9px; }
+.bean-profile dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin: 0 0 14px; }
+.bean-profile dl div { background: var(--paper); padding: 10px; }
+.bean-profile dt { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.bean-profile dd { margin: 4px 0 0; color: var(--coffee-dark); font: 500 16px var(--font-serif), serif; text-transform: capitalize; }
+.bean-profile p { line-height: 1.5; margin: 8px 0 0; }
+.bean-profile p b { color: var(--ink); }
+.bean-profile-missing { border-style: dashed; }
+.bean-profile-missing .button { display: inline-block; margin-top: 13px; }
 .bean-empty { color: var(--muted); padding: 35px 0; }
 .brew-numbers, .sensory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
 .sensory-grid { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
