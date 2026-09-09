@@ -17,6 +17,14 @@ function revalidateCoffeeSpace() {
   revalidatePath("/space/world");
 }
 
+function missingColumn(error: { code?: string; message?: string } | null, column: string) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes(column)));
+}
+
+function withoutField(value: Record<string, string | number | null>, field: string) {
+  return Object.fromEntries(Object.entries(value).filter(([key]) => key !== field));
+}
+
 async function ownedBeanExists(beanId: string, userId: string) {
   const supabase = await createClient();
   const { data } = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
@@ -47,7 +55,11 @@ export async function addBrewLog(formData: FormData) {
   if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
-  const { error } = await supabase.from("brew_logs").insert({ ...validated.value, user_id: userId });
+  let { error } = await supabase.from("brew_logs").insert({ ...validated.value, user_id: userId });
+  if (missingColumn(error, "water_temp_c")) {
+    if (validated.value.water_temp_c !== null) redirect(destination("error", "Apply the latest database migration before saving water temperature."));
+    ({ error } = await supabase.from("brew_logs").insert({ ...withoutField(validated.value, "water_temp_c"), user_id: userId }));
+  }
   if (error) redirect(destination("error", "The journal entry could not be saved. Try again."));
   revalidateCoffeeSpace();
   redirect(destination("message", "Entry saved to your private Brew Journal."));
@@ -62,7 +74,11 @@ export async function updateBrewLog(formData: FormData) {
   if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
-  const { error } = await supabase.from("brew_logs").update(validated.value).eq("id", logId).eq("user_id", userId);
+  let { error } = await supabase.from("brew_logs").update(validated.value).eq("id", logId).eq("user_id", userId);
+  if (missingColumn(error, "water_temp_c")) {
+    if (validated.value.water_temp_c !== null) redirect(destination("error", "Apply the latest database migration before saving water temperature."));
+    ({ error } = await supabase.from("brew_logs").update(withoutField(validated.value, "water_temp_c")).eq("id", logId).eq("user_id", userId));
+  }
   if (error) redirect(destination("error", "The journal entry could not be updated."));
   revalidateCoffeeSpace();
   redirect(destination("message", "Journal entry updated."));
