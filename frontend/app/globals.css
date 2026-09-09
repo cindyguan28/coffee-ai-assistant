@@ -276,6 +276,48 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .brew-next { display: flex; align-items: baseline; gap: 8px; margin-top: 12px; text-transform: capitalize; }
 .brew-actions { border-top: 1px solid var(--line); display: flex; gap: 16px; align-items: center; margin-top: 18px; padding-top: 14px; }
 .brew-actions a { color: var(--coffee); font-size: 10px; border-bottom: 1px solid; }
+.brews-page { width: min(1180px, calc(100% - 48px)); }
+.journal-workspace { display: grid; gap: 18px; }
+.journal-composer { border: 1px solid var(--line); background: var(--cream); }
+.journal-composer > summary { align-items: center; cursor: pointer; display: grid; grid-template-columns: 100px 1fr auto; gap: 18px; list-style: none; padding: 18px 24px; }
+.journal-composer > summary::-webkit-details-marker { display: none; }
+.journal-composer > summary span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .14em; }
+.journal-composer > summary b { font: 500 22px var(--font-serif), serif; }
+.journal-composer > summary small { color: var(--muted); font-size: 10px; }
+.journal-composer[open] > summary { border-bottom: 1px solid var(--line); }
+.journal-composer .brew-form { border: 0; margin: 0 auto; max-width: 760px; }
+.journal-history { display: grid; gap: 18px; margin-top: 18px; }
+.journal-controls { align-items: end; display: grid; grid-template-columns: minmax(240px, 1fr) 180px; gap: 12px; }
+.journal-controls label { display: grid; gap: 6px; }
+.journal-controls label > span { color: var(--muted); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.journal-controls input, .journal-controls select { border: 1px solid var(--line); background: var(--paper); padding: 11px 12px; width: 100%; }
+.journal-result-count { color: var(--muted); font-size: 9px; margin: -7px 0 0; }
+.journal-group { border: 1px solid var(--line); background: var(--cream); }
+.journal-group > header { align-items: end; display: flex; justify-content: space-between; gap: 25px; padding: 22px 24px 16px; }
+.journal-group > header span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.journal-group > header h2 { font-size: 29px; margin-top: 4px; }
+.journal-group > header p { color: var(--muted); font-size: 9px; margin: 0; text-align: right; }
+.journal-rows { border-top: 1px solid var(--line); }
+.journal-row + .journal-row { border-top: 1px solid var(--line); }
+.journal-row-summary { align-items: center; background: transparent; border: 0; color: var(--ink); cursor: pointer; display: grid; gap: 16px; grid-template-columns: 100px repeat(3, minmax(85px, 1fr)) 92px 20px; padding: 14px 24px; text-align: left; width: 100%; }
+.journal-row-summary.has-bean { grid-template-columns: 100px minmax(130px, 1.35fr) repeat(3, minmax(80px, 1fr)) 92px 20px; }
+.journal-row-summary:hover { background: var(--paper-deep); }
+.journal-row-summary > span { display: grid; gap: 3px; min-width: 0; }
+.journal-row-summary small { color: var(--muted); font-size: 8px; font-weight: 400; text-transform: none; }
+.journal-row-summary b { font-size: 11px; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; white-space: nowrap; }
+.journal-row-date { color: var(--muted); font-size: 10px; }
+.journal-row-score { text-align: right; }
+.journal-row-score b { color: var(--coffee); font: 500 20px var(--font-serif), serif; }
+.journal-row-score small { color: var(--coffee); font-size: 7px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.journal-row-summary i { color: var(--coffee); font-size: 18px; font-style: normal; text-align: right; }
+.journal-row-details { background: var(--paper); border-top: 1px solid var(--line); padding: 18px 24px; }
+.journal-row-details > dl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); margin: 0; }
+.journal-row-details > dl div { background: var(--paper); padding: 10px; }
+.journal-row-details dt { color: var(--muted); font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
+.journal-row-details dd { font: 500 14px var(--font-serif), serif; margin: 4px 0 0; text-transform: capitalize; }
+.journal-no-results { border: 1px dashed var(--line); padding: 38px; text-align: center; }
+.journal-no-results h2 { font-size: 25px; }
+.journal-no-results p { color: var(--muted); font-size: 11px; }
 .taste-layout { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(320px, 1.1fr); gap: 70px; align-items: center; }
 .radar-wrap { background: var(--cream); border: 1px solid var(--line); padding: 30px; }
 .taste-radar { width: 100%; overflow: visible; }
@@ -354,6 +396,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .beans-layout { grid-template-columns: 1fr; }
   .brew-numbers { grid-template-columns: repeat(2, 1fr); }
   .brew-facts { grid-template-columns: repeat(2, 1fr); }
+  .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: 86px minmax(100px, 1fr) repeat(3, minmax(68px, .8fr)) 80px 18px; gap: 9px; padding-inline: 16px; }
   .taste-layout { grid-template-columns: 1fr; gap: 35px; }
   .flavor-families > div { grid-template-columns: repeat(2, 1fr); }
   .world-toolbar { align-items: start; flex-direction: column; gap: 18px; }
@@ -367,6 +410,15 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .space-preview { padding: 18px; }
   .now-card { grid-template-columns: 92px 1fr; gap: 15px; }
   .bean-reference-grid { grid-template-columns: 1fr; gap: 12px; }
+  .journal-controls { grid-template-columns: 1fr; }
+  .journal-composer > summary { grid-template-columns: 1fr; gap: 5px; }
+  .journal-composer > summary small { display: none; }
+  .journal-group > header { align-items: start; flex-direction: column; gap: 7px; }
+  .journal-group > header p { text-align: left; }
+  .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: repeat(2, 1fr); position: relative; padding-right: 36px; }
+  .journal-row-summary > i { position: absolute; right: 16px; top: 15px; }
+  .journal-row-score { text-align: left; }
+  .journal-row-details > dl { grid-template-columns: repeat(2, 1fr); }
   .bag { width: 84px; height: 122px; }
   .preview-topline h2 { font-size: 20px; }
   .footer { align-items: flex-start; gap: 22px; flex-direction: column; }

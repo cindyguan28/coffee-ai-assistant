@@ -11,11 +11,13 @@ import {
   TASTE_RESULT_OPTIONS,
   type GuidedOption,
 } from "../../../lib/coffee/brew-options";
+import type { JournalEntry } from "../../../lib/coffee/journal";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
+import { JournalHistory } from "../../components/journal-history";
 import { RangeField } from "../../components/range-field";
 import { SubmitButton } from "../../components/submit-button";
-import { addBrewLog, deleteBrewLog, updateBrewLog, updateEquipment } from "./actions";
+import { addBrewLog, updateBrewLog, updateEquipment } from "./actions";
 
 type PageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
 type Log = Record<string, string | number | null>;
@@ -26,14 +28,6 @@ function options(items: GuidedOption[], current?: string) {
     ? [{ value: current, label: current.replaceAll("_", " ") }]
     : [];
   return [...legacy, ...items].map((option) => <option key={option.value} value={option.value}>{option.label}</option>);
-}
-
-function display(value: string | number | null | undefined) {
-  return String(value ?? "").replaceAll("_", " ");
-}
-
-function isPresent(value: string | number | null | undefined) {
-  return value !== null && value !== undefined && value !== "";
 }
 
 export const dynamic = "force-dynamic";
@@ -71,9 +65,8 @@ export default async function BrewsPage({ searchParams }: PageProps) {
       {beansResult.error || logsResult.error ? <div className="auth-notice">Apply the Supabase migration to activate your private journal.</div> : !beansResult.data?.length ? (
         <div className="space-first-step"><h2>Add a Bean before creating a journal entry.</h2><Link className="button button-primary" href="/space/beans">Add a coffee ↗</Link></div>
       ) : (
-        <div className="beans-layout">
-          <div className="journal-entry-column">
-            <section className="equipment-card">
+        <div className="journal-workspace">
+          <section className="equipment-card">
               <div><span>MY EQUIPMENT</span><h2>{equipment?.default_machine_model || "Save your machine once"}</h2><p>{[equipment?.default_grinder_type, profileResult.data?.default_brew_method].filter(Boolean).map((item) => String(item).replaceAll("_", " ")).join(" · ") || "It will be attached to new journal entries automatically."}</p></div>
               {legacyEquipmentResult?.error ? <p>Apply the latest database migration to save equipment defaults.</p> : <details open={!equipment?.default_machine_model}><summary>{equipment?.default_machine_model ? "Edit equipment" : "Add equipment"}</summary><form action={updateEquipment}>
                 <label htmlFor="default_machine_model">Machine</label><input id="default_machine_model" name="default_machine_model" defaultValue={equipment?.default_machine_model ?? ""} placeholder="e.g. Sage Barista Express" />
@@ -82,7 +75,9 @@ export default async function BrewsPage({ searchParams }: PageProps) {
                 {profileResult.error && <small>Apply the newest migration before saving a usual brew method.</small>}
                 <SubmitButton pendingLabel="Saving equipment…">Save equipment</SubmitButton>
               </form></details>}
-            </section>
+          </section>
+          <details className="journal-composer" id="journal-composer" open={Boolean(editing) || !logs.length}>
+            <summary><span>{editing ? "EDITING ENTRY" : "NEW ENTRY"}</span><b>{editing ? "Edit journal entry" : "+ Add journal entry"}</b><small>{editing ? "Update this recipe" : "Open the compact composer"}</small></summary>
             <form className="bean-form brew-form" action={editing ? updateBrewLog : addBrewLog}>
             <h2>{editing ? "Edit journal entry" : "Add journal entry"}</h2>
             <p>Choose the coffee, record its grind setting, then describe the cup. Everything under Recipe details is optional.</p>
@@ -142,33 +137,8 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             <SubmitButton pendingLabel={editing ? "Updating entry…" : "Saving entry…"}>{editing ? "Update entry" : "Save to journal"}</SubmitButton>
             {editing && <Link className="auth-back" href="/space/brews">Cancel editing</Link>}
             </form>
-          </div>
-          <div className="bean-list"><span>{logs.length} JOURNAL ENTRIES</span>
-            {logs.map((log) => {
-              const facts = [
-                ["Grind", log.grind_setting],
-                ["Method", log.brew_method],
-                ["Water", isPresent(log.water_temp_c) ? `${log.water_temp_c}°C` : null],
-                ["Machine", log.machine_model],
-                ["Grinder", log.grinder_type],
-                ["Dose", isPresent(log.default_dose_g) ? `${log.default_dose_g} g` : null],
-                ["Yield", isPresent(log.espresso_volume_ml) ? `${log.espresso_volume_ml} ml` : null],
-                ["Time", isPresent(log.extraction_time_sec) ? `${log.extraction_time_sec} sec` : null],
-              ].filter((fact) => isPresent(fact[1]));
-              const problems = display(log.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
-              return <article className="bean-item brew-item" key={String(log.id)}>
-                <div className="brew-item-heading"><div><span>{display(log.brew_date)}</span><h2>{log.beans?.name || "Coffee"}</h2><p>{log.beans?.roaster || "Your recipe"}</p></div><strong>{String(log.score)}/10</strong></div>
-                <dl className="brew-facts">
-                  {facts.map(([label, fact]) => <div key={String(label)}><dt>{label}</dt><dd>{display(fact)}</dd></div>)}
-                </dl>
-                {(log.taste_result || log.notes) && <div className="brew-observation">{log.taste_result && <b>{display(log.taste_result)}</b>}{log.notes && <p>{String(log.notes)}</p>}</div>}
-                {problems.length > 0 && <div className="brew-problems"><span>Observed</span>{problems.map((problem) => <b key={problem}>{display(problem)}</b>)}</div>}
-                {log.next_adjustment && <p className="brew-next"><span>Next time</span>{display(log.next_adjustment)}</p>}
-                <div className="brew-actions"><Link href={`/space/brews?edit=${log.id}`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={String(log.id)} /><button className="bean-delete" type="submit">Remove</button></form></div>
-              </article>;
-            })}
-            {!logs.length && <p className="bean-empty">Your first entry only needs a Bean, date, grind setting, and liking score.</p>}
-          </div>
+          </details>
+          {logs.length ? <JournalHistory entries={logs as unknown as JournalEntry[]} /> : <p className="bean-empty">Your first entry only needs a Bean, date, grind setting, and liking score.</p>}
         </div>
       )}
     </section>
