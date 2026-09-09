@@ -13,6 +13,7 @@ import {
 } from "../../../lib/coffee/options";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
+import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
 import { SubmitButton } from "../../components/submit-button";
 import { addBean, deleteBean, regenerateBeanProfile, updateBean } from "./actions";
 
@@ -176,17 +177,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               <div><label htmlFor="package_weight_g">Package size (g)</label><input id="package_weight_g" name="package_weight_g" type="number" min="1" step="1" defaultValue={editingBean?.package_weight_g ?? ""} placeholder="e.g. 250" /></div>
             </div>
 
-            <fieldset className="option-fieldset">
-              <legend>Flavor labels <span>Optional</span></legend>
-              <div className="option-chips">
-                {FLAVOR_OPTIONS.map((option) => (
-                  <label key={option} className="option-chip">
-                    <input type="checkbox" name="flavor_notes" value={option} defaultChecked={flavors.has(option.toLowerCase())} />
-                    <span>{option}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <SearchableFlavorPicker options={FLAVOR_OPTIONS} initialSelected={FLAVOR_OPTIONS.filter((option) => flavors.has(option.toLowerCase()))} />
             <label htmlFor="custom_flavor_notes">Other flavors</label>
             <input id="custom_flavor_notes" name="custom_flavor_notes" defaultValue={customFlavors} placeholder="Comma-separated, e.g. white tea, nougat" />
 
