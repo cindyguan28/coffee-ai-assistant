@@ -265,11 +265,13 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-profile-missing { border-style: dashed; }
 .bean-profile-missing .button { display: inline-block; margin-top: 13px; }
 .bean-empty { color: var(--muted); padding: 35px 0; }
-.brew-numbers, .sensory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.brew-numbers, .sensory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 9px; }
 .sensory-grid { grid-template-columns: repeat(3, 1fr); margin-bottom: 12px; }
 .brew-numbers label, .sensory-grid label, .brew-details > label { display: grid; }
 .brew-details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
 .brew-details summary { color: var(--coffee); font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+.brew-details-help { color: var(--muted); font-size: 9px; line-height: 1.45; margin: 0 0 12px; }
+.contextual-fields { background: var(--paper-deep); border-left: 3px solid var(--coffee); margin-top: 14px; padding: 6px 14px 14px; }
 .brew-form small { color: var(--muted); font-size: 9px; font-weight: 400; line-height: 1.4; }
 .sensory-fieldset > p { color: var(--muted); font-size: 10px; margin: 0 0 12px; }
 .sensory-sliders { display: grid; gap: 8px; }
@@ -379,6 +381,18 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .flavor-families article { background: var(--cream); border: 1px solid var(--line); padding: 18px; }
 .flavor-families h3 { font: 500 20px var(--font-serif), serif; margin: 0 0 8px; }
 .flavor-families article p { color: var(--muted); font-size: 10px; margin: 0; }
+.automatic-preference { background: var(--cream); border: 1px solid var(--line); display: grid; gap: 18px; margin-top: 54px; padding: clamp(22px, 4vw, 38px); }
+.automatic-preference > span { color: var(--coffee); font-size: 9px; font-weight: 800; letter-spacing: .15em; }
+.automatic-preference h2 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 7px; }
+.automatic-preference p, .automatic-preference > small { color: var(--muted); font-size: 10px; line-height: 1.55; margin: 0; }
+.automatic-preference dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 0; }
+.automatic-preference dl div { min-width: 0; }
+.automatic-preference dt { font-size: 10px; font-weight: 700; }
+.automatic-preference dd { color: var(--coffee); font: 500 20px var(--font-serif), serif; margin: 5px 0; }
+.automatic-preference progress { appearance: none; border: 0; display: block; height: 6px; width: 100%; }
+.automatic-preference progress::-webkit-progress-bar { background: var(--paper-deep); }
+.automatic-preference progress::-webkit-progress-value { background: var(--coffee); }
+.automatic-preference progress::-moz-progress-bar { background: var(--coffee); }
 .world-page { width: min(1100px, calc(100% - 48px)); }
 .world-toolbar { display: flex; align-items: end; justify-content: space-between; margin: 48px 0 18px; }
 .world-toolbar span, .country-detail span { color: var(--coffee); font-size: 9px; letter-spacing: .15em; font-weight: 800; }
@@ -496,6 +510,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .journal-row-summary > i { position: absolute; right: 16px; top: 15px; }
   .journal-row-score { text-align: left; }
   .journal-row-details > dl { grid-template-columns: repeat(2, 1fr); }
+  .automatic-preference dl { grid-template-columns: 1fr; gap: 12px; }
   .bag { width: 84px; height: 122px; }
   .preview-topline h2 { font-size: 20px; }
   .footer { align-items: flex-start; gap: 22px; flex-direction: column; }

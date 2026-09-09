@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateFlavorFamilies, calculateTasteProfile, explainTasteDimension } from "./taste";
+import { calculateAutomaticBeanPreference, calculateFlavorFamilies, calculateTasteProfile, explainTasteDimension, sensoryCoverage } from "./taste";
 
 describe("calculateTasteProfile", () => {
   it("matches the liking-weighted Python behavior", () => {
@@ -35,4 +35,23 @@ describe("explainTasteDimension", () => {
     expect(explainTasteDimension("acidity", 3)).toContain("soft (1) to bright (5)");
   });
   it("handles missing ratings", () => expect(explainTasteDimension("aroma", null)).toContain("Not enough"));
+});
+
+describe("automatic Bean preference", () => {
+  it("weights only available Bean Profile dimensions by liking", () => {
+    const result = calculateAutomaticBeanPreference([
+      { score: 6, bean_profile: { predicted_acidity: 1, predicted_sweetness: 2, predicted_body: 3 } },
+      { score: 9, bean_profile: { predicted_acidity: 5, predicted_sweetness: 4, predicted_body: 2 } },
+    ]);
+    expect(result.dimensions).toEqual({ acidity: 4.2, sweetness: 3.6, body: 2.2 });
+    expect(result.contributingBrews).toBe(2);
+  });
+
+  it("does not fabricate unavailable dimensions", () => {
+    expect(calculateAutomaticBeanPreference([{ score: 9, bean_profile: null }]).dimensions).toEqual({ acidity: null, sweetness: null, body: null });
+  });
+
+  it("describes sensory coverage without implying statistical certainty", () => {
+    expect([sensoryCoverage(1), sensoryCoverage(4), sensoryCoverage(8)]).toEqual(["Early", "Growing", "Established"]);
+  });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateBrewLog } from "./brew";
+import { brewFieldVisibility, validateBrewLog } from "./brew";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -65,5 +65,20 @@ describe("validateBrewLog", () => {
       milk_type: "barista_oat_milk",
       milk_pairing: "excellent_match",
     });
+  });
+});
+
+describe("brewFieldVisibility", () => {
+  it("shows milk only for milk drinks or an existing milk record", () => {
+    expect(brewFieldVisibility("espresso_machine", "espresso").milk).toBe(false);
+    expect(brewFieldVisibility("espresso_machine", "cappuccino").milk).toBe(true);
+    expect(brewFieldVisibility("espresso_machine", "espresso", true).milk).toBe(true);
+  });
+
+  it("shows water for manual methods and omits automatic dose unless already recorded", () => {
+    expect(brewFieldVisibility("v60", "filter_coffee")).toMatchObject({ water: true, dose: true });
+    expect(brewFieldVisibility("espresso_machine", "espresso").water).toBe(false);
+    expect(brewFieldVisibility("automatic_machine", "espresso").dose).toBe(false);
+    expect(brewFieldVisibility("automatic_machine", "espresso", false, true).dose).toBe(true);
   });
 });
