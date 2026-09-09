@@ -67,20 +67,3 @@ export function buildCoffeeSummary(bean: CoffeeSummaryInput) {
     flavors: notes.slice(0, 4).map(display),
   };
 }
-
-export function preparationFor(method: string | null | undefined, recommendedTemp?: string | null) {
-  const value = clean(method);
-  if (!value) return null;
-  const temp = recommendedTemp && recommendedTemp !== "unknown" ? `${recommendedTemp}°C` : null;
-  const guidance: Record<string, { label: string; details: Array<string | null> }> = {
-    espresso_machine: { label: "Espresso machine", details: ["Start around 1:2", temp] },
-    automatic_machine: { label: "Automatic machine", details: ["Use your saved machine program"] },
-    v60: { label: "V60", details: ["Start around 1:16", temp] },
-    aeropress: { label: "AeroPress", details: ["Start around 1:14", temp] },
-    french_press: { label: "French press", details: ["Start around 1:15", temp] },
-    moka_pot: { label: "Moka pot", details: ["Fill the basket level; do not tamp"] },
-    other: { label: "Your usual method", details: [] },
-  };
-  const result = guidance[value];
-  return result ? { ...result, details: result.details.filter((detail): detail is string => Boolean(detail)) } : null;
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bestEntryId, filterJournalEntries, groupJournalEntries, type JournalEntry } from "./journal";
+import { bestEntryId, filterJournalEntries, groupJournalEntries, showsWaterTemperature, type JournalEntry } from "./journal";
 
 const entries: JournalEntry[] = [
   { id: "a1", bean_id: "a", brew_date: "2026-09-09", score: 7, brew_method: "espresso_machine", notes: "Too bitter", beans: { name: "Halo", roaster: "The Barn" } },
@@ -27,5 +27,14 @@ describe("journal organization", () => {
 
   it("selects the highest-rated recipe", () => {
     expect(bestEntryId(entries.slice(0, 2))).toBe("a2");
+  });
+
+  it("treats water temperature as a primary fact only for manual methods", () => {
+    expect(showsWaterTemperature("v60")).toBe(true);
+    expect(showsWaterTemperature("AeroPress")).toBe(true);
+    expect(showsWaterTemperature("french press")).toBe(true);
+    expect(showsWaterTemperature("espresso_machine")).toBe(false);
+    expect(showsWaterTemperature("automatic_machine")).toBe(false);
+    expect(showsWaterTemperature(null)).toBe(false);
   });
 });

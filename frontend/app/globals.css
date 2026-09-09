@@ -234,10 +234,6 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-reference progress::-webkit-progress-value { background: var(--coffee); }
 .bean-reference progress::-moz-progress-bar { background: var(--coffee); }
 .bean-reference small { color: var(--muted); font-size: 9px; text-transform: capitalize; }
-.bean-preparation { background: var(--paper-deep); margin-top: 16px; padding: 13px; }
-.bean-preparation > span { font-size: 7px; }
-.bean-preparation h4 { font: 500 18px var(--font-serif), serif; margin: 5px 0 0; }
-.bean-preparation p { color: var(--muted); font-size: 10px; }
 .bean-profile dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); margin: 0 0 14px; }
 .bean-profile dl div { background: var(--paper); padding: 10px; }
 .bean-profile dt { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
@@ -299,8 +295,10 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .journal-group > header p { color: var(--muted); font-size: 9px; margin: 0; text-align: right; }
 .journal-rows { border-top: 1px solid var(--line); }
 .journal-row + .journal-row { border-top: 1px solid var(--line); }
-.journal-row-summary { align-items: center; background: transparent; border: 0; color: var(--ink); cursor: pointer; display: grid; gap: 16px; grid-template-columns: 100px repeat(3, minmax(85px, 1fr)) 92px 20px; padding: 14px 24px; text-align: left; width: 100%; }
-.journal-row-summary.has-bean { grid-template-columns: 100px minmax(130px, 1.35fr) repeat(3, minmax(80px, 1fr)) 92px 20px; }
+.journal-row-summary { align-items: center; background: transparent; border: 0; color: var(--ink); cursor: pointer; display: grid; gap: 16px; grid-template-columns: 100px repeat(2, minmax(85px, 1fr)) 92px 20px; padding: 14px 24px; text-align: left; width: 100%; }
+.journal-row-summary.has-water { grid-template-columns: 100px repeat(3, minmax(85px, 1fr)) 92px 20px; }
+.journal-row-summary.has-bean { grid-template-columns: 100px minmax(130px, 1.35fr) repeat(2, minmax(80px, 1fr)) 92px 20px; }
+.journal-row-summary.has-bean.has-water { grid-template-columns: 100px minmax(130px, 1.35fr) repeat(3, minmax(80px, 1fr)) 92px 20px; }
 .journal-row-summary:hover { background: var(--paper-deep); }
 .journal-row-summary > span { display: grid; gap: 3px; min-width: 0; }
 .journal-row-summary small { color: var(--muted); font-size: 8px; font-weight: 400; text-transform: none; }
@@ -396,7 +394,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .beans-layout { grid-template-columns: 1fr; }
   .brew-numbers { grid-template-columns: repeat(2, 1fr); }
   .brew-facts { grid-template-columns: repeat(2, 1fr); }
-  .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: 86px minmax(100px, 1fr) repeat(3, minmax(68px, .8fr)) 80px 18px; gap: 9px; padding-inline: 16px; }
+  .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: 86px minmax(100px, 1fr) repeat(2, minmax(68px, .8fr)) 80px 18px; gap: 9px; padding-inline: 16px; }
+  .journal-row-summary.has-water, .journal-row-summary.has-bean.has-water { grid-template-columns: 86px minmax(100px, 1fr) repeat(3, minmax(68px, .8fr)) 80px 18px; }
   .taste-layout { grid-template-columns: 1fr; gap: 35px; }
   .flavor-families > div { grid-template-columns: repeat(2, 1fr); }
   .world-toolbar { align-items: start; flex-direction: column; gap: 18px; }

@@ -9,7 +9,7 @@ import {
   ROASTER_OPTIONS,
   ROAST_LEVEL_OPTIONS,
 } from "../../../lib/coffee/options";
-import { buildCoffeeSummary, preparationFor } from "../../../lib/coffee/summary";
+import { buildCoffeeSummary } from "../../../lib/coffee/summary";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
@@ -85,15 +85,11 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const [withPackageWeight, preferenceResult, methodHistoryResult] = await Promise.all([
-    supabase
-      .from("beans")
-      .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
-      .eq("user_id", userId!)
-      .order("created_at", { ascending: false }),
-    supabase.from("user_profiles").select("default_brew_method").eq("user_id", userId!).maybeSingle(),
-    supabase.from("brew_logs").select("brew_method").eq("user_id", userId!).not("brew_method", "is", null).limit(50),
-  ]);
+  const withPackageWeight = await supabase
+    .from("beans")
+    .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
+    .eq("user_id", userId!)
+    .order("created_at", { ascending: false });
   const legacy = missingPackageWeight(withPackageWeight.error)
     ? await supabase
       .from("beans")
@@ -116,13 +112,6 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
   const roasters = mergeOptions(ROASTER_OPTIONS, beans.map((bean) => bean.roaster));
   const countries = mergeOptions(COUNTRY_OPTIONS, beans.map((bean) => bean.country));
   const processes = mergeOptions(PROCESS_OPTIONS, beans.map((bean) => bean.process));
-  const methodCounts = new Map<string, number>();
-  for (const log of methodHistoryResult.data ?? []) {
-    if (log.brew_method) methodCounts.set(log.brew_method, (methodCounts.get(log.brew_method) ?? 0) + 1);
-  }
-  const historyMethod = [...methodCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-  const preferredMethod = preferenceResult.data?.default_brew_method ?? historyMethod;
-
   return (
     <section className="space-welcome beans-page">
       <p className="kicker"><span /> Your shelf</p>
@@ -204,7 +193,6 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               const profile = beanProfile(bean);
               const price = bean.price === null ? null : `${Number(bean.price).toFixed(2)}`;
               const summary = buildCoffeeSummary({ ...bean, ...profile });
-              const preparation = preparationFor(preferredMethod, profile?.recommended_temp);
               return (
                 <article className={`bean-item${bean.id === editingBean?.id ? " is-editing" : ""}`} key={bean.id}>
                   <div><h2>{bean.name}</h2><p>{[bean.roaster, bean.country].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
@@ -219,7 +207,6 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
                       ].map(({ label, scale }) => <div className="bean-reference" key={label}><div><dt>{label}</dt><dd>{scale.score ? `${scale.score}/5` : "—"}</dd></div><progress max="5" value={scale.score ?? 0} /><small>{scale.label}</small></div>)}
                     </div>
                     {summary.flavors.length > 0 && <p><b>Main flavors:</b> {summary.flavors.join(" · ")}</p>}
-                    {preparation && <div className="bean-preparation"><span>FOR YOUR USUAL SETUP</span><h4>{preparation.label}</h4>{preparation.details.length > 0 && <p>{preparation.details.join(" · ")}</p>}</div>}
                   </section> : <section className="bean-profile bean-profile-missing"><span>BEAN PROFILE</span><h3>Profile not generated yet</h3><p>Your Bean is safe. Generate its Roast, Intensity, Acidity and main flavors.</p><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button className="button button-primary" type="submit">Generate profile</button></form></section>}
                   {(price || bean.package_weight_g) && <p>{[price && `Price ${price}`, bean.package_weight_g && `${bean.package_weight_g} g`].filter(Boolean).join(" · ")}</p>}
                   <div className="bean-actions">

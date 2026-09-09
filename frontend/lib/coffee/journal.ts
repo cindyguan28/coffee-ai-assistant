@@ -23,6 +23,12 @@ export type JournalEntry = {
 
 export type JournalGroupMode = "bean" | "date" | "all";
 
+const WATER_RELEVANT_METHODS = new Set(["v60", "aeropress", "french_press"]);
+
+export function showsWaterTemperature(method: string | null | undefined) {
+  return WATER_RELEVANT_METHODS.has(String(method ?? "").trim().toLowerCase().replaceAll("-", "_").replaceAll(" ", "_"));
+}
+
 export type JournalGroup = {
   key: string;
   label: string;
