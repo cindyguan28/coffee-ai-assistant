@@ -216,6 +216,10 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-item { background: var(--cream); border: 1px solid var(--line); padding: 24px; position: relative; }
 .bean-item.is-editing { border-color: var(--coffee); }
 .bean-item > div:first-child { display: flex; justify-content: space-between; }
+.bean-purchase-facts { display: flex; gap: 22px; margin: 14px 0 0; }
+.bean-purchase-facts div { display: grid; gap: 3px; }
+.bean-purchase-facts dt { color: var(--muted); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+.bean-purchase-facts dd { color: var(--coffee-dark); font: 500 17px var(--font-serif), serif; margin: 0; }
 .bean-tags { display: flex; gap: 8px; margin: 16px 0; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .bean-delete { background: transparent; border: 0; border-bottom: 1px solid; padding: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }

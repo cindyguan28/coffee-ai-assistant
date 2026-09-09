@@ -40,6 +40,9 @@ export async function addBean(formData: FormData) {
   const supabase = await createClient();
   let { data, error } = await supabase.from("beans").insert(bean).select("id").single();
   if (missingPackageWeight(error)) {
+    if (validation.value.package_weight_g !== null) {
+      redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
+    }
     ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(bean)).select("id").single());
   }
   if (error || !data) redirect(message("error", "The bean could not be saved. Try again."));
@@ -71,6 +74,9 @@ export async function updateBean(formData: FormData) {
     .select("id")
     .single();
   if (missingPackageWeight(error)) {
+    if (validation.value.package_weight_g !== null) {
+      redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
+    }
     ({ data, error } = await supabase
       .from("beans")
       .update(withoutPackageWeight(validation.value))

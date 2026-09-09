@@ -196,6 +196,10 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               return (
                 <article className={`bean-item${bean.id === editingBean?.id ? " is-editing" : ""}`} key={bean.id}>
                   <div><h2>{bean.name}</h2><p>{[bean.roaster, bean.country].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
+                  {(price || bean.package_weight_g) && <dl className="bean-purchase-facts">
+                    {bean.package_weight_g && <div><dt>Package</dt><dd>{Number(bean.package_weight_g).toLocaleString()} g</dd></div>}
+                    {price && <div><dt>Price</dt><dd>{price}</dd></div>}
+                  </dl>}
                   <div className="bean-tags"><span>{summary.profileLabel}</span>{summary.flavors.slice(0, 2).map((flavor) => <span key={flavor}>{flavor}</span>)}</div>
                   {profile ? <section className="bean-profile">
                     <div className="bean-profile-heading"><div><span>AT A GLANCE</span><h3>{summary.profileLabel}</h3></div><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button type="submit">Refresh</button></form></div>
@@ -208,7 +212,6 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
                     </div>
                     {summary.flavors.length > 0 && <p><b>Main flavors:</b> {summary.flavors.join(" · ")}</p>}
                   </section> : <section className="bean-profile bean-profile-missing"><span>BEAN PROFILE</span><h3>Profile not generated yet</h3><p>Your Bean is safe. Generate its Roast, Intensity, Acidity and main flavors.</p><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button className="button button-primary" type="submit">Generate profile</button></form></section>}
-                  {(price || bean.package_weight_g) && <p>{[price && `Price ${price}`, bean.package_weight_g && `${bean.package_weight_g} g`].filter(Boolean).join(" · ")}</p>}
                   <div className="bean-actions">
                     <Link className="bean-edit" href={`/space/beans?edit=${bean.id}`}>Edit</Link>
                     <form action={deleteBean}><input type="hidden" name="beanId" value={bean.id} /><button className="bean-delete" type="submit">Remove</button></form>
