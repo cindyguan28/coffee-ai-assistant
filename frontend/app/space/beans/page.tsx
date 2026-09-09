@@ -10,6 +10,7 @@ import {
   ROAST_LEVEL_OPTIONS,
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
+import { compatibleGuidedValue, normalizeGuidedValue } from "../../../lib/coffee/bean";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
@@ -66,7 +67,12 @@ function mergeOptions(base: readonly string[], saved: Array<string | null>) {
 }
 
 function selectedFlavors(bean?: Bean) {
-  return new Set((bean?.flavor_notes ?? "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean));
+  return new Set((bean?.flavor_notes ?? "").split(",").map(normalizeGuidedValue).filter(Boolean));
+}
+
+function selectOptions(base: readonly string[], saved?: string | null) {
+  const value = compatibleGuidedValue(saved, base);
+  return { value, options: value && !base.includes(value) ? [...base, value] : [...base] };
 }
 
 function beanProfile(bean: Bean) {
@@ -106,8 +112,11 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
   const customFlavors = (editingBean?.flavor_notes ?? "")
     .split(",")
     .map((value) => value.trim())
-    .filter((value) => value && !FLAVOR_OPTIONS.some((option) => option.toLowerCase() === value.toLowerCase()))
+    .filter((value) => value && !FLAVOR_OPTIONS.some((option) => normalizeGuidedValue(option) === normalizeGuidedValue(value)))
     .join(", ");
+  const roast = selectOptions(ROAST_LEVEL_OPTIONS, editingBean?.roast_level);
+  const milkPairing = selectOptions(MILK_COMPATIBILITY_OPTIONS, editingBean?.milk_compatibility);
+  const acidity = selectOptions(ACIDITY_OPTIONS, editingBean?.acidity);
 
   const roasters = mergeOptions(ROASTER_OPTIONS, beans.map((bean) => bean.roaster));
   const countries = mergeOptions(COUNTRY_OPTIONS, beans.map((bean) => bean.country));
@@ -122,7 +131,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
         <div className="auth-notice">Apply the latest Supabase migration before adding coffee data.</div>
       ) : (
         <div className="beans-layout">
-          <form className="bean-form" action={editingBean ? updateBean : addBean}>
+          <form key={editingBean?.id ?? "new-bean"} className="bean-form" action={editingBean ? updateBean : addBean}>
             <h2>{editingBean ? `Edit ${editingBean.name}` : "Add a coffee"}</h2>
             <p>Choose a suggestion or type your own. Only the coffee name is required.</p>
             {editingBean && <input type="hidden" name="beanId" value={editingBean.id} />}
@@ -150,21 +159,21 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
             <div className="bean-form-row">
               <div>
                 <label htmlFor="roast_level">Roast</label>
-                <select id="roast_level" name="roast_level" defaultValue={editingBean?.roast_level ?? ""}>
+                <select id="roast_level" name="roast_level" defaultValue={roast.value}>
                   <option value="">Not sure</option>
-                  {ROAST_LEVEL_OPTIONS.map((option) => <option key={option}>{option}</option>)}
+                  {roast.options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="milk_compatibility">Milk pairing</label>
-                <select id="milk_compatibility" name="milk_compatibility" defaultValue={editingBean?.milk_compatibility ?? ""}>
+                <select id="milk_compatibility" name="milk_compatibility" defaultValue={milkPairing.value}>
                   <option value="">Not specified</option>
-                  {MILK_COMPATIBILITY_OPTIONS.map((option) => <option key={option}>{option}</option>)}
+                  {milkPairing.options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
                 </select>
               </div>
             </div>
 
-            <label htmlFor="acidity">Expected acidity</label><select id="acidity" name="acidity" defaultValue={editingBean?.acidity ?? ""}><option value="">Optional</option>{ACIDITY_OPTIONS.map((option) => <option key={option}>{option}</option>)}</select>
+            <label htmlFor="acidity">Expected acidity</label><select id="acidity" name="acidity" defaultValue={acidity.value}><option value="">Optional</option>{acidity.options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}</select>
             <input type="hidden" name="body" value={editingBean?.body ?? ""} />
             <input type="hidden" name="sweetness" value={editingBean?.sweetness ?? ""} />
 
@@ -173,7 +182,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               <div><label htmlFor="package_weight_g">Package size (g)</label><input id="package_weight_g" name="package_weight_g" type="number" min="1" step="1" defaultValue={editingBean?.package_weight_g ?? ""} placeholder="e.g. 250" /></div>
             </div>
 
-            <SearchableFlavorPicker options={FLAVOR_OPTIONS} initialSelected={FLAVOR_OPTIONS.filter((option) => flavors.has(option.toLowerCase()))} />
+            <SearchableFlavorPicker key={editingBean?.id ?? "new-flavors"} options={FLAVOR_OPTIONS} initialSelected={FLAVOR_OPTIONS.filter((option) => flavors.has(normalizeGuidedValue(option)))} />
             <label htmlFor="custom_flavor_notes">Other flavors</label>
             <input id="custom_flavor_notes" name="custom_flavor_notes" defaultValue={customFlavors} placeholder="Comma-separated, e.g. white tea, nougat" />
 
