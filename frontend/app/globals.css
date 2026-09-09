@@ -191,6 +191,13 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .option-chip input { position: absolute; opacity: 0; pointer-events: none; }
 .option-chip span { display: block; border: 1px solid var(--line); background: var(--paper); padding: 7px 9px; color: var(--muted); font-size: 10px; }
 .option-chip input:checked + span { border-color: var(--coffee); background: var(--coffee); color: white; }
+.flavor-search { display: grid; gap: 7px; margin: 0 0 10px !important; }
+.flavor-search > span { color: var(--muted); font-size: 9px; }
+.selected-flavors { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.selected-flavors button, .flavor-results button { border: 0; background: transparent; font: inherit; padding: 0; cursor: pointer; }
+.selected-flavors button { background: var(--coffee); color: white; padding: 7px 9px; font-size: 10px; }
+.flavor-results .option-chip[aria-pressed="true"] span { border-color: var(--coffee); background: var(--coffee); color: white; }
+.flavor-results > p { color: var(--muted); font-size: 10px; }
 .bean-form-actions { display: flex; align-items: center; gap: 20px; margin-top: 22px; }
 .bean-form-actions .auth-submit { margin: 0; }
 .text-link, .bean-edit { color: var(--coffee); border-bottom: 1px solid; font-size: 10px; }
