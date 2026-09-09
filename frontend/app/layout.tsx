@@ -13,9 +13,27 @@ const serif = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Mylot Coffee — Your private coffee space",
+  metadataBase: new URL("https://beanmemo.com"),
+  title: {
+    default: "Beanmemo — Personal Coffee Journal & Taste Tracker",
+    template: "%s | Beanmemo",
+  },
   description:
-    "Remember every bean, learn from every brew, and discover your personal taste.",
+    "Keep a personal coffee journal, remember every bean and brew, and discover the coffees you truly enjoy.",
+  applicationName: "Beanmemo",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Beanmemo",
+    title: "Beanmemo — Your personal coffee journal",
+    description: "Remember every bean. Learn from every brew. Discover what you love.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Beanmemo — Your personal coffee journal",
+    description: "Remember every bean. Learn from every brew. Discover what you love.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

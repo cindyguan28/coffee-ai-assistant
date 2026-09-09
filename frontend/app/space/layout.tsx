@@ -13,7 +13,7 @@ export default async function SpaceLayout({ children }: { children: ReactNode })
   return (
     <main className="space-page">
       <nav className="space-nav">
-        <Link className="brand" href="/"><span className="coffee-mark" aria-hidden="true"><span /></span><span>Mylot</span></Link>
+        <Link className="brand" href="/"><span className="coffee-mark" aria-hidden="true"><span /></span><span>Beanmemo</span></Link>
         <div className="space-links">
           <Link href="/space">Overview</Link>
           <Link href="/space/beans">My Beans</Link>

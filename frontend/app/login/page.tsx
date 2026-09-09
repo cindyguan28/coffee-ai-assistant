@@ -86,7 +86,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </form>
 
       <p className="auth-switch">
-        {isSignup ? "Already have a space?" : "New to Mylot?"}{" "}
+        {isSignup ? "Already have a space?" : "New to Beanmemo?"}{" "}
         <Link href={isSignup ? `/login?next=${encodeURIComponent(next)}` : `/login?mode=signup&next=${encodeURIComponent(next)}`}>
           {isSignup ? "Sign in" : "Create yours"}
         </Link>

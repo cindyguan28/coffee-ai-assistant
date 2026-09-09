@@ -52,9 +52,9 @@ export default function Home() {
   return (
     <main>
       <nav className="nav shell" aria-label="Main navigation">
-        <a className="brand" href="#top" aria-label="Mylot Coffee home">
+        <a className="brand" href="#top" aria-label="Beanmemo home">
           <CoffeeMark />
-          <span>Mylot</span>
+          <span>Beanmemo</span>
         </a>
         <div className="nav-links">
           <a href="#features">What it does</a>
@@ -163,7 +163,7 @@ export default function Home() {
       </section>
 
       <footer className="footer shell">
-        <a className="brand" href="#top"><CoffeeMark /><span>Mylot</span></a>
+        <a className="brand" href="#top"><CoffeeMark /><span>Beanmemo</span></a>
         <p>Your coffee memories, kept close.</p>
         <span><a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span>
       </footer>

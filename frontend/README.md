@@ -1,4 +1,4 @@
-# Mylot Next.js frontend
+# Beanmemo Next.js frontend
 
 ## Local development
 

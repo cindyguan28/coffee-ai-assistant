@@ -1,6 +1,6 @@
 # Authentication setup
 
-Mylot uses Supabase Auth as its managed identity backend and Next.js Server Actions/Route Handlers for the application flow. Access and refresh tokens are managed in secure Supabase SSR cookies; passwords and provider secrets are never stored by this repository.
+Beanmemo uses Supabase Auth as its managed identity backend and Next.js Server Actions/Route Handlers for the application flow. Access and refresh tokens are managed in secure Supabase SSR cookies; passwords and provider secrets are never stored by this repository.
 
 ## 1. Create and configure Supabase
 
@@ -57,7 +57,7 @@ Add the same three variables in **Project Settings → Environment Variables** f
 3. Sign out and verify `/space` redirects to `/login`.
 4. Request a password reset, open the email link, and choose a new password.
 5. If Google is enabled, create an account with Google and verify the callback returns to `/space`.
-6. Verify an external `next` URL never redirects outside the Mylot domain.
+6. Verify an external `next` URL never redirects outside the Beanmemo domain.
 
 ## Security boundary
 

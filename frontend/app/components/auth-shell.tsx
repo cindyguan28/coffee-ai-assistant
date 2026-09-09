@@ -11,7 +11,7 @@ export function AuthShell({ children }: AuthShellProps) {
       <section className="auth-story">
         <Link className="brand auth-brand" href="/">
           <span className="coffee-mark" aria-hidden="true"><span /></span>
-          <span>Mylot</span>
+          <span>Beanmemo</span>
         </Link>
         <div>
           <p className="kicker"><span /> A space that remembers</p>
