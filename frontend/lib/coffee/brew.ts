@@ -42,6 +42,7 @@ export function validateBrewLog(formData: FormData): BrewValidation {
     ["default_dose_g", 0, 1000, false],
     ["espresso_volume_ml", 0, 5000, false],
     ["extraction_time_sec", 0, 3600, false],
+    ["water_temp_c", 0, 100, false],
     ["milk_ml", 0, 5000, false],
     ["grind_setting", 0, 1000, true],
     ["score", 0, 10, false],
