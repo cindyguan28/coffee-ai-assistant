@@ -273,6 +273,23 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .brew-form small { color: var(--muted); font-size: 9px; font-weight: 400; line-height: 1.4; }
 .sensory-fieldset > p { color: var(--muted); font-size: 10px; margin: 0 0 12px; }
 .sensory-sliders { display: grid; gap: 8px; }
+.sensory-invite { align-items: center; background: var(--paper-deep); border-left: 3px solid var(--coffee); display: flex; justify-content: space-between; gap: 22px; margin: 20px 0 4px; padding: 16px 18px; }
+.sensory-invite span, .brew-starter span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .14em; }
+.sensory-invite h3 { font: 500 20px var(--font-serif), serif; margin: 5px 0 3px; }
+.sensory-invite p, .brew-starter p { color: var(--muted); font-size: 9px; line-height: 1.45; margin: 0; }
+.sensory-invite button, .sensory-more, .brew-starter button { background: transparent; border: 1px solid var(--coffee); color: var(--coffee); cursor: pointer; flex: 0 0 auto; font: 700 10px var(--font-sans), sans-serif; padding: 10px 12px; }
+.sensory-primary, .sensory-advanced { display: grid; gap: 10px; }
+.sensory-primary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sensory-advanced { border-top: 1px solid var(--line); grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; padding-top: 3px; }
+.sensory-primary .range-field, .sensory-advanced .range-field { min-width: 0; }
+.sensory-more { margin-top: 16px; }
+.balance-field { align-self: end; display: grid; gap: 7px; margin-top: 18px; }
+.balance-field > span { font-size: 11px; font-weight: 700; }
+.balance-field small { color: var(--muted); font-size: 9px; font-weight: 400; margin-left: 5px; }
+.balance-field select { border: 1px solid var(--line); background: var(--paper); padding: 12px; width: 100%; }
+.brew-starter { align-items: center; background: var(--paper-deep); border: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-top: 14px; padding: 15px 16px; }
+.brew-starter strong { display: block; font: 500 18px var(--font-serif), serif; margin: 5px 0 3px; }
+.brew-starter-empty { display: block; }
 .range-field { display: grid; gap: 7px; margin-top: 18px; }
 .range-field > span, .range-field small { display: flex; justify-content: space-between; align-items: center; }
 .range-field output { color: var(--coffee); font-weight: 800; }
@@ -422,6 +439,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .beans-layout { grid-template-columns: 1fr; }
   .brew-numbers { grid-template-columns: repeat(2, 1fr); }
   .brew-facts { grid-template-columns: repeat(2, 1fr); }
+  .sensory-primary, .sensory-advanced { grid-template-columns: 1fr; }
   .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: 86px minmax(100px, 1fr) repeat(2, minmax(68px, .8fr)) 80px 18px; gap: 9px; padding-inline: 16px; }
   .journal-row-summary.has-water, .journal-row-summary.has-bean.has-water { grid-template-columns: 86px minmax(100px, 1fr) repeat(3, minmax(68px, .8fr)) 80px 18px; }
   .taste-layout { grid-template-columns: 1fr; gap: 35px; }
@@ -469,6 +487,9 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .journal-controls { grid-template-columns: 1fr; }
   .journal-composer > summary { grid-template-columns: 1fr; gap: 5px; }
   .journal-composer > summary small { display: none; }
+  .sensory-invite, .brew-starter { align-items: start; grid-template-columns: 1fr; }
+  .sensory-invite { flex-direction: column; }
+  .sensory-invite button, .brew-starter button { width: 100%; }
   .journal-group > header { align-items: start; flex-direction: column; gap: 7px; }
   .journal-group > header p { text-align: left; }
   .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: repeat(2, 1fr); position: relative; padding-right: 36px; }
