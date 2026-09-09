@@ -127,6 +127,7 @@ export type EquipmentDefaults = { machineModel?: string | null; grinderType?: st
 
 export function journalDetailFacts(entry: JournalEntry, defaults: EquipmentDefaults = {}) {
   const present = (value: unknown) => value !== null && value !== undefined && value !== "";
+  const milk = [entry.milk_type, present(entry.milk_ml) ? `${entry.milk_ml} ml` : null].filter(present).join(" · ") || null;
   const facts: Array<[string, string | null | undefined]> = [
     ["Different machine", entry.machine_model && entry.machine_model !== defaults.machineModel ? entry.machine_model : null],
     ["Different grinder", entry.grinder_type && entry.grinder_type !== defaults.grinderType ? entry.grinder_type : null],
@@ -134,8 +135,7 @@ export function journalDetailFacts(entry: JournalEntry, defaults: EquipmentDefau
     ["Actual yield", present(entry.espresso_volume_ml) ? `${entry.espresso_volume_ml} ml` : null],
     ["Actual time", present(entry.extraction_time_sec) ? `${entry.extraction_time_sec} sec` : null],
     ["Drink", entry.drink_type],
-    ["Milk", entry.milk_type],
-    ["Milk amount", present(entry.milk_ml) ? `${entry.milk_ml} ml` : null],
+    ["Milk", milk],
     ["Milk pairing", entry.milk_pairing],
   ];
   return facts.filter((fact): fact is [string, string] => present(fact[1]));

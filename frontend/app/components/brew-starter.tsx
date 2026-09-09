@@ -37,7 +37,9 @@ export function BrewStarter({ entries, initialBeanId = "" }: { entries: JournalE
     <button type="button" onClick={(event) => {
       const form = event.currentTarget.form;
       if (!form) return;
-      Object.entries(starterValues(starter)).forEach(([name, value]) => fill(form, name, value));
+      const values = starterValues(starter);
+      Object.entries(values).filter(([name]) => !name.startsWith("milk_")).forEach(([name, value]) => fill(form, name, value));
+      window.setTimeout(() => Object.entries(values).filter(([name]) => name.startsWith("milk_")).forEach(([name, value]) => fill(form, name, value)), 0);
       event.currentTarget.textContent = "Settings applied ✓";
     }}>Start from this brew</button>
   </div>;

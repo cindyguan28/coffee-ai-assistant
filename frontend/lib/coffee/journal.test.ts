@@ -58,4 +58,8 @@ describe("journal organization", () => {
   it("calls out equipment only when it differs from the saved setup", () => {
     expect(journalDetailFacts({ id: "x", machine_model: "Picopresso" }, { machineModel: "Sage" })[0]).toEqual(["Different machine", "Picopresso"]);
   });
+
+  it("combines milk type and amount into one history fact", () => {
+    expect(journalDetailFacts({ id: "x", milk_type: "oat_milk", milk_ml: 80 })).toEqual([["Milk", "oat_milk · 80 ml"]]);
+  });
 });

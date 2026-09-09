@@ -1,6 +1,10 @@
 export const SENSORY_DIMENSIONS = ["acidity", "sweetness", "bitterness", "body", "balance", "aroma"] as const;
 export type SensoryDimension = (typeof SENSORY_DIMENSIONS)[number];
-export type TasteLog = Partial<Record<SensoryDimension, number | null>> & { score?: number | null; flavor_notes?: string | null };
+export type TasteLog = Partial<Record<SensoryDimension, number | null>> & {
+  score?: number | null;
+  flavor_notes?: string | null;
+  bean_profile?: { predicted_acidity?: number | null; predicted_sweetness?: number | null; predicted_body?: number | null } | null;
+};
 
 export const TASTE_DIMENSION_GUIDE: Record<SensoryDimension, { low: string; high: string; meaning: string }> = {
   acidity: { low: "soft", high: "bright", meaning: "the brightness or lively fruit-like quality you perceived" },
@@ -79,4 +83,35 @@ export function calculateFlavorFamilies(logs: TasteLog[]) {
     families.forEach((family) => { weights[family] = (weights[family] ?? 0) + weight; counts[family] = (counts[family] ?? 0) + 1; });
   }
   return Object.entries(weights).map(([family, weight]) => ({ family, weight, brewCount: counts[family] })).sort((a, b) => b.weight - a.weight || a.family.localeCompare(b.family));
+}
+
+export function calculateAutomaticBeanPreference(logs: TasteLog[]) {
+  const fields = ["acidity", "sweetness", "body"] as const;
+  const source = { acidity: "predicted_acidity", sweetness: "predicted_sweetness", body: "predicted_body" } as const;
+  const sums = { acidity: 0, sweetness: 0, body: 0 };
+  const weights = { ...sums };
+  let contributingBrews = 0;
+  for (const log of logs) {
+    const weight = Math.max((typeof log.score === "number" ? log.score : 0) - 5, 0);
+    if (!weight || !log.bean_profile) continue;
+    let contributed = false;
+    fields.forEach((field) => {
+      const value = log.bean_profile?.[source[field]];
+      if (typeof value !== "number") return;
+      sums[field] += value * weight;
+      weights[field] += weight;
+      contributed = true;
+    });
+    if (contributed) contributingBrews += 1;
+  }
+  return {
+    dimensions: Object.fromEntries(fields.map((field) => [field, weights[field] ? Number((sums[field] / weights[field]).toFixed(2)) : null])) as Record<(typeof fields)[number], number | null>,
+    contributingBrews,
+  };
+}
+
+export function sensoryCoverage(contributingBrews: number) {
+  if (contributingBrews >= 7) return "Established";
+  if (contributingBrews >= 3) return "Growing";
+  return "Early";
 }
