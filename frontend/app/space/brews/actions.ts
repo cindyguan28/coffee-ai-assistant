@@ -23,6 +23,22 @@ async function ownedBeanExists(beanId: string, userId: string) {
   return Boolean(data);
 }
 
+export async function updateEquipment(formData: FormData) {
+  const userId = await requireCurrentUserId();
+  const machine = String(formData.get("default_machine_model") ?? "").trim().slice(0, 200) || null;
+  const grinder = String(formData.get("default_grinder_type") ?? "").trim().slice(0, 200) || null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .update({ default_machine_model: machine, default_grinder_type: grinder })
+    .eq("user_id", userId)
+    .select("user_id")
+    .single();
+  if (error || !data) redirect(destination("error", "Your equipment could not be saved. Apply the latest database migration and try again."));
+  revalidatePath("/space/brews");
+  redirect(destination("message", "Your default equipment was saved."));
+}
+
 export async function addBrewLog(formData: FormData) {
   const userId = await requireCurrentUserId();
   const validated = validateBrewLog(formData);

@@ -13,7 +13,7 @@ function formWithProblems(values: Record<string, string>, problems: string[]) {
   return data;
 }
 
-const valid = { bean_id: "bean-1", brew_date: "2026-09-08", score: "8.5" };
+const valid = { bean_id: "bean-1", brew_date: "2026-09-08", score: "8.5", grind_setting: "10" };
 
 describe("validateBrewLog", () => {
   it("accepts a compact brew log", () => {
@@ -34,6 +34,7 @@ describe("validateBrewLog", () => {
     [{ ...valid, score: "11" }, "score"],
     [{ ...valid, acidity: "6" }, "acidity"],
     [{ ...valid, grind_setting: "1.5" }, "grind"],
+    [{ ...valid, grind_setting: "" }, "grind"],
   ])("rejects invalid input", (values, message) => {
     const result = validateBrewLog(form(values));
     expect(result.ok).toBe(false);
