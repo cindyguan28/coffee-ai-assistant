@@ -9,6 +9,10 @@
 
 - Added consistent Organization and WebSite structured data across public pages.
 - Added FAQ structured data matching the visible Coffee Journal FAQ.
+- Rebuilt the landing page around a clear personal coffee journal position, public-preview pricing signal, and conversion-focused CTA.
+- Added an interactive, auto-playing Bean → Brew → Taste → World product story with clickable tabs and reduced-motion support.
+- Reframed five equal feature cards into the Remember → Learn → Discover value loop.
+- Reduced onboarding to three steps and added concise privacy, preview pricing, and no-credit-card assurances.
 
 ## Marketing operations
 
