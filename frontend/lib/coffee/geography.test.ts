@@ -41,4 +41,21 @@ describe("coffee geography", () => {
     const summary = aggregateCoffeeWorld([{ id: "a", country: "Kenya" }], [])[0];
     expect(countryNarrative(summary, "preference")).toContain("no scored journal entries");
   });
+
+  it("keeps custom Bean flavor labels instead of asking for notes that already exist", () => {
+    const [summary] = aggregateCoffeeWorld(
+      [
+        { id: "a", country: "Colombia", flavor_notes: "Red apple, panela" },
+        { id: "b", country: "Colombia", flavor_notes: "red apple, chocolate" },
+      ],
+      [],
+    );
+
+    expect(summary.topFlavorFamilies).toEqual(["Red apple", "Chocolate", "Panela"]);
+  });
+
+  it("uses an empty flavor list only when no Bean flavor labels were saved", () => {
+    const [summary] = aggregateCoffeeWorld([{ id: "a", country: "Rwanda", flavor_notes: "" }], []);
+    expect(summary.topFlavorFamilies).toEqual([]);
+  });
 });
