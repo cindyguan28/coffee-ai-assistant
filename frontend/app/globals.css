@@ -477,6 +477,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 }
 
 @media (max-width: 520px) {
+  input:not([type="range"]), select, textarea { font-size: 16px; }
   .nav-action { font-size: 0; }
   .nav-action span { font-size: 16px; }
   .hero { padding-bottom: 70px; }
@@ -525,10 +526,12 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .sensory-invite button, .brew-starter button { width: 100%; }
   .journal-group > header { align-items: start; flex-direction: column; gap: 7px; }
   .journal-group > header p { text-align: left; }
-  .journal-row-summary, .journal-row-summary.has-bean { grid-template-columns: repeat(2, 1fr); position: relative; padding-right: 36px; }
+  .journal-workspace, .journal-composer, .journal-composer .brew-form, .journal-history, .journal-group, .journal-rows, .journal-row { min-width: 0; max-width: 100%; }
+  .journal-row-summary, .journal-row-summary.has-bean, .journal-row-summary.has-water, .journal-row-summary.has-bean.has-water { grid-template-columns: repeat(2, minmax(0, 1fr)); position: relative; padding-right: 36px; }
   .journal-row-summary > i { position: absolute; right: 16px; top: 15px; }
   .journal-row-score { text-align: left; }
   .journal-row-details > dl { grid-template-columns: repeat(2, 1fr); }
+  .journal-row-details > dl div, .journal-row-details dd { min-width: 0; overflow-wrap: anywhere; }
   .automatic-preference dl { grid-template-columns: 1fr; gap: 12px; }
   .bag { width: 84px; height: 122px; }
   .preview-topline h2 { font-size: 20px; }
