@@ -418,6 +418,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .country-detail dl div { background: var(--coffee-dark); padding: 18px; }
 .country-detail dt { color: #cfbfae; font-size: 10px; margin-bottom: 8px; }
 .country-detail dd { margin: 0; font: 500 22px var(--font-serif), serif; }
+.country-flavor-source { grid-column: 2; color: #cfbfae; font-size: 9px; line-height: 1.5; }
 .legal-page, .error-page { width: min(850px, calc(100% - 48px)); margin: auto; padding: 70px 0 110px; }
 .legal-page > .kicker { margin-top: 90px; }
 .legal-page h1, .error-page h1 { font-size: clamp(48px, 8vw, 88px); }
@@ -460,6 +461,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .flavor-families > div { grid-template-columns: repeat(2, 1fr); }
   .world-toolbar { align-items: start; flex-direction: column; gap: 18px; }
   .country-detail { grid-template-columns: 1fr; gap: 25px; }
+  .country-flavor-source { grid-column: 1; }
 }
 
 @media (max-width: 520px) {

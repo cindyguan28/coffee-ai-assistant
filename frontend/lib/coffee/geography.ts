@@ -1,4 +1,4 @@
-import { extractFlavorFamilies } from "./taste";
+import { extractFlavorLabels } from "./taste";
 
 export type GeographyBean = { id: string; country?: string | null; flavor_notes?: string | null };
 export type GeographyBrew = { id: string; bean_id: string; score?: number | null };
@@ -107,8 +107,8 @@ export function aggregateCoffeeWorld(beans: GeographyBean[], brews: GeographyBre
     for (const country of countries) {
       const summary = summaries.get(country) ?? { beanIds: new Set(), brewedBeanIds: new Set(), brewIds: new Set(), scores: [], families: new Map() };
       summary.beanIds.add(bean.id);
-      for (const family of extractFlavorFamilies(bean.flavor_notes)) {
-        summary.families.set(family, (summary.families.get(family) ?? 0) + 1);
+      for (const flavor of extractFlavorLabels(bean.flavor_notes)) {
+        summary.families.set(flavor, (summary.families.get(flavor) ?? 0) + 1);
       }
       summaries.set(country, summary);
     }

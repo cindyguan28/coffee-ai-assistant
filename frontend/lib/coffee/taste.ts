@@ -31,13 +31,29 @@ const FAMILY_BY_NOTE: Record<string, string> = {
   almond: "Nutty", hazelnut: "Nutty", nuts: "Nutty", nutty: "Nutty",
 };
 
+function splitFlavorNotes(flavorNotes?: string | null) {
+  return (flavorNotes ?? "")
+    .split(",")
+    .map((note) => note.trim())
+    .filter(Boolean);
+}
+
 export function extractFlavorFamilies(flavorNotes?: string | null) {
   return [...new Set(
-    (flavorNotes ?? "")
-      .split(",")
-      .map((note) => FAMILY_BY_NOTE[note.trim().toLowerCase()])
+    splitFlavorNotes(flavorNotes)
+      .map((note) => FAMILY_BY_NOTE[note.toLowerCase()])
       .filter((family): family is string => Boolean(family)),
   )];
+}
+
+export function extractFlavorLabels(flavorNotes?: string | null) {
+  const labels = new Map<string, string>();
+  splitFlavorNotes(flavorNotes).forEach((note) => {
+    const label = FAMILY_BY_NOTE[note.toLowerCase()] ?? `${note[0].toUpperCase()}${note.slice(1).toLowerCase()}`;
+    const key = label.toLocaleLowerCase();
+    if (!labels.has(key)) labels.set(key, label);
+  });
+  return [...labels.values()];
 }
 
 export function calculateTasteProfile(logs: TasteLog[]) {
