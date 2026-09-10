@@ -38,6 +38,12 @@ function ExampleRow({ label, children }: { label: string; children: React.ReactN
 }
 
 export default function CoffeeJournalPage() {
+  const faqItems = [
+    ["What should I write in a coffee journal?", "Start with the coffee name, roaster, brew method, whether you liked it, and one sentence about what you would remember or change. Add recipe variables only when they help you compare or repeat a brew."],
+    ["Do I need to understand professional coffee tasting?", "No. Ordinary descriptions such as bright, sweet, bitter, light, creamy, or balanced are useful. Your journal is meant to describe your experience, not test your vocabulary."],
+    ["Should I record every cup of coffee?", "Not necessarily. Record first attempts, meaningful changes, excellent cups, and disappointing cups you want to learn from. A smaller journal you maintain is more useful than a detailed one you abandon."],
+    ["What is the difference between a coffee journal and a brew log?", "A brew log focuses on preparation variables and results. A coffee journal can also remember the bean, roaster, origin, tasting experience, and personal preferences across many brews."],
+  ];
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -49,10 +55,20 @@ export default function CoffeeJournalPage() {
     publisher: { "@type": "Organization", name: "Beanmemo" },
     mainEntityOfPage: "https://beanmemo.com/coffee-journal",
   };
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(([name, text]) => ({
+      "@type": "Question",
+      name,
+      acceptedAnswer: { "@type": "Answer", text },
+    })),
+  };
 
   return (
     <main className="article-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
       <nav className="nav shell" aria-label="Main navigation">
         <Link className="brand" href="/" aria-label="Beanmemo home"><CoffeeMark /><span>Beanmemo</span></Link>
         <span className="article-nav-label">Coffee journal guide</span>

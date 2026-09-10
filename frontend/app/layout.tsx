@@ -37,9 +37,36 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://beanmemo.com/#organization",
+        name: "Beanmemo",
+        url: "https://beanmemo.com/",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://beanmemo.com/#website",
+        url: "https://beanmemo.com/",
+        name: "Beanmemo",
+        description: "A private personal coffee journal for your beans, brews, and evolving taste.",
+        publisher: { "@id": "https://beanmemo.com/#organization" },
+        inLanguage: "en",
+      },
+    ],
+  };
+
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${serif.variable}`}>{children}</body>
+      <body className={`${sans.variable} ${serif.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
