@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "../components/auth-shell";
 import { SubmitButton } from "../components/submit-button";
 import { safeRedirectPath } from "../../lib/auth/validation";
+import { loginPresentation } from "../../lib/auth/presentation";
 import { isSupabaseConfigured } from "../../lib/supabase/config";
 import { createClient } from "../../lib/supabase/server";
 import { login, signInWithGoogle, signup } from "./actions";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; message?: string; mode?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; mode?: string; next?: string; status?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -16,6 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const isSignup = params.mode === "signup";
   const configured = isSupabaseConfigured();
   const next = safeRedirectPath(params.next);
+  const presentation = loginPresentation(params.mode, params.status);
 
   if (configured) {
     const supabase = await createClient();
@@ -26,12 +28,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell>
       <p className="auth-step">MY COFFEE SPACE</p>
-      <h2>{isSignup ? "Create your space" : "Welcome back"}</h2>
-      <p className="auth-subtitle">
-        {isSignup
-          ? "Create a private home for your beans, brews and evolving taste."
-          : "Return to your beans, brews and evolving taste."}
-      </p>
+      <h2>{presentation.heading}</h2>
+      <p className="auth-subtitle">{presentation.subtitle}</p>
 
       {!configured && (
         <div className="auth-notice">
@@ -39,6 +37,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
       )}
       {params.error && <div className="auth-error" role="alert">{params.error}</div>}
+      {presentation.statusMessage && <div className="auth-success" role="status">{presentation.statusMessage}</div>}
       {params.message && <div className="auth-success" role="status">{params.message}</div>}
       {configured && isSignup && (
         <div className="auth-notice">

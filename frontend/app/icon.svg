@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Beanmemo coffee bean</title>
+  <circle cx="32" cy="32" r="29" fill="#6f3d25"/>
+  <path
+    d="M32 12.5c-2.9 9.4-2.9 29.6 0 39 2.9-9.4 2.9-29.6 0-39Z"
+    fill="#f7f1e8"
+  />
+</svg>

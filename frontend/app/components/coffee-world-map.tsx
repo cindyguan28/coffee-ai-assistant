@@ -75,8 +75,9 @@ export function CoffeeWorldMap({ summaries }: { summaries: CountrySummary[] }) {
         <div><dt>Saved coffees</dt><dd>{selected.coffeeCount}</dd></div>
         {mode === "explored" && <div><dt>Brewed coffees</dt><dd>{selected.brewedCoffeeCount}</dd></div>}
         {mode === "explored" && <div><dt>Journal entries</dt><dd>{selected.brewCount}</dd></div>}
-        <div><dt>Top flavors</dt><dd>{selected.topFlavorFamilies.join(" · ") || "Add flavor notes"}</dd></div>
+        <div><dt>Top Bean flavors</dt><dd>{selected.topFlavorFamilies.join(" · ") || "No flavor labels saved"}</dd></div>
       </dl>
+      <small className="country-flavor-source">From flavor labels saved on Beans from this country—not from Brew Journal taste ratings.</small>
     </section>}
   </>;
 }
