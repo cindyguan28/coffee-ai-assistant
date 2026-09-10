@@ -8,5 +8,5 @@ export async function logout() {
   if (!isSupabaseConfigured()) redirect("/");
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login?message=You%20have%20signed%20out.");
+  redirect("/login?status=signed-out");
 }
