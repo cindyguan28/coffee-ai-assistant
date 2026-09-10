@@ -3,7 +3,7 @@ const features = [
     number: "01",
     eyebrow: "Your shelf",
     title: "My Beans",
-    description: "Keep the coffees you own in one calm, searchable place — without spreadsheet work.",
+    description: "Remember every coffee on your shelf, keep the details that matter, and return to its Bean Profile whenever you buy or brew it again.",
     accent: "bean",
   },
   {
@@ -24,7 +24,7 @@ const features = [
     number: "04",
     eyebrow: "Understand yourself",
     title: "My Taste",
-    description: "See the patterns behind the coffees you genuinely enjoy — not a generic tasting score.",
+    description: "Your liking reveals patterns in the Beans you enjoy. Optional sensory reviews build a separate six-dimension radar from what you actually tasted.",
     accent: "taste",
   },
   {
@@ -46,6 +46,31 @@ function CoffeeMark() {
 
 function Arrow() {
   return <span aria-hidden="true">↗</span>;
+}
+
+function TasteFeatureVisual() {
+  return (
+    <div className="feature-visual taste-feature-visual">
+      <svg viewBox="0 0 250 112" role="img" aria-label="Example six-dimensional sensory profile based on explicit ratings">
+        <polygon className="landing-radar-grid" points="65,17 98,37 98,75 65,95 32,75 32,37" />
+        <polygon className="landing-radar-grid inner" points="65,35 82,45 82,67 65,77 48,67 48,45" />
+        <g className="landing-radar-axes">
+          <line x1="65" y1="56" x2="65" y2="17" /><line x1="65" y1="56" x2="98" y2="37" />
+          <line x1="65" y1="56" x2="98" y2="75" /><line x1="65" y1="56" x2="65" y2="95" />
+          <line x1="65" y1="56" x2="32" y2="75" /><line x1="65" y1="56" x2="32" y2="37" />
+        </g>
+        <polygon className="landing-radar-data" points="65,25 89,42 80,65 65,79 37,72 40,42" />
+        <g className="landing-radar-labels">
+          <text x="65" y="10">Acidity</text><text x="106" y="34">Natural sweetness</text>
+          <text x="106" y="82">Bitterness</text><text x="65" y="109">Body</text>
+          <text x="24" y="82">Balance</text><text x="24" y="34">Aroma</text>
+        </g>
+        <text className="landing-radar-caption" x="166" y="51">EXAMPLE</text>
+        <text className="landing-radar-copy" x="166" y="67">Your explicit sensory</text>
+        <text className="landing-radar-copy" x="166" y="80">ratings shape this radar.</text>
+      </svg>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -82,10 +107,10 @@ export default function Home() {
         <div className="space-preview" id="space" aria-label="Preview of a personal coffee space">
           <div className="preview-topline">
             <div>
-              <p>Sunday, September 6</p>
-              <h2>Good morning, Cindy.</h2>
+              <p>Example coffee space</p>
+              <h2>A private place that grows with every coffee.</h2>
             </div>
-            <span className="avatar">CG</span>
+            <span className="preview-example">PRODUCT PREVIEW</span>
           </div>
           <div className="preview-grid">
             <article className="now-card">
@@ -103,16 +128,16 @@ export default function Home() {
 
             <article className="taste-card">
               <div className="card-heading">
-                <div><p className="mini-label">Your taste lately</p><h3>Bright &amp; floral</h3></div>
-                <span>Last 30 days</span>
+                <div><p className="mini-label">Automatic Bean Preference · Example</p><h3>What liked Beans have in common</h3></div>
+                <span>Bean Profiles + liking</span>
               </div>
-              <div className="taste-bars" aria-label="Taste preference illustration">
-                <div><span>Sweetness</span><i style={{ "--score": "82%" } as React.CSSProperties} /></div>
-                <div><span>Acidity</span><i style={{ "--score": "74%" } as React.CSSProperties} /></div>
-                <div><span>Aroma</span><i style={{ "--score": "88%" } as React.CSSProperties} /></div>
-                <div><span>Body</span><i style={{ "--score": "46%" } as React.CSSProperties} /></div>
+              <div className="taste-bars" aria-label="Example automatic Bean Preference derived from Bean Profiles and liking">
+                <div><span>Acidity</span><i style={{ "--score": "78%" } as React.CSSProperties} /><b>3.9 / 5</b></div>
+                <div><span>Natural sweetness</span><i style={{ "--score": "72%" } as React.CSSProperties} /><b>3.6 / 5</b></div>
+                <div><span>Body</span><i style={{ "--score": "54%" } as React.CSSProperties} /><b>2.7 / 5</b></div>
               </div>
-              <p className="taste-insight">You seem happiest with aromatic, lightly roasted coffees.</p>
+              <p className="taste-insight"><b>Flavor families in liked Beans</b><span>Floral · Citrus · Stone fruit</span></p>
+              <small className="taste-source">Only available Bean Profile dimensions are shown. Sensory ratings remain a separate, optional radar.</small>
             </article>
           </div>
           <div className="preview-footer">
@@ -133,7 +158,7 @@ export default function Home() {
           {features.map((feature) => (
             <article className={`feature-card ${feature.accent}`} key={feature.title}>
               <div className="feature-number">{feature.number}</div>
-              <div className="feature-visual" aria-hidden="true"><span /><i /></div>
+              {feature.accent === "taste" ? <TasteFeatureVisual /> : <div className="feature-visual" aria-hidden="true"><span /><i /></div>}
               <p>{feature.eyebrow}</p>
               <h3>{feature.title}</h3>
               <div>{feature.description}</div>

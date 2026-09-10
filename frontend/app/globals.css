@@ -57,6 +57,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .preview-topline p, .mini-label { margin: 0 0 7px; text-transform: uppercase; font-size: 10px; letter-spacing: .13em; color: var(--muted); font-weight: 700; }
 .preview-topline h2 { font: 500 24px var(--font-serif), serif; letter-spacing: -.02em; }
 .avatar { width: 39px; height: 39px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-deep); font-size: 11px; font-weight: 700; }
+.preview-example { border: 1px solid var(--line); padding: 8px 10px; color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .14em; white-space: nowrap; }
 .preview-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; padding: 24px 0; }
 .now-card, .taste-card { border: 1px solid var(--line); padding: 22px; min-height: 260px; }
 .now-card { display: grid; grid-template-columns: 122px 1fr; gap: 24px; align-items: end; position: relative; }
@@ -71,10 +72,14 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .card-heading h3 { margin-top: 0; }
 .card-heading > span { font-size: 10px; color: var(--muted); }
 .taste-bars { display: grid; gap: 13px; margin: 23px 0 20px; }
-.taste-bars div { display: grid; grid-template-columns: 82px 1fr; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
+.taste-bars div { display: grid; grid-template-columns: 105px 1fr 42px; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
 .taste-bars i { height: 5px; background: var(--paper-deep); position: relative; }
 .taste-bars i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--score); background: var(--coffee); }
-.taste-insight { background: var(--paper); padding: 12px 14px; margin: 0; font: italic 13px/1.5 var(--font-serif), serif; color: var(--coffee-dark); }
+.taste-bars b { color: var(--coffee-dark); font-size: 9px; white-space: nowrap; }
+.taste-insight { background: var(--paper); padding: 12px 14px; margin: 0; color: var(--coffee-dark); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.taste-insight b { font-size: 9px; letter-spacing: .06em; text-transform: uppercase; }
+.taste-insight span { font: italic 12px/1.5 var(--font-serif), serif; text-align: right; }
+.taste-source { display: block; color: var(--muted); font-size: 9px; line-height: 1.45; margin-top: 10px; }
 .preview-footer { display: flex; gap: 36px; border-top: 1px solid var(--line); padding-top: 20px; font-size: 11px; color: var(--muted); }
 .preview-footer b { color: var(--ink); font-size: 17px; margin-right: 5px; }
 
@@ -93,7 +98,14 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .feature-visual span::after { content: ""; position: absolute; width: 1px; height: 68px; background: var(--paper); left: 31px; top: 7px; transform: rotate(-22deg); }
 .profile .feature-visual span { background: var(--orange); transform: rotate(-18deg); }
 .journal .feature-visual span { width: 80px; height: 70px; border-radius: 3px; transform: rotate(-5deg); background: var(--sage); }
-.taste .feature-visual span { background: transparent; border: 2px solid var(--coffee); clip-path: polygon(50% 0, 100% 40%, 82% 100%, 18% 100%, 0 40%); border-radius: 0; transform: none; }
+.taste-feature-visual { height: 112px; overflow: visible; }
+.taste-feature-visual svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.landing-radar-grid, .landing-radar-axes line { fill: none; stroke: rgba(111,61,37,.22); stroke-width: 1; }
+.landing-radar-grid.inner { stroke: rgba(111,61,37,.12); }
+.landing-radar-data { fill: rgba(217,119,69,.32); stroke: var(--coffee); stroke-width: 1.5; }
+.landing-radar-labels { fill: var(--muted); font-size: 5.5px; text-anchor: middle; }
+.landing-radar-caption { fill: var(--coffee); font-size: 7px; font-weight: 800; letter-spacing: 1px; }
+.landing-radar-copy { fill: var(--muted); font-size: 7px; }
 .world .feature-visual span { background: var(--sage); border-radius: 50%; transform: none; }
 .feature-card > p { text-transform: uppercase; letter-spacing: .12em; color: var(--coffee); font-size: 9px; font-weight: 700; margin: auto 0 7px; }
 .feature-card h3 { font: 500 27px var(--font-serif), serif; margin: 0 0 12px; }
@@ -467,6 +479,11 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .nav-action span { font-size: 16px; }
   .hero { padding-bottom: 70px; }
   .space-preview { padding: 18px; }
+  .preview-topline { align-items: flex-start; gap: 12px; }
+  .preview-example { white-space: normal; text-align: center; }
+  .taste-bars div { grid-template-columns: 94px 1fr 40px; }
+  .taste-insight { align-items: flex-start; flex-direction: column; }
+  .taste-insight span { text-align: left; }
   .space-nav { width: calc(100% - 28px); height: 68px; }
   .space-nav .brand > span:last-child { display: none; }
   .space-empty, .space-welcome { width: calc(100% - 28px); padding: 48px 0 34px; }
