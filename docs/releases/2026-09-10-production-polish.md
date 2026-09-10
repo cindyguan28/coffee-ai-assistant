@@ -19,7 +19,7 @@
 
 ### A more accurate introduction
 
-- Replaces personal placeholder content such as `Cindy` and `CG` with a generic product preview.
+- Replaces personal placeholder content with a generic product preview.
 - Makes the landing-page My Beans and My Taste explanations match the implemented product.
 - Separates the automatic Bean Preference example from the optional six-dimensional Sensory Profile.
 - Removes unsupported 30-day taste claims and generated conclusions.
