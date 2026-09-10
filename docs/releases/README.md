@@ -6,7 +6,7 @@ This directory is the source of truth for Beanmemo product releases. Release not
 
 | Version | Release | Status | Production date |
 | --- | --- | --- | --- |
-| [v0.1.1](./2026-09-10-production-polish.md) | Production polish | Accepted release candidate | Pending |
+| [v0.1.1](./2026-09-10-production-polish.md) | Production polish | Production | 2026-09-10 22:14 CEST |
 | [v0.1.0](./2026-09-09-public-beta.md) | Next.js Public Beta | Production | 2026-09-09 22:55 CEST |
 
 ## Update policy
@@ -37,4 +37,3 @@ Each note records:
 Repository notes may include operational details. A future public `/updates` page should use only the customer-facing sections and omit security-sensitive implementation details.
 
 Recommended trigger: publish `/updates` after Beanmemo has at least two Production releases worth announcing. Link it quietly from the footer; keep the landing page focused on the product rather than a long changelog.
-

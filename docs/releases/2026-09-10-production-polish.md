@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Accepted release candidate |
+| Status | Production |
 | Preview time | 2026-09-10 21:46:25 CEST |
 | Preview deployment | `dpl_DDfT4Z3qxRjoTa4zs9EJcb8ZqkSU` |
 | Preview URL | `https://coffee-ai-assistant-5u4xlk94y-cindyguan28gmailcoms-projects.vercel.app` |
 | Source branch | `release/production-polish-preview` |
 | Source commit | `f6811d002e4bb780122714969956a80984922f82` |
 | User acceptance | Passed on 2026-09-10 |
-| Production time | Pending |
-| Production deployment | Pending |
-| Production commit | Pending |
+| Production time | 2026-09-10 22:14:35 CEST |
+| Production deployment | `dpl_BfmbBF1KvjtbWouAGBcnt1gPYM8m` |
+| Production commit | `54949a3959863c1d18995b76676657efaed6ec74` |
 
 ## Customer-facing release notes
 
@@ -60,9 +60,9 @@
 - COF-46 — Signed-out-aware login copy.
 - COF-47 — Versioned release-note and changelog policy.
 
-## Production completion checklist
+## Production verification
 
-- Merge the accepted source to `main`.
-- Confirm Vercel Production is Ready and `https://beanmemo.com/api/health` reports configured authentication.
-- Record the exact Production timestamp, deployment ID, and commit above.
-- Mark COF-30, COF-42, COF-45, and COF-46 Done.
+- Accepted source merged to `main`.
+- Vercel Production status: `Ready`.
+- `https://beanmemo.com/api/health`: `ready`; authentication `configured` at 2026-09-10 22:15 CEST.
+- Production aliases include `beanmemo.com`, `beanmemo.app`, and their `www` variants.
