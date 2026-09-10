@@ -12,5 +12,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.2,
     },
+    {
+      url: "https://beanmemo.com/coffee-journal",
+      lastModified: "2026-09-10",
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
   ];
 }

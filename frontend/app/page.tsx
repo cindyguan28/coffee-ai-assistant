@@ -84,6 +84,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#features">What it does</a>
           <a href="#journey">How it works</a>
+          <a href="/coffee-journal">Coffee journal guide</a>
         </div>
         <a className="nav-action" href="/login">
           Enter my space <Arrow />
@@ -190,7 +191,7 @@ export default function Home() {
       <footer className="footer shell">
         <a className="brand" href="#top"><CoffeeMark /><span>Beanmemo</span></a>
         <p>Your coffee memories, kept close.</p>
-        <span><a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span>
+        <span><a href="/coffee-journal">Coffee journal guide</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span>
       </footer>
     </main>
   );
