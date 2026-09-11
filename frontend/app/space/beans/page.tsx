@@ -11,6 +11,7 @@ import {
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
 import { compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries } from "../../../lib/coffee/bean";
+import { libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
@@ -18,9 +19,9 @@ import { GuidedCombobox } from "../../components/guided-combobox";
 import { GuidedMultiSelect } from "../../components/guided-multi-select";
 import { SubmitButton } from "../../components/submit-button";
 import { SpeciesSelector } from "../../components/species-selector";
-import { addBean, deleteBean, regenerateBeanProfile, updateBean } from "./actions";
+import { addBean, deleteBean, regenerateBeanProfile, updateBean, updateBeanLibraryState } from "./actions";
 
-type BeansPageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
+type BeansPageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string; view?: string }> };
 
 type Bean = {
   id: string;
@@ -30,6 +31,9 @@ type Bean = {
   origin_countries: string[] | null;
   species: string | null;
   arabica_percentage: number | null;
+  favorite: boolean;
+  lifecycle_state: string | null;
+  repurchase_intent: string | null;
   process: string | null;
   roast_level: string | null;
   price: number | null;
@@ -97,6 +101,20 @@ function missingSpecies(error: { code?: string; message?: string } | null) {
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (error.message?.includes("species") || error.message?.includes("arabica_percentage")));
 }
 
+function missingLibraryState(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (error.message?.includes("favorite") || error.message?.includes("lifecycle_state") || error.message?.includes("repurchase_intent")));
+}
+
+const VIEW_LABELS: Array<{ value: LibraryView; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "current", label: "On hand" },
+  { value: "favorites", label: "Favorites" },
+  { value: "try", label: "Want to try" },
+  { value: "buy-again", label: "Buy again" },
+  { value: "not-for-me", label: "Not for me" },
+  { value: "finished", label: "Finished" },
+];
+
 export default async function BeansPage({ searchParams }: BeansPageProps) {
   const params = await searchParams;
   if (!isSupabaseConfigured()) {
@@ -107,15 +125,21 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
   const supabase = await createClient();
   const current = await supabase
     .from("beans")
-    .select("id,name,roaster,country,origin_countries,species,arabica_percentage,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
+    .select("id,name,roaster,country,origin_countries,species,arabica_percentage,favorite,lifecycle_state,repurchase_intent,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
     .eq("user_id", userId!)
     .order("created_at", { ascending: false });
-  const withoutSpecies = missingSpecies(current.error) ? await supabase
+  const withoutLibraryState = missingLibraryState(current.error) ? await supabase
+    .from("beans")
+    .select("id,name,roaster,country,origin_countries,species,arabica_percentage,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
+    .eq("user_id", userId!)
+    .order("created_at", { ascending: false }) : null;
+  const libraryCompatible = withoutLibraryState ?? current;
+  const withoutSpecies = missingSpecies(libraryCompatible.error) ? await supabase
     .from("beans")
     .select("id,name,roaster,country,origin_countries,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
     .eq("user_id", userId!)
     .order("created_at", { ascending: false }) : null;
-  const speciesCompatible = withoutSpecies ?? current;
+  const speciesCompatible = withoutSpecies ?? libraryCompatible;
   const withoutOrigins = missingOriginCountries(speciesCompatible.error) ? await supabase
     .from("beans")
     .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
@@ -131,8 +155,10 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
     : null;
   const error = legacy ? legacy.error : compatible.error;
   const beans = (legacy
-    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null, origin_countries: parseOriginCountries(bean.country), species: null, arabica_percentage: null }))
-    : (compatible.data ?? []).map((bean) => ({ ...bean, origin_countries: "origin_countries" in bean && Array.isArray(bean.origin_countries) ? bean.origin_countries : parseOriginCountries(bean.country), species: "species" in bean ? bean.species : null, arabica_percentage: "arabica_percentage" in bean ? bean.arabica_percentage : null }))) as Bean[];
+    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null, origin_countries: parseOriginCountries(bean.country), species: null, arabica_percentage: null, favorite: false, lifecycle_state: null, repurchase_intent: null }))
+    : (compatible.data ?? []).map((bean) => ({ ...bean, origin_countries: "origin_countries" in bean && Array.isArray(bean.origin_countries) ? bean.origin_countries : parseOriginCountries(bean.country), species: "species" in bean ? bean.species : null, arabica_percentage: "arabica_percentage" in bean ? bean.arabica_percentage : null, favorite: "favorite" in bean ? Boolean(bean.favorite) : false, lifecycle_state: "lifecycle_state" in bean ? bean.lifecycle_state : null, repurchase_intent: "repurchase_intent" in bean ? bean.repurchase_intent : null }))) as Bean[];
+  const view = libraryView(params.view);
+  const visibleBeans = beans.filter((bean) => matchesLibraryView(bean, view));
   const editingBean = beans.find((bean) => bean.id === params.edit);
   const flavors = selectedFlavors(editingBean);
   const customFlavors = (editingBean?.flavor_notes ?? "")
@@ -227,8 +253,14 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
           </details>
 
           <div className="bean-list">
-            <span>{beans.length} COFFEES</span>
-            {beans.map((bean) => {
+            <nav className="bean-library-filters" aria-label="Filter coffee library">
+              {VIEW_LABELS.map((item) => {
+                const count = beans.filter((bean) => matchesLibraryView(bean, item.value)).length;
+                return <Link key={item.value} className={view === item.value ? "is-active" : ""} href={item.value === "all" ? "/space/beans" : `/space/beans?view=${item.value}`}>{item.label}<span>{count}</span></Link>;
+              })}
+            </nav>
+            <span>{visibleBeans.length}{view === "all" ? "" : ` OF ${beans.length}`} COFFEES</span>
+            {visibleBeans.map((bean) => {
               const profile = beanProfile(bean);
               const price = bean.price === null ? null : `${Number(bean.price).toFixed(2)}`;
               const summary = buildCoffeeSummary({ ...bean, ...profile });
@@ -240,6 +272,25 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
                     {price && <div><dt>Price</dt><dd>{price}</dd></div>}
                   </dl>}
                   <div className="bean-tags"><span>{summary.profileLabel}</span>{bean.species && bean.species !== "Unknown" && <span>{bean.species === "Blend" && bean.arabica_percentage !== null ? `${bean.arabica_percentage}% Arabica · ${100 - bean.arabica_percentage}% Robusta` : bean.species}</span>}{summary.flavors.slice(0, 2).map((flavor) => <span key={flavor}>{flavor}</span>)}</div>
+                  <section className="bean-library-state" aria-label={`Library status for ${bean.name}`}>
+                    <div><span>MY LIBRARY</span><small>Separate from your taste rating</small></div>
+                    <div className="bean-state-actions">
+                      {[
+                        { field: "favorite", value: bean.favorite ? "false" : "true", label: "Favorite", active: bean.favorite },
+                        { field: "lifecycle_state", value: bean.lifecycle_state === "want_to_try" ? "" : "want_to_try", label: "Want to try", active: bean.lifecycle_state === "want_to_try" },
+                        { field: "lifecycle_state", value: bean.lifecycle_state === "currently_have" ? "" : "currently_have", label: "On hand", active: bean.lifecycle_state === "currently_have" },
+                        { field: "lifecycle_state", value: bean.lifecycle_state === "finished" ? "" : "finished", label: "Finished", active: bean.lifecycle_state === "finished" },
+                        { field: "repurchase_intent", value: bean.repurchase_intent === "buy_again" ? "" : "buy_again", label: "Buy again", active: bean.repurchase_intent === "buy_again" },
+                        { field: "repurchase_intent", value: bean.repurchase_intent === "would_not_buy_again" ? "" : "would_not_buy_again", label: "Not for me", active: bean.repurchase_intent === "would_not_buy_again" },
+                      ].map((item) => <form action={updateBeanLibraryState} key={`${item.field}-${item.label}`}>
+                        <input type="hidden" name="beanId" value={bean.id} />
+                        <input type="hidden" name="field" value={item.field} />
+                        <input type="hidden" name="value" value={item.value} />
+                        <input type="hidden" name="view" value={view} />
+                        <button className={item.active ? "is-active" : ""} type="submit" aria-pressed={item.active}>{item.label}</button>
+                      </form>)}
+                    </div>
+                  </section>
                   {profile ? <section className="bean-profile">
                     <div className="bean-profile-heading"><div><span>AT A GLANCE</span><h3>{summary.profileLabel}</h3></div><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button type="submit">Refresh</button></form></div>
                     <div className="bean-reference-grid">
@@ -259,6 +310,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               );
             })}
             {!beans.length && <p className="bean-empty">Your shelf is waiting for its first coffee.</p>}
+            {beans.length > 0 && !visibleBeans.length && <p className="bean-empty">No coffees match this library view yet.</p>}
           </div>
         </div>
       )}

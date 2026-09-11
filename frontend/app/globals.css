@@ -443,6 +443,10 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .text-link, .bean-edit { color: var(--coffee); border-bottom: 1px solid; font-size: 10px; }
 .bean-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .bean-list > span, .bean-list > .bean-empty { grid-column: 1 / -1; }
+.bean-library-filters { grid-column: 1 / -1; display: flex; gap: 7px; overflow-x: auto; padding: 2px 0 5px; scrollbar-width: thin; }
+.bean-library-filters a { display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; border: 1px solid var(--line); color: var(--muted); font-size: 9px; padding: 8px 10px; text-transform: uppercase; letter-spacing: .06em; }
+.bean-library-filters a span { color: inherit; font-weight: 800; }
+.bean-library-filters a.is-active { background: var(--coffee); border-color: var(--coffee); color: white; }
 .bean-item { background: var(--cream); border: 1px solid var(--line); padding: 24px; position: relative; }
 .bean-item.is-editing { border-color: var(--coffee); }
 .bean-item > div:first-child { display: flex; justify-content: space-between; }
@@ -452,6 +456,13 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-purchase-facts dd { color: var(--coffee-dark); font: 500 17px var(--font-serif), serif; margin: 0; }
 .bean-tags { display: flex; gap: 8px; margin: 16px 0; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.bean-library-state { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 15px; }
+.bean-library-state > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.bean-library-state > div:first-child span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .14em; }
+.bean-library-state > div:first-child small { color: var(--muted); font-size: 8px; }
+.bean-state-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.bean-state-actions button { border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; font: 650 9px var(--font-sans), sans-serif; padding: 7px 9px; }
+.bean-state-actions button.is-active { background: var(--coffee); border-color: var(--coffee); color: white; }
 .bean-delete { background: transparent; border: 0; border-bottom: 1px solid; padding: 4px 0; color: var(--muted); font-size: 10px; cursor: pointer; }
 .bean-actions { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
 .bean-profile { background: var(--paper); border: 1px solid var(--line); padding: 18px; margin: 18px 0; }

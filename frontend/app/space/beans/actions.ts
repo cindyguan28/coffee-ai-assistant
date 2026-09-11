@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireCurrentUserId } from "../../../lib/auth/user";
 import { validateBean } from "../../../lib/coffee/bean";
 import { generateBeanProfile } from "../../../lib/coffee/profile";
+import { validateLibraryState } from "../../../lib/coffee/library";
 import { createClient } from "../../../lib/supabase/server";
 
 function text(formData: FormData, field: string, maxLength = 500) {
@@ -13,6 +14,12 @@ function text(formData: FormData, field: string, maxLength = 500) {
 
 function message(kind: "error" | "message", value: string) {
   return `/space/beans?${kind}=${encodeURIComponent(value)}`;
+}
+
+function libraryMessage(kind: "error" | "message", value: string, view: string) {
+  const params = new URLSearchParams({ [kind]: value });
+  if (view && view !== "all") params.set("view", view);
+  return `/space/beans?${params.toString()}`;
 }
 
 function revalidateCoffeeSpace() {
@@ -173,6 +180,34 @@ export async function regenerateBeanProfile(formData: FormData) {
 
   revalidateCoffeeSpace();
   redirect(message("message", `${bean.name} Bean Profile generated.`));
+}
+
+export async function updateBeanLibraryState(formData: FormData) {
+  const userId = await requireCurrentUserId();
+  const beanId = text(formData, "beanId", 100);
+  const field = text(formData, "field", 50) ?? "";
+  const value = String(formData.get("value") ?? "");
+  const view = text(formData, "view", 30) ?? "all";
+  if (!beanId) redirect(libraryMessage("error", "Coffee not found.", view));
+
+  const state = validateLibraryState(field, value);
+  if (!state.ok) redirect(libraryMessage("error", "That library status is not valid.", view));
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("beans")
+    .update({ [field]: state.value })
+    .eq("id", beanId)
+    .eq("user_id", userId)
+    .select("id")
+    .single();
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    redirect(libraryMessage("error", "Library status was not saved because migration 202609110003_coffee_library_states.sql is missing.", view));
+  }
+  if (error || !data) redirect(libraryMessage("error", "Library status could not be updated.", view));
+
+  revalidateCoffeeSpace();
+  redirect(libraryMessage("message", "Coffee library updated.", view));
 }
 
 export async function deleteBean(formData: FormData) {
