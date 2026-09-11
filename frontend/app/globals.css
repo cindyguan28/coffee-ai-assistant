@@ -454,8 +454,9 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-purchase-facts div { display: grid; gap: 3px; }
 .bean-purchase-facts dt { color: var(--muted); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
 .bean-purchase-facts dd { color: var(--coffee-dark); font: 500 17px var(--font-serif), serif; margin: 0; }
-.bean-tags { display: flex; gap: 8px; margin: 16px 0; }
+.bean-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
 .bean-tags span { background: var(--paper-deep); color: var(--coffee-dark); padding: 6px 9px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.bean-tags span.library-tag { background: var(--coffee); color: white; }
 .bean-library-state { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 15px; }
 .bean-library-state > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .bean-library-state > div:first-child span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .14em; }

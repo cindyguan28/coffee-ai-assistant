@@ -21,6 +21,17 @@ export function matchesLibraryView(bean: CoffeeLibraryState, view: LibraryView) 
   return true;
 }
 
+export function libraryBadges(bean: CoffeeLibraryState) {
+  const badges: string[] = [];
+  if (bean.favorite) badges.push("Favorite");
+  if (bean.lifecycle_state === "want_to_try") badges.push("Want to try");
+  if (bean.lifecycle_state === "currently_have") badges.push("On hand");
+  if (bean.lifecycle_state === "finished") badges.push("Finished");
+  if (bean.repurchase_intent === "buy_again") badges.push("Buy again");
+  if (bean.repurchase_intent === "would_not_buy_again") badges.push("Not for me");
+  return badges;
+}
+
 export function validateLibraryState(field: string, rawValue: string) {
   if (field === "favorite") {
     if (rawValue === "true") return { ok: true as const, value: true };

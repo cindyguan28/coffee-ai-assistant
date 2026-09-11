@@ -11,7 +11,7 @@ import {
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
 import { compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries } from "../../../lib/coffee/bean";
-import { libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
+import { libraryBadges, libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
@@ -271,7 +271,12 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
                     {bean.package_weight_g && <div><dt>Package</dt><dd>{Number(bean.package_weight_g).toLocaleString()} g</dd></div>}
                     {price && <div><dt>Price</dt><dd>{price}</dd></div>}
                   </dl>}
-                  <div className="bean-tags"><span>{summary.profileLabel}</span>{bean.species && bean.species !== "Unknown" && <span>{bean.species === "Blend" && bean.arabica_percentage !== null ? `${bean.arabica_percentage}% Arabica · ${100 - bean.arabica_percentage}% Robusta` : bean.species}</span>}{summary.flavors.slice(0, 2).map((flavor) => <span key={flavor}>{flavor}</span>)}</div>
+                  <div className="bean-tags">
+                    {libraryBadges(bean).map((label) => <span className="library-tag" key={label}>{label === "Favorite" ? "★ Favorite" : label}</span>)}
+                    <span>{summary.profileLabel}</span>
+                    {bean.species && bean.species !== "Unknown" && <span>{bean.species === "Blend" && bean.arabica_percentage !== null ? `${bean.arabica_percentage}% Arabica · ${100 - bean.arabica_percentage}% Robusta` : bean.species}</span>}
+                    {summary.flavors.slice(0, 2).map((flavor) => <span key={flavor}>{flavor}</span>)}
+                  </div>
                   <section className="bean-library-state" aria-label={`Library status for ${bean.name}`}>
                     <div><span>MY LIBRARY</span><small>Separate from your taste rating</small></div>
                     <div className="bean-state-actions">
