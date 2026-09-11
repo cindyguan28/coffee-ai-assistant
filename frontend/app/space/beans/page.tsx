@@ -10,11 +10,12 @@ import {
   ROAST_LEVEL_OPTIONS,
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
-import { compatibleGuidedValue, normalizeGuidedValue } from "../../../lib/coffee/bean";
+import { compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries } from "../../../lib/coffee/bean";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
 import { GuidedCombobox } from "../../components/guided-combobox";
+import { GuidedMultiSelect } from "../../components/guided-multi-select";
 import { SubmitButton } from "../../components/submit-button";
 import { addBean, deleteBean, regenerateBeanProfile, updateBean } from "./actions";
 
@@ -25,6 +26,7 @@ type Bean = {
   name: string;
   roaster: string | null;
   country: string | null;
+  origin_countries: string[] | null;
   process: string | null;
   roast_level: string | null;
   price: number | null;
@@ -84,6 +86,10 @@ function missingPackageWeight(error: { code?: string; message?: string } | null)
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes("package_weight_g")));
 }
 
+function missingOriginCountries(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("origin_countries"));
+}
+
 export default async function BeansPage({ searchParams }: BeansPageProps) {
   const params = await searchParams;
   if (!isSupabaseConfigured()) {
@@ -92,22 +98,28 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const withPackageWeight = await supabase
+  const current = await supabase
+    .from("beans")
+    .select("id,name,roaster,country,origin_countries,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
+    .eq("user_id", userId!)
+    .order("created_at", { ascending: false });
+  const withoutOrigins = missingOriginCountries(current.error) ? await supabase
     .from("beans")
     .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
     .eq("user_id", userId!)
-    .order("created_at", { ascending: false });
-  const legacy = missingPackageWeight(withPackageWeight.error)
+    .order("created_at", { ascending: false }) : null;
+  const compatible = withoutOrigins ?? current;
+  const legacy = missingPackageWeight(compatible.error)
     ? await supabase
       .from("beans")
       .select("id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
       .eq("user_id", userId!)
       .order("created_at", { ascending: false })
     : null;
-  const error = legacy ? legacy.error : withPackageWeight.error;
+  const error = legacy ? legacy.error : compatible.error;
   const beans = (legacy
-    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null }))
-    : (withPackageWeight.data ?? [])) as Bean[];
+    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null, origin_countries: parseOriginCountries(bean.country) }))
+    : (compatible.data ?? []).map((bean) => ({ ...bean, origin_countries: "origin_countries" in bean && Array.isArray(bean.origin_countries) ? bean.origin_countries : parseOriginCountries(bean.country) }))) as Bean[];
   const editingBean = beans.find((bean) => bean.id === params.edit);
   const flavors = selectedFlavors(editingBean);
   const customFlavors = (editingBean?.flavor_notes ?? "")
@@ -120,7 +132,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
   const acidity = selectOptions(ACIDITY_OPTIONS, editingBean?.acidity);
 
   const roasters = mergeOptions(ROASTER_OPTIONS, beans.map((bean) => bean.roaster));
-  const countries = mergeOptions(COUNTRY_OPTIONS, beans.map((bean) => bean.country));
+  const countries = mergeOptions(COUNTRY_OPTIONS, beans.flatMap((bean) => bean.origin_countries ?? parseOriginCountries(bean.country)));
   const processes = mergeOptions(PROCESS_OPTIONS, beans.map((bean) => bean.process));
   return (
     <section className="space-welcome beans-page">
@@ -150,13 +162,8 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
             <label htmlFor="roaster">Roaster</label>
             <GuidedCombobox id="roaster" name="roaster" options={roasters} initialValue={editingBean?.roaster} placeholder="Search or add a roaster" suggestionLabel="Show roaster suggestions" />
 
-            <div className="bean-form-row">
-              <div>
-                <label htmlFor="country">Origin</label>
-                <input id="country" name="country" list="country-options" defaultValue={editingBean?.country ?? ""} placeholder="Choose or add an origin" />
-                <datalist id="country-options">{countries.map((option) => <option key={option} value={option} />)}</datalist>
-              </div>
-            </div>
+            <label htmlFor="origin-countries">Origin countries</label>
+            <GuidedMultiSelect id="origin-countries" name="origin_countries" options={countries} initialSelected={editingBean?.origin_countries ?? parseOriginCountries(editingBean?.country)} placeholder="Search or add a country" />
 
             <div className="bean-form-row">
               <div>
@@ -212,7 +219,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               const summary = buildCoffeeSummary({ ...bean, ...profile });
               return (
                 <article className={`bean-item${bean.id === editingBean?.id ? " is-editing" : ""}`} key={bean.id}>
-                  <div><h2>{bean.name}</h2><p>{[bean.roaster, bean.country].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
+                  <div><h2>{bean.name}</h2><p>{[bean.roaster, (bean.origin_countries?.length ? bean.origin_countries.join(" · ") : bean.country)].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
                   {(price || bean.package_weight_g) && <dl className="bean-purchase-facts">
                     {bean.package_weight_g && <div><dt>Package</dt><dd>{Number(bean.package_weight_g).toLocaleString()} g</dd></div>}
                     {price && <div><dt>Price</dt><dd>{price}</dd></div>}

@@ -2,6 +2,7 @@ export type BeanPayload = {
   name: string;
   roaster: string | null;
   country: string | null;
+  origin_countries: string[] | null;
   process: string | null;
   roast_level: string | null;
   price: number | null;
@@ -49,6 +50,24 @@ function flavorNotes(formData: FormData) {
   return unique.length ? unique.join(",") : null;
 }
 
+export function parseOriginCountries(value?: string | null) {
+  return [...new Map(
+    String(value ?? "")
+      .split(/\s*(?:,|\/|;)\s*/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => [normalizeGuidedValue(item), item]),
+  ).values()];
+}
+
+function originCountries(formData: FormData) {
+  const selected = formData.getAll("origin_countries").map(String);
+  const fallback = selected.length ? selected : parseOriginCountries(text(formData, "country", 500));
+  return [...new Map(
+    fallback.map((item) => item.trim()).filter(Boolean).map((item) => [normalizeGuidedValue(item), item.slice(0, 100)]),
+  ).values()];
+}
+
 export function validateBean(formData: FormData): BeanValidation {
   const name = text(formData, "name", 200);
   if (!name) return { ok: false, message: "Enter a coffee name." };
@@ -58,11 +77,14 @@ export function validateBean(formData: FormData): BeanValidation {
   if (!packageWeight.ok || (packageWeight.value !== null && packageWeight.value <= 0)) {
     return { ok: false, message: "Enter a valid package weight above zero." };
   }
+  const origins = originCountries(formData);
+  if (origins.length > 12) return { ok: false, message: "Choose no more than 12 origin countries." };
 
   return { ok: true, value: {
     name,
     roaster: text(formData, "roaster", 200),
-    country: text(formData, "country", 200),
+    country: origins.length ? origins.join(", ") : null,
+    origin_countries: origins.length ? origins : null,
     process: text(formData, "process", 100),
     roast_level: text(formData, "roast_level", 100),
     price: price.value,

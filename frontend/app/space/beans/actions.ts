@@ -27,8 +27,16 @@ function missingPackageWeight(error: { code?: string; message?: string } | null)
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes("package_weight_g")));
 }
 
+function missingOriginCountries(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("origin_countries"));
+}
+
 function withoutPackageWeight<T extends Record<string, unknown>>(bean: T) {
   return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "package_weight_g"));
+}
+
+function withoutOriginCountries<T extends Record<string, unknown>>(bean: T) {
+  return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "origin_countries"));
 }
 
 export async function addBean(formData: FormData) {
@@ -38,12 +46,17 @@ export async function addBean(formData: FormData) {
 
   const bean = { user_id: userId, ...validation.value };
   const supabase = await createClient();
-  let { data, error } = await supabase.from("beans").insert(bean).select("id").single();
+  let compatibleBean = bean;
+  let { data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single();
+  if (missingOriginCountries(error)) {
+    compatibleBean = withoutOriginCountries(bean) as typeof bean;
+    ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
+  }
   if (missingPackageWeight(error)) {
     if (validation.value.package_weight_g !== null) {
       redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
     }
-    ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(bean)).select("id").single());
+    ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(compatibleBean)).select("id").single());
   }
   if (error || !data) redirect(message("error", "The bean could not be saved. Try again."));
 
@@ -66,20 +79,31 @@ export async function updateBean(formData: FormData) {
   if (!validation.ok) redirect(message("error", validation.message));
 
   const supabase = await createClient();
+  let compatibleBean = validation.value;
   let { data, error } = await supabase
     .from("beans")
-    .update(validation.value)
+    .update(compatibleBean)
     .eq("id", beanId)
     .eq("user_id", userId)
     .select("id")
     .single();
+  if (missingOriginCountries(error)) {
+    compatibleBean = withoutOriginCountries(validation.value) as typeof validation.value;
+    ({ data, error } = await supabase
+      .from("beans")
+      .update(compatibleBean)
+      .eq("id", beanId)
+      .eq("user_id", userId)
+      .select("id")
+      .single());
+  }
   if (missingPackageWeight(error)) {
     if (validation.value.package_weight_g !== null) {
       redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
     }
     ({ data, error } = await supabase
       .from("beans")
-      .update(withoutPackageWeight(validation.value))
+      .update(withoutPackageWeight(compatibleBean))
       .eq("id", beanId)
       .eq("user_id", userId)
       .select("id")
