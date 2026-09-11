@@ -2,7 +2,8 @@
 
 - Source branch: `codex/cof-39-seo-growth`
 - Related Linear issue: COF-39
-- Deployment: Pending merge and production verification
+- Preview deployment: `dpl_Gqw69SNoADBfET8dtdLZk8wumzej` — Ready
+- Production deployment: Pending approval and merge
 - Validation: `npm test`, `npm run lint`, and `npm run build`
 
 ## User-visible changes
