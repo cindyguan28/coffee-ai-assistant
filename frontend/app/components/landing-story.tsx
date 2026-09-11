@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const steps = ["Bean", "Brew", "Taste", "World"] as const;
 
 export function LandingStory() {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(1);
   const [paused, setPaused] = useState(false);
   const [brewExpanded, setBrewExpanded] = useState(false);
 
