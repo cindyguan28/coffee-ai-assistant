@@ -11,7 +11,7 @@ import {
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
 import { compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries } from "../../../lib/coffee/bean";
-import { libraryBadges, libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
+import { beanSelectFields, libraryBadges, libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
@@ -123,40 +123,38 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const current = await supabase
+  const available = { library: true, species: true, origins: true, packageWeight: true };
+  const fetchBeans = () => supabase
     .from("beans")
-    .select("id,name,roaster,country,origin_countries,species,arabica_percentage,favorite,lifecycle_state,repurchase_intent,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
+    .select(beanSelectFields(available))
     .eq("user_id", userId!)
     .order("created_at", { ascending: false });
-  const withoutLibraryState = missingLibraryState(current.error) ? await supabase
-    .from("beans")
-    .select("id,name,roaster,country,origin_countries,species,arabica_percentage,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
-    .eq("user_id", userId!)
-    .order("created_at", { ascending: false }) : null;
-  const libraryCompatible = withoutLibraryState ?? current;
-  const withoutSpecies = missingSpecies(libraryCompatible.error) ? await supabase
-    .from("beans")
-    .select("id,name,roaster,country,origin_countries,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
-    .eq("user_id", userId!)
-    .order("created_at", { ascending: false }) : null;
-  const speciesCompatible = withoutSpecies ?? libraryCompatible;
-  const withoutOrigins = missingOriginCountries(speciesCompatible.error) ? await supabase
-    .from("beans")
-    .select("id,name,roaster,country,process,roast_level,price,package_weight_g,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
-    .eq("user_id", userId!)
-    .order("created_at", { ascending: false }) : null;
-  const compatible = withoutOrigins ?? speciesCompatible;
-  const legacy = missingPackageWeight(compatible.error)
-    ? await supabase
-      .from("beans")
-      .select("id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at,bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)")
-      .eq("user_id", userId!)
-      .order("created_at", { ascending: false })
-    : null;
-  const error = legacy ? legacy.error : compatible.error;
-  const beans = (legacy
-    ? (legacy.data ?? []).map((bean) => ({ ...bean, package_weight_g: null, origin_countries: parseOriginCountries(bean.country), species: null, arabica_percentage: null, favorite: false, lifecycle_state: null, repurchase_intent: null }))
-    : (compatible.data ?? []).map((bean) => ({ ...bean, origin_countries: "origin_countries" in bean && Array.isArray(bean.origin_countries) ? bean.origin_countries : parseOriginCountries(bean.country), species: "species" in bean ? bean.species : null, arabica_percentage: "arabica_percentage" in bean ? bean.arabica_percentage : null, favorite: "favorite" in bean ? Boolean(bean.favorite) : false, lifecycle_state: "lifecycle_state" in bean ? bean.lifecycle_state : null, repurchase_intent: "repurchase_intent" in bean ? bean.repurchase_intent : null }))) as Bean[];
+
+  let result = await fetchBeans();
+  for (let attempt = 0; result.error && attempt < 4; attempt += 1) {
+    if (available.library && missingLibraryState(result.error)) available.library = false;
+    else if (available.species && missingSpecies(result.error)) available.species = false;
+    else if (available.origins && missingOriginCountries(result.error)) available.origins = false;
+    else if (available.packageWeight && missingPackageWeight(result.error)) available.packageWeight = false;
+    else break;
+    result = await fetchBeans();
+  }
+
+  const error = result.error;
+  const records = (result.data ?? []) as unknown as Array<Record<string, unknown>>;
+  const beans = records.map((record) => {
+    const country = typeof record.country === "string" ? record.country : null;
+    return {
+      ...record,
+      package_weight_g: available.packageWeight ? record.package_weight_g ?? null : null,
+      origin_countries: available.origins && Array.isArray(record.origin_countries) ? record.origin_countries : parseOriginCountries(country),
+      species: available.species && typeof record.species === "string" ? record.species : null,
+      arabica_percentage: available.species && typeof record.arabica_percentage === "number" ? record.arabica_percentage : null,
+      favorite: available.library && record.favorite === true,
+      lifecycle_state: available.library && typeof record.lifecycle_state === "string" ? record.lifecycle_state : null,
+      repurchase_intent: available.library && typeof record.repurchase_intent === "string" ? record.repurchase_intent : null,
+    };
+  }) as unknown as Bean[];
   const view = libraryView(params.view);
   const visibleBeans = beans.filter((bean) => matchesLibraryView(bean, view));
   const editingBean = beans.find((bean) => bean.id === params.edit);

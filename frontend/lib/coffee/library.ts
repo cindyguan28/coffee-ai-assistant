@@ -7,6 +7,24 @@ export type CoffeeLibraryState = {
   repurchase_intent: string | null;
 };
 
+export type BeanSchemaAvailability = {
+  library: boolean;
+  species: boolean;
+  origins: boolean;
+  packageWeight: boolean;
+};
+
+export function beanSelectFields(available: BeanSchemaAvailability) {
+  return [
+    "id,name,roaster,country,process,roast_level,price,weblink,flavor_notes,acidity,body,sweetness,milk_compatibility,notes,created_at",
+    available.origins ? "origin_countries" : "",
+    available.species ? "species,arabica_percentage" : "",
+    available.library ? "favorite,lifecycle_state,repurchase_intent" : "",
+    available.packageWeight ? "package_weight_g" : "",
+    "bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)",
+  ].filter(Boolean).join(",");
+}
+
 export function libraryView(value?: string | null): LibraryView {
   return LIBRARY_VIEWS.includes(value as LibraryView) ? value as LibraryView : "all";
 }
