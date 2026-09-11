@@ -14,6 +14,7 @@ import { compatibleGuidedValue, normalizeGuidedValue } from "../../../lib/coffee
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
 import { SearchableFlavorPicker } from "../../components/searchable-flavor-picker";
+import { GuidedCombobox } from "../../components/guided-combobox";
 import { SubmitButton } from "../../components/submit-button";
 import { addBean, deleteBean, regenerateBeanProfile, updateBean } from "./actions";
 
@@ -147,19 +148,13 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
             <input id="name" name="name" required maxLength={200} defaultValue={editingBean?.name ?? ""} />
 
             <label htmlFor="roaster">Roaster</label>
-            <input id="roaster" name="roaster" list="roaster-options" maxLength={200} defaultValue={editingBean?.roaster ?? ""} placeholder="Choose or add a roaster" />
-            <datalist id="roaster-options">{roasters.map((option) => <option key={option} value={option} />)}</datalist>
+            <GuidedCombobox id="roaster" name="roaster" options={roasters} initialValue={editingBean?.roaster} placeholder="Search or add a roaster" suggestionLabel="Show roaster suggestions" />
 
             <div className="bean-form-row">
               <div>
                 <label htmlFor="country">Origin</label>
                 <input id="country" name="country" list="country-options" defaultValue={editingBean?.country ?? ""} placeholder="Choose or add an origin" />
                 <datalist id="country-options">{countries.map((option) => <option key={option} value={option} />)}</datalist>
-              </div>
-              <div>
-                <label htmlFor="process">Process</label>
-                <input id="process" name="process" list="process-options" defaultValue={editingBean?.process ?? ""} placeholder="Optional" />
-                <datalist id="process-options">{processes.map((option) => <option key={option} value={option} />)}</datalist>
               </div>
             </div>
 
@@ -193,8 +188,13 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
             <label htmlFor="custom_flavor_notes">Other flavors</label>
             <input id="custom_flavor_notes" name="custom_flavor_notes" defaultValue={customFlavors} placeholder="Comma-separated, e.g. white tea, nougat" />
 
-            <label htmlFor="weblink">Product website</label>
-            <input id="weblink" name="weblink" type="url" defaultValue={editingBean?.weblink ?? ""} placeholder="https://…" />
+            <details className="bean-more-details" open={Boolean(editingBean?.process || editingBean?.weblink)}>
+              <summary>More coffee details <span>Optional</span></summary>
+              <label htmlFor="process">Process</label>
+              <GuidedCombobox id="process" name="process" options={processes} initialValue={editingBean?.process} placeholder="Washed, natural…" suggestionLabel="Show process suggestions" maxLength={100} />
+              <label htmlFor="weblink">Product website</label>
+              <input id="weblink" name="weblink" type="url" defaultValue={editingBean?.weblink ?? ""} placeholder="https://…" />
+            </details>
             <label htmlFor="notes">Personal notes</label>
             <textarea id="notes" name="notes" rows={3} defaultValue={editingBean?.notes ?? ""} />
             <div className="bean-form-actions">

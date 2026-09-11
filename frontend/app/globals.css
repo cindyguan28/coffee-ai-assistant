@@ -402,6 +402,19 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .bean-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .bean-form .auth-submit { margin-top: 22px; }
 .bean-form-row-three { grid-template-columns: repeat(3, 1fr); }
+.guided-combobox { min-width: 0; position: relative; }
+.guided-combobox-control { display: grid; grid-template-columns: minmax(0, 1fr) 44px; }
+.guided-combobox-control input { border-right: 0; }
+.guided-combobox-toggle { border: 1px solid var(--line); background: var(--paper-deep); color: var(--coffee); cursor: pointer; font: 700 18px var(--font-sans), sans-serif; }
+.guided-combobox-menu { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); display: grid; max-height: 240px; overflow-y: auto; border: 1px solid var(--coffee); background: var(--cream); box-shadow: 0 16px 32px rgba(65,39,25,.16); }
+.guided-combobox-menu button { border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; font: 500 12px var(--font-sans), sans-serif; padding: 11px 13px; text-align: left; }
+.guided-combobox-menu button:hover, .guided-combobox-menu button:focus, .guided-combobox-menu button[aria-selected="true"] { background: var(--paper-deep); outline: none; }
+.guided-combobox-menu p { color: var(--muted); font-size: 11px; margin: 0; padding: 12px; }
+.guided-combobox-custom { color: var(--coffee) !important; font-weight: 750 !important; }
+.bean-more-details { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 15px; }
+.bean-more-details summary { color: var(--coffee); cursor: pointer; font-size: 12px; font-weight: 750; }
+.bean-more-details summary span { color: var(--muted); font-size: 9px; font-weight: 400; margin-left: 6px; }
+.bean-more-details[open] summary { margin-bottom: 4px; }
 .option-fieldset, .sensory-fieldset { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
 .option-fieldset legend, .sensory-fieldset legend { font-size: 11px; font-weight: 700; margin-bottom: 10px; }
 .option-fieldset legend span, .sensory-fieldset legend span { color: var(--muted); font-weight: 400; }
