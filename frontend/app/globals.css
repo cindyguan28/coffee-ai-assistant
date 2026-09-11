@@ -416,6 +416,9 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .guided-selected { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .guided-selected button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--coffee); background: var(--paper-deep); color: var(--coffee-dark); cursor: pointer; font: 650 10px var(--font-sans), sans-serif; padding: 7px 9px; }
 .guided-selected button span { font-size: 14px; line-height: 1; }
+.species-selector, .species-composition { display: grid; }
+.species-composition { margin-top: 10px; }
+.species-composition small { color: var(--muted); font-size: 9px; margin-top: 6px; }
 .bean-more-details { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 15px; }
 .bean-more-details summary { color: var(--coffee); cursor: pointer; font-size: 12px; font-weight: 750; }
 .bean-more-details summary span { color: var(--muted); font-size: 9px; font-weight: 400; margin-left: 6px; }

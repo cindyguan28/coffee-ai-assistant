@@ -31,12 +31,20 @@ function missingOriginCountries(error: { code?: string; message?: string } | nul
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("origin_countries"));
 }
 
+function missingSpecies(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (error.message?.includes("species") || error.message?.includes("arabica_percentage")));
+}
+
 function withoutPackageWeight<T extends Record<string, unknown>>(bean: T) {
   return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "package_weight_g"));
 }
 
 function withoutOriginCountries<T extends Record<string, unknown>>(bean: T) {
   return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "origin_countries"));
+}
+
+function withoutSpecies<T extends Record<string, unknown>>(bean: T) {
+  return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "species" && key !== "arabica_percentage"));
 }
 
 export async function addBean(formData: FormData) {
@@ -48,8 +56,12 @@ export async function addBean(formData: FormData) {
   const supabase = await createClient();
   let compatibleBean = bean;
   let { data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single();
+  if (missingSpecies(error)) {
+    compatibleBean = withoutSpecies(bean) as typeof bean;
+    ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
+  }
   if (missingOriginCountries(error)) {
-    compatibleBean = withoutOriginCountries(bean) as typeof bean;
+    compatibleBean = withoutOriginCountries(compatibleBean) as typeof bean;
     ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
   }
   if (missingPackageWeight(error)) {
@@ -87,8 +99,18 @@ export async function updateBean(formData: FormData) {
     .eq("user_id", userId)
     .select("id")
     .single();
+  if (missingSpecies(error)) {
+    compatibleBean = withoutSpecies(validation.value) as typeof validation.value;
+    ({ data, error } = await supabase
+      .from("beans")
+      .update(compatibleBean)
+      .eq("id", beanId)
+      .eq("user_id", userId)
+      .select("id")
+      .single());
+  }
   if (missingOriginCountries(error)) {
-    compatibleBean = withoutOriginCountries(validation.value) as typeof validation.value;
+    compatibleBean = withoutOriginCountries(compatibleBean) as typeof validation.value;
     ({ data, error } = await supabase
       .from("beans")
       .update(compatibleBean)
