@@ -17,6 +17,7 @@ Product Discussion
 → Lint + Test + Build
 → Preview Validation
 → Acceptance
+→ Merge to main / designated release branch
 → Production
 ```
 
@@ -49,10 +50,14 @@ Prefer one continuing development thread for related work. The agent should read
 - **Backlog** — still being discussed or insufficiently defined.
 - **Todo** — Ready for Dev; scope is sufficiently frozen.
 - **In Progress** — actively being implemented.
-- **In Review** — implementation complete; Preview/manual validation underway.
-- **Done** — accepted and verified.
+- **In Review** — implementation complete; Preview/manual validation and integration are underway.
+- **Done** — accepted, verified, and merged into `main` or the designated release branch.
 
 `Todo` means a developer can implement the issue without restarting product discovery; it does not merely mean the issue is important.
+
+**Done gate:** user acceptance alone is not sufficient. An issue may move to Done only after the accepted implementation has been merged into `main` or the designated release branch.
+
+If a later feature branch already contains an earlier accepted issue, prefer one integration PR from the superset branch rather than merging overlapping branches independently.
 
 ## Ready-for-development criteria
 
@@ -150,7 +155,7 @@ Prefer the first meaningful error, relevant stack trace, and roughly 20–40 sur
 
 A code change and a production deployment are not the same event.
 
-Multiple commits are fine. Use Preview when a meaningful batch is ready for validation. Production should normally happen only after implementation is complete, tests/build pass, Preview validation is complete, and required migrations have been reviewed.
+Multiple commits are fine. Use Preview when a meaningful batch is ready for validation. Production should normally happen only after implementation is complete, tests/build pass, Preview validation is complete, required migrations have been reviewed, and the accepted implementation has been merged into `main` or the designated release branch.
 
 Avoid unnecessary repeated production deployments. Hotfixes are an exception.
 
@@ -197,7 +202,9 @@ notice issue → start agent → deploy → notice another issue → start agent
 5. Run lint, tests, build, and Preview validation after the batch.
 6. Manually test the primary user journeys.
 7. Record non-blocking findings for the next batch.
-8. Merge/deploy production only after acceptance.
+8. Merge accepted work into `main` or the designated release branch.
+9. Mark the issue Done only after the merge.
+10. Deploy production deliberately after the release candidate is accepted.
 
 ## Decision rule
 
