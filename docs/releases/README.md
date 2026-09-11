@@ -6,6 +6,7 @@ This directory is the source of truth for Beanmemo product releases. Release not
 
 | Version | Release | Status | Production date |
 | --- | --- | --- | --- |
+| [v0.1.2](./2026-09-11-coffee-library-growth.md) | Coffee Library & Growth Foundation | Draft | Pending |
 | [v0.1.1](./2026-09-10-production-polish.md) | Production polish | Production | 2026-09-10 22:14 CEST |
 | [v0.1.0](./2026-09-09-public-beta.md) | Next.js Public Beta | Production | 2026-09-09 22:55 CEST |
 
