@@ -57,6 +57,9 @@ export async function addBean(formData: FormData) {
   let compatibleBean = bean;
   let { data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single();
   if (missingSpecies(error)) {
+    if (validation.value.species !== null) {
+      redirect(message("error", "Species was not saved because the database migration is missing. Apply 202609110002_bean_species_composition.sql and try again."));
+    }
     compatibleBean = withoutSpecies(bean) as typeof bean;
     ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
   }
@@ -100,6 +103,9 @@ export async function updateBean(formData: FormData) {
     .select("id")
     .single();
   if (missingSpecies(error)) {
+    if (validation.value.species !== null) {
+      redirect(message("error", "Species was not saved because the database migration is missing. Apply 202609110002_bean_species_composition.sql and try again."));
+    }
     compatibleBean = withoutSpecies(validation.value) as typeof validation.value;
     ({ data, error } = await supabase
       .from("beans")
