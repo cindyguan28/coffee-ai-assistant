@@ -50,7 +50,7 @@ export default function Home() {
 
       <section className="closing shell"><CoffeeMark /><p>Your next favorite coffee may already be on your shelf.</p><h2>Remember the cup.<br /><em>Find your taste.</em></h2><a className="button button-primary" href="/login?mode=signup">Start my free coffee journal <Arrow /></a></section>
 
-      <footer className="footer shell"><a className="brand" href="#top"><CoffeeMark /><span>Beanmemo</span></a><p>Your coffee memories, kept close.</p><span><a href="/coffee-journal">Coffee journal guide</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span></footer>
+      <footer className="footer shell"><a className="brand" href="#top"><CoffeeMark /><span>Beanmemo</span></a><p>Your coffee memories, kept close.<small>Designed and built in Munich.</small></p><span><a href="/coffee-journal">Coffee journal guide</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/cindyguan28/coffee-ai-assistant/issues/new" rel="noreferrer" target="_blank">Feedback ↗</a> · Public preview 2026</span></footer>
     </main>
   );
 }

@@ -126,6 +126,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .closing .button { background: var(--paper); color: var(--coffee-dark); border-color: var(--paper); }
 .footer { display: flex; align-items: center; justify-content: space-between; padding: 40px 0; color: var(--muted); font-size: 11px; }
 .footer .brand { color: var(--ink); }
+.footer > p { text-align: center; }
+.footer > p small { display: block; margin-top: 5px; color: var(--coffee); font-size: 9px; letter-spacing: .08em; }
 
 /* Landing page V2 */
 .hero-v2 { min-height: 630px; padding: 68px 0 72px; display: flex; align-items: center; border-bottom: 1px solid var(--line); }
@@ -724,6 +726,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .bag { width: 84px; height: 122px; }
   .preview-topline h2 { font-size: 20px; }
   .footer { align-items: flex-start; gap: 22px; flex-direction: column; }
+  .footer > p { text-align: left; }
   .article-nav-label { display: none; }
   .article-hero h1 { font-size: 49px; }
   .article-content .article-opening { font-size: 22px; }

@@ -24,6 +24,7 @@
 - Rebuilt the landing Bean scene from the real mobile Bean card reference: identity, roaster/origin, flavor tags, At a glance summary, three profile bars, and main flavors.
 - Rebuilt the Brew scene around the real Journal interaction: group by Bean, compare multiple Bean overviews, then automatically expand one entry to reveal its details.
 - Replaced real brand, roaster, bean, and equipment names in marketing examples with generic illustrative names to avoid implying affiliation or endorsement.
+- Added “Designed and built in Munich.” to the landing footer as a restrained origin and trust signal.
 
 ## Marketing operations
 
