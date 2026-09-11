@@ -157,19 +157,33 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .story-bean-card b, .story-brew-card > b, .story-taste-card > b { font: 500 31px var(--font-serif), serif; }
 .story-bean-card p { color: var(--coffee); font: italic 15px var(--font-serif), serif; }
 .story-bean-card small, .story-taste-card small { color: var(--muted); font-size: 9px; }
+.story-bean-copy { min-width: 0; }
+.story-bean-profile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 20px 0 0; background: var(--line); }
+.story-bean-profile div { min-width: 0; background: var(--cream); padding: 10px; }
+.story-bean-profile dt { color: var(--muted); font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
+.story-bean-profile dd { color: var(--coffee); font: 500 16px var(--font-serif), serif; margin: 4px 0 0; white-space: nowrap; }
 .story-brew-card > span, .story-taste-card > span, .story-world-card > span { display: block; margin-bottom: 15px; }
-.story-brew-card dl { display: grid; grid-template-columns: repeat(3, 1fr); margin: 28px 0; background: var(--line); gap: 1px; }
+.story-brew-card dl { display: grid; grid-template-columns: 1.25fr repeat(4, 1fr); margin: 24px 0; background: var(--line); gap: 1px; }
 .story-brew-card dl div { background: var(--cream); padding: 16px; }
 .story-brew-card dt { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .1em; }
-.story-brew-card dd { margin: 5px 0 0; font: 500 23px var(--font-serif), serif; }
+.story-brew-card dd { margin: 5px 0 0; font: 500 17px var(--font-serif), serif; white-space: nowrap; }
 .story-brew-card p { background: #e7eddf; color: var(--muted); padding: 15px; font-size: 11px; line-height: 1.5; }
 .story-brew-card strong { display: block; color: #4d5b3e; margin-bottom: 4px; }
 .story-taste-card { display: grid; gap: 10px; }
 .story-taste-card > b { margin-bottom: 10px; }
-.story-radar { display: block; width: min(100%, 400px); height: 230px; margin: -5px auto 0; overflow: visible; }
+.story-taste-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
+.story-taste-layout > div > b, .story-preference > b { display: block; font: 500 18px/1.3 var(--font-serif), serif; }
+.story-radar { display: block; width: min(100%, 330px); height: 205px; margin: 5px auto 0; overflow: visible; }
 .story-radar-grid, .story-radar-axes line { fill: none; stroke: rgba(111,61,37,.2); stroke-width: 1; }
 .story-radar-data { fill: rgba(217,119,69,.3); stroke: var(--coffee); stroke-width: 2; animation: story-enter .6s ease both; }
 .story-radar-labels { fill: var(--muted); font: 8px var(--font-sans), sans-serif; text-anchor: middle; }
+.story-preference { border-left: 1px solid var(--line); padding-left: 26px; display: grid; gap: 13px; }
+.story-preference > b { margin-bottom: 6px; }
+.story-preference > div { display: grid; gap: 6px; }
+.story-preference div span { color: var(--muted); font-size: 9px; font-weight: 650; letter-spacing: 0; text-transform: none; }
+.story-preference i { display: block; height: 6px; background: var(--paper-deep); position: relative; }
+.story-preference i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--story-score); background: var(--orange); animation: story-preference-bar .7s ease both; }
+.story-preference small { line-height: 1.45; }
 .story-world-map { display: block; width: 100%; height: auto; max-height: 225px; }
 .story-land { fill: #ded7cb; stroke: var(--cream); stroke-width: 2; }
 .story-map-pins { fill: var(--coffee); stroke: var(--cream); stroke-width: 3; }
@@ -202,7 +216,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .privacy-points span { color: var(--muted); font-size: 11px; line-height: 1.5; }
 @keyframes story-progress { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
 @keyframes story-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .story-tabs button[aria-selected="true"]::after, .story-panel, .story-radar-data { animation: none; } }
+@keyframes story-preference-bar { from { width: 0; } }
+@media (prefers-reduced-motion: reduce) { .story-tabs button[aria-selected="true"]::after, .story-panel, .story-radar-data, .story-preference i::after { animation: none; } }
 
 .article-page { background: var(--paper); }
 .article-nav-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
@@ -689,9 +704,11 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .story-panel { margin: 16px; padding: 22px; min-height: 340px; }
   .story-bean-card { grid-template-columns: 105px 1fr; gap: 18px; }
   .story-bag { height: 170px; padding-top: 35px; }
-  .story-brew-card dl { grid-template-columns: repeat(3, 1fr); }
+  .story-brew-card dl { grid-template-columns: repeat(2, 1fr); }
   .story-brew-card dl div { padding: 12px 8px; }
-  .story-radar { height: 210px; }
+  .story-taste-layout { grid-template-columns: 1fr; gap: 18px; }
+  .story-radar { height: 190px; }
+  .story-preference { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
   .story-map-summary { grid-template-columns: auto 1fr; }
   .story-map-summary p { grid-column: 1 / -1; justify-self: start; }
   .value-grid article { min-height: 215px; padding: 28px; }

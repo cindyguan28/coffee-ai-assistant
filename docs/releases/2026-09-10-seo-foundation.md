@@ -16,6 +16,10 @@
 - Replaced the landing Taste inference placeholder with the implemented six-dimensional sensory radar.
 - Replaced the abstract Coffee World orbit placeholder with a map visual aligned to the product experience.
 - Added an explicit Back to Beanmemo link to the Coffee Journal guide navigation.
+- Expanded the Bean story with Roast, Acidity, and Intensity profile dimensions.
+- Replaced the generic brew example with an Isomac espresso setup including grind, dose, yield, time, result, and next adjustment.
+- Added a clearly separated horizontal Bean Preference preview below the six-dimensional sensory Radar.
+- Rewrote the Coffee World story copy around the user’s growing personal origin map.
 
 ## Marketing operations
 
