@@ -21,6 +21,7 @@
 - Replaced the generic brew example with an Isomac espresso setup including grind, dose, yield, time, result, and next adjustment.
 - Added a clearly separated horizontal Bean Preference preview below the six-dimensional sensory Radar.
 - Rewrote the Coffee World story copy around the user’s growing personal origin map.
+- Rebuilt the landing Bean scene from the real mobile Bean card reference: identity, roaster/origin, flavor tags, At a glance summary, three profile bars, and main flavors.
 
 ## Marketing operations
 

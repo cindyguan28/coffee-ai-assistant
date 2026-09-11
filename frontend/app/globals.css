@@ -150,18 +150,28 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .story-copy h3 { font: 500 clamp(34px, 4vw, 50px)/1.08 var(--font-serif), serif; margin: 18px 0; }
 .story-copy > span { display: block; max-width: 380px; color: var(--muted); line-height: 1.65; }
 .story-panel { margin: 24px; background: var(--paper); border: 1px solid var(--line); padding: 34px; display: grid; align-items: center; animation: story-enter .45s ease both; }
-.story-bean-card { display: grid; grid-template-columns: 145px 1fr; gap: 35px; align-items: end; position: relative; }
-.story-bean-card > span { position: absolute; top: 0; left: 0; }
+.story-bean-card { display: grid; gap: 15px; position: relative; }
+.story-bean-card > span { display: block; }
 .story-bag { height: 220px; padding: 44px 16px 24px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; color: #fff7eb; background: var(--orange); border-radius: 6px 6px 10px 10px; box-shadow: 0 18px 30px rgba(83,45,26,.2); transform: rotate(-2deg); font-size: 11px; text-align: center; }
 .story-bag small { font-size: 8px; letter-spacing: .16em; }
-.story-bean-card b, .story-brew-card > b, .story-taste-card > b { font: 500 31px var(--font-serif), serif; }
-.story-bean-card p { color: var(--coffee); font: italic 15px var(--font-serif), serif; }
+.story-bean-card > .story-bean-heading b, .story-brew-card > b, .story-taste-card > b { font: 500 31px var(--font-serif), serif; }
+.story-bean-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+.story-bean-heading p { margin: 0; color: var(--muted); font-size: 11px; }
 .story-bean-card small, .story-taste-card small { color: var(--muted); font-size: 9px; }
-.story-bean-copy { min-width: 0; }
-.story-bean-profile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 20px 0 0; background: var(--line); }
-.story-bean-profile div { min-width: 0; background: var(--cream); padding: 10px; }
-.story-bean-profile dt { color: var(--muted); font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
-.story-bean-profile dd { color: var(--coffee); font: 500 16px var(--font-serif), serif; margin: 4px 0 0; white-space: nowrap; }
+.story-bean-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.story-bean-tags small { background: var(--paper-deep); color: var(--coffee-dark); padding: 7px 9px; letter-spacing: .07em; text-transform: uppercase; }
+.story-bean-profile { border: 1px solid var(--line); padding: 18px; }
+.story-profile-heading { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 11px; }
+.story-profile-heading span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.story-profile-heading b { font: 500 20px var(--font-serif), serif; }
+.story-profile-row { display: grid; grid-template-columns: 68px 42px 1fr 54px; gap: 10px; align-items: center; margin: 8px 0; }
+.story-profile-row dt { color: var(--muted); font-size: 8px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.story-profile-row dd { color: var(--coffee-dark); font: 500 17px var(--font-serif), serif; margin: 0; }
+.story-profile-row i { display: block; height: 6px; background: var(--paper-deep); }
+.story-profile-row i span { display: block; height: 100%; background: var(--coffee); }
+.story-profile-row small { color: var(--muted); }
+.story-bean-profile > p { border-top: 1px solid var(--line); margin: 11px 0 0; padding-top: 11px; color: var(--muted); font-size: 10px; }
+.story-bean-profile > p b { color: var(--ink); }
 .story-brew-card > span, .story-taste-card > span, .story-world-card > span { display: block; margin-bottom: 15px; }
 .story-brew-card dl { display: grid; grid-template-columns: 1.25fr repeat(4, 1fr); margin: 24px 0; background: var(--line); gap: 1px; }
 .story-brew-card dl div { background: var(--cream); padding: 16px; }
@@ -702,8 +712,9 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .story-stage { min-height: 590px; }
   .story-copy { padding: 30px 22px 5px; }
   .story-panel { margin: 16px; padding: 22px; min-height: 340px; }
-  .story-bean-card { grid-template-columns: 105px 1fr; gap: 18px; }
-  .story-bag { height: 170px; padding-top: 35px; }
+  .story-bean-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .story-profile-row { grid-template-columns: 62px 38px 1fr; }
+  .story-profile-row small { grid-column: 3; }
   .story-brew-card dl { grid-template-columns: repeat(2, 1fr); }
   .story-brew-card dl div { padding: 12px 8px; }
   .story-taste-layout { grid-template-columns: 1fr; gap: 18px; }
