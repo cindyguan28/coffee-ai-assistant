@@ -22,6 +22,8 @@
 - Added a clearly separated horizontal Bean Preference preview below the six-dimensional sensory Radar.
 - Rewrote the Coffee World story copy around the user’s growing personal origin map.
 - Rebuilt the landing Bean scene from the real mobile Bean card reference: identity, roaster/origin, flavor tags, At a glance summary, three profile bars, and main flavors.
+- Rebuilt the Brew scene around the real Journal interaction: group by Bean, compare multiple Bean overviews, then automatically expand one entry to reveal its details.
+- Replaced real brand, roaster, bean, and equipment names in marketing examples with generic illustrative names to avoid implying affiliation or endorsement.
 
 ## Marketing operations
 

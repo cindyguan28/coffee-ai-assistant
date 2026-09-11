@@ -143,7 +143,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .story-tabs button span { color: var(--muted); font-size: 8px; margin-right: 10px; }
 .story-tabs button[aria-selected="true"] { color: var(--cream); background: var(--coffee); }
 .story-tabs button[aria-selected="true"] span { color: #dfb091; }
-.story-tabs button[aria-selected="true"]::after { content: ""; position: absolute; height: 3px; left: 0; right: 0; bottom: -1px; background: var(--orange); animation: story-progress 2.4s linear; }
+.story-tabs button[aria-selected="true"]::after { content: ""; position: absolute; height: 3px; left: 0; right: 0; bottom: -1px; background: var(--orange); animation: story-progress 4.2s linear; }
 .story-stage { min-height: 390px; display: grid; grid-template-columns: .82fr 1.18fr; }
 .story-copy { padding: 58px; align-self: center; }
 .story-copy > p, .story-panel span { color: var(--coffee); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
@@ -179,6 +179,32 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .story-brew-card dd { margin: 5px 0 0; font: 500 17px var(--font-serif), serif; white-space: nowrap; }
 .story-brew-card p { background: #e7eddf; color: var(--muted); padding: 15px; font-size: 11px; line-height: 1.5; }
 .story-brew-card strong { display: block; color: #4d5b3e; margin-bottom: 4px; }
+.story-journal-card { display: grid; gap: 10px; }
+.story-journal-toolbar { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 28px; padding: 9px 15px; }
+.story-journal-toolbar span { color: var(--muted); font-size: 7px; }
+.story-journal-toolbar b { font: 500 15px var(--font-serif), serif; }
+.story-journal-group { border: 1px solid var(--line); background: var(--cream); }
+.story-journal-group header { padding: 14px 16px 12px; }
+.story-journal-group header span { color: var(--coffee); font-size: 7px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.story-journal-group header b { display: block; font: 500 22px var(--font-serif), serif; margin: 5px 0 3px; }
+.story-journal-group header p { color: var(--muted); font-size: 8px; margin: 0; }
+.story-journal-group > button { width: 100%; display: grid; grid-template-columns: 62px 1.3fr 55px 74px 14px; align-items: center; gap: 9px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); padding: 11px 16px; text-align: left; cursor: pointer; font: 650 10px var(--font-sans), sans-serif; }
+.story-journal-group > button span { color: var(--muted); font-size: 9px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.story-journal-group > button span small, .story-journal-group > button b small { display: block; color: var(--muted); font: 500 6px var(--font-sans), sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.story-journal-group > button b { color: var(--coffee); font: 500 18px var(--font-serif), serif; }
+.story-journal-group > button b small { color: var(--coffee); }
+.story-journal-group > button i { color: var(--coffee); font: normal 20px var(--font-serif), serif; }
+.story-journal-detail { border-top: 1px solid var(--line); background: var(--paper); padding: 12px 16px; animation: story-detail .45s ease both; }
+.story-journal-detail dl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 0; background: var(--line); }
+.story-journal-detail dl div { background: var(--paper); padding: 7px; }
+.story-journal-detail dt, .story-journal-detail p span { color: var(--muted); font-size: 6px; letter-spacing: .07em; text-transform: uppercase; }
+.story-journal-detail dd { margin: 3px 0 0; font: 500 12px var(--font-serif), serif; }
+.story-journal-detail blockquote { border-left: 2px solid var(--coffee); margin: 10px 0; padding: 5px 9px; font: 500 10px/1.4 var(--font-sans), sans-serif; }
+.story-journal-detail p { display: flex; align-items: center; gap: 7px; margin: 7px 0 0; color: var(--ink); font: 500 11px var(--font-serif), serif; }
+.story-journal-detail p b { background: var(--paper-deep); padding: 5px 6px; font: 650 7px var(--font-sans), sans-serif; }
+.story-journal-group-secondary header { padding-block: 10px; }
+.story-journal-group-secondary header b { font-size: 17px; }
+.story-equipment-line { color: var(--muted); font-size: 7px; line-height: 1.4; }
 .story-taste-card { display: grid; gap: 10px; }
 .story-taste-card > b { margin-bottom: 10px; }
 .story-taste-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: center; }
@@ -226,6 +252,7 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
 .privacy-points span { color: var(--muted); font-size: 11px; line-height: 1.5; }
 @keyframes story-progress { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
 @keyframes story-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes story-detail { from { opacity: 0; max-height: 0; transform: translateY(-5px); } to { opacity: 1; max-height: 240px; transform: none; } }
 @keyframes story-preference-bar { from { width: 0; } }
 @media (prefers-reduced-motion: reduce) { .story-tabs button[aria-selected="true"]::after, .story-panel, .story-radar-data, .story-preference i::after { animation: none; } }
 
@@ -717,6 +744,8 @@ h1 em, h2 em { color: var(--coffee); font-weight: 400; }
   .story-profile-row small { grid-column: 3; }
   .story-brew-card dl { grid-template-columns: repeat(2, 1fr); }
   .story-brew-card dl div { padding: 12px 8px; }
+  .story-journal-group > button { grid-template-columns: 52px 1fr 44px 61px 12px; padding-inline: 10px; gap: 6px; }
+  .story-journal-detail dl { grid-template-columns: repeat(2, 1fr); }
   .story-taste-layout { grid-template-columns: 1fr; gap: 18px; }
   .story-radar { height: 190px; }
   .story-preference { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
