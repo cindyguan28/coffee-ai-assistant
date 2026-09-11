@@ -71,7 +71,7 @@ export default function CoffeeJournalPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
       <nav className="nav shell" aria-label="Main navigation">
         <Link className="brand" href="/" aria-label="Beanmemo home"><CoffeeMark /><span>Beanmemo</span></Link>
-        <span className="article-nav-label">Coffee journal guide</span>
+        <Link className="article-nav-label article-home-link" href="/">← Back to Beanmemo</Link>
         <Link className="nav-action" href="/login?mode=signup">Start free <span aria-hidden="true">↗</span></Link>
       </nav>
 

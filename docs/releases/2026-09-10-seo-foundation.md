@@ -13,6 +13,9 @@
 - Added an interactive, auto-playing Bean → Brew → Taste → World product story with clickable tabs and reduced-motion support.
 - Reframed five equal feature cards into the Remember → Learn → Discover value loop.
 - Reduced onboarding to three steps and added concise privacy, preview pricing, and no-credit-card assurances.
+- Replaced the landing Taste inference placeholder with the implemented six-dimensional sensory radar.
+- Replaced the abstract Coffee World orbit placeholder with a map visual aligned to the product experience.
+- Added an explicit Back to Beanmemo link to the Coffee Journal guide navigation.
 
 ## Marketing operations
 
