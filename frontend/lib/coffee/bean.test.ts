@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compatibleGuidedValue, normalizeGuidedValue, validateBean } from "./bean";
+import { coffeeProductRecord, compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries, referenceProfileSource, validateBean } from "./bean";
 
 describe("Bean validation", () => {
   it("accepts guided and custom metadata and deduplicates flavor labels", () => {
@@ -23,5 +23,54 @@ describe("Bean validation", () => {
     expect(compatibleGuidedValue("medium_dark", ["Light", "Medium dark"])).toBe("Medium dark");
     expect(compatibleGuidedValue("good_with_milk", ["Good with milk"])).toBe("Good with milk");
     expect(compatibleGuidedValue("roaster_custom_value", ["Known"])).toBe("roaster_custom_value");
+  });
+
+  it("stores multiple origins while retaining a compatible country summary", () => {
+    const form = new FormData();
+    form.set("name", "House blend");
+    form.append("origin_countries", "Brazil");
+    form.append("origin_countries", "India");
+    const result = validateBean(form);
+    expect(result.ok && result.value).toMatchObject({ country: "Brazil, India", origin_countries: ["Brazil", "India"] });
+    expect(parseOriginCountries("Brazil / India, Brazil")).toEqual(["Brazil", "India"]);
+  });
+
+  it("stores species and an optional Arabica/Robusta blend composition", () => {
+    const form = new FormData();
+    form.set("name", "Espresso blend");
+    form.set("species", "Blend");
+    form.set("arabica_percentage", "70");
+    const result = validateBean(form);
+    expect(result.ok && result.value).toMatchObject({ species: "Blend", arabica_percentage: 70 });
+  });
+
+  it("rejects invalid species composition without manufacturing a ratio", () => {
+    const singleOrigin = new FormData();
+    singleOrigin.set("name", "Arabica"); singleOrigin.set("species", "100% Arabica"); singleOrigin.set("arabica_percentage", "70");
+    expect(validateBean(singleOrigin)).toEqual({ ok: false, message: "Only add a composition percentage for a blend." });
+
+    const blend = new FormData();
+    blend.set("name", "Blend"); blend.set("species", "Blend"); blend.set("arabica_percentage", "120");
+    expect(validateBean(blend)).toEqual({ ok: false, message: "Enter a whole Arabica percentage between 0 and 100." });
+  });
+
+  it("represents capsules without manufacturing bean-specific metadata", () => {
+    const form = new FormData();
+    form.set("name", "Arpeggio"); form.set("product_format", "capsule");
+    form.set("capsule_system", "Nespresso Original"); form.set("capsule_intensity", "9");
+    form.set("reference_source_type", "roaster_official"); form.set("reference_source_name", "Nespresso");
+    form.set("weblink", "https://example.com/arpeggio");
+    const result = validateBean(form);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(coffeeProductRecord(result.value)).toMatchObject({ product_format: "capsule", capsule_system: "Nespresso Original", capsule_intensity: 9, country: null, species: null });
+    expect(coffeeProductRecord(result.value)).not.toHaveProperty("reference_source_type");
+    expect(referenceProfileSource(result.value)).toEqual({ reference_source_type: "roaster_official", reference_source_name: "Nespresso", reference_source_url: "https://example.com/arpeggio" });
+  });
+
+  it("defaults existing coffee records to whole bean semantics", () => {
+    const form = new FormData(); form.set("name", "Legacy coffee");
+    const result = validateBean(form);
+    expect(result.ok && result.value.product_format).toBe("whole_bean");
   });
 });

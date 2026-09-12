@@ -27,6 +27,15 @@ describe("calculateFlavorFamilies", () => {
       { family: "Chocolate", weight: 2, brewCount: 1 },
     ]);
   });
+
+  it("keeps perceived flavor evidence separate from reference flavor claims", () => {
+    const logs = [{ score: 9, flavor_notes: "cocoa", perceived_flavor_notes: "grapefruit peel, green apple" }];
+    expect(calculateFlavorFamilies(logs)).toEqual([{ family: "Chocolate", weight: 4, brewCount: 1 }]);
+    expect(calculateFlavorFamilies(logs, "perceived")).toEqual([
+      { family: "Citrus", weight: 4, brewCount: 1 },
+      { family: "Orchard fruit", weight: 4, brewCount: 1 },
+    ]);
+  });
 });
 
 describe("explainTasteDimension", () => {
