@@ -1,0 +1,30 @@
+import type { Metadata } from "next";
+import { GuideExample, PublicGuide } from "../components/public-guide";
+
+export const metadata: Metadata = {
+  title: "Coffee Bean Tracker: Organize Your Home Coffee Shelf",
+  description: "Learn how to track coffee beans at home, organize what is on hand, remember favorites and finished bags, and make clearer repurchase decisions.",
+  alternates: { canonical: "/coffee-bean-tracker" },
+  openGraph: { title: "How to Track Coffee Beans at Home", description: "A simple coffee bean tracker for your shelf, history, favorites, and repurchase decisions.", url: "/coffee-bean-tracker", type: "article", publishedTime: "2026-09-12" },
+  twitter: { card: "summary", title: "A Practical Coffee Bean Tracker", description: "Keep your current shelf useful without losing your coffee history." },
+};
+
+const sections = [["what-to-track", "What to track"], ["shelf-history", "Shelf and history"], ["product-details", "Product details"], ["tracker-example", "Tracker example"], ["review-routine", "Review routine"]] as const;
+
+export default function CoffeeBeanTrackerPage() {
+  return <PublicGuide title="A Coffee Bean Tracker" titleAccent="for Your Real-Life Shelf" description={metadata.description as string} route="/coffee-bean-tracker" sections={[...sections]}>
+    <p className="article-opening">A coffee bean tracker is not just an inventory list. It should remember what you own now, what you tried before, and what you want to buy—or avoid—next time.</p>
+    <p>The useful unit is the coffee product: a whole-bean bag, pre-ground coffee, capsule, or another format. Save the details you actually know, then connect brews and decisions over time.</p>
+    <section className="article-answer" aria-label="The short answer"><span>The short answer</span><p>Track identity, format, shelf status, a few useful product details, and your personal intent. Keep finished and disliked coffees in history instead of deleting the evidence.</p></section>
+
+    <section id="what-to-track"><p className="article-section-number">01</p><h2>Track enough to recognize the coffee</h2><p>The smallest useful product record contains:</p><ul><li>coffee name;</li><li>roaster or brand;</li><li>format: whole bean, ground coffee, capsule, or other;</li><li>whether it is on hand, finished, or something you want to try;</li><li>your repurchase decision.</li></ul><p>Add price, package weight, a product link, roast level, origin, and printed flavor notes when they help you compare. Do not delay saving a coffee because the process or variety is missing.</p><p className="article-note"><strong>Practical rule:</strong> if a field does not help you identify, brew, compare, or repurchase the coffee, it can stay empty.</p></section>
+
+    <section id="shelf-history"><p className="article-section-number">02</p><h2>Separate your shelf from your history</h2><p>Your default view should answer “what coffee do I have?” Finished products can move out of the active shelf without disappearing.</p><GuideExample rows={[["On hand", "Currently available at home"], ["Want to try", "Saved for a future purchase"], ["Finished", "No longer on the shelf, still in history"], ["Favorite", "A quick personal highlight"], ["Buy again", "Actively worth repurchasing"], ["Not for me", "Useful negative preference evidence"]]} /><p>These states answer different questions. A finished coffee may still be a favorite. A coffee can be on hand but already marked not for me. Avoid forcing everything into one status when separate shelf and intent signals are clearer.</p></section>
+
+    <section id="product-details"><p className="article-section-number">03</p><h2>Use details that fit the product format</h2><p>Whole and ground coffee may have origin countries, species, process, roast level, acidity, and flavor notes. A blend may include several countries or an Arabica–Robusta composition.</p><p>A capsule is still a coffee product, but it may be better described by capsule system, product line, and intensity. It should not require a grinder, dose, farm, or process simply to fit a bean-shaped form.</p><p>Keep source information visible. Printed or roaster-provided notes are a reference profile. Your own tasting notes belong to your brew history and should not silently overwrite the original description.</p></section>
+
+    <section id="tracker-example"><p className="article-section-number">04</p><h2>A practical coffee tracker example</h2><GuideExample rows={[["Product", "Guatemala PUR · GEPA"], ["Format", "Whole bean"], ["Origins", "Guatemala"], ["Roast", "Medium"], ["Reference flavors", "Chocolate · nutty"], ["Shelf", "On hand"], ["Intent", "Buy again"], ["History", "4 brews · best 8/10 · latest September 9"]]} className="journal-example-espresso" /><p>For a capsule, the middle rows might instead read “Nespresso Original · Arpeggio · intensity 9.” The shelf and personal history still work the same way.</p><p>Price becomes more comparable when package weight is included. But cost per kilogram is context, not a quality score; an expensive coffee is not automatically a better match for you.</p></section>
+
+    <section id="review-routine"><p className="article-section-number">05</p><h2>Use a tiny shelf-review routine</h2><p>Once a week—or whenever you open a new product—take one minute to:</p><ol><li>add anything new;</li><li>move empty products to finished;</li><li>mark favorites while you remember why;</li><li>decide buy again or not for me;</li><li>check your saved want-to-try list before shopping.</li></ol><p>Do not delete a disappointing coffee just to keep the shelf pretty. Its history can prevent the same purchase and make your real preferences clearer.</p><p>A tracker remembers products and decisions. A <a href="/brew-log">coffee brew log</a> records what happened during preparation. A <a href="/coffee-journal">personal coffee journal</a> connects both into a longer story.</p></section>
+  </PublicGuide>;
+}
