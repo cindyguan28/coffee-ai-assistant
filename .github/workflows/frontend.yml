@@ -2,14 +2,15 @@ name: Frontend CI
 
 on:
   pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend.yml"
   push:
-    branches: [main, "release/**", "feature/**"]
+    branches: [main, "release/**", "feature/**", "fix/**"]
     paths:
       - "frontend/**"
       - ".github/workflows/frontend.yml"
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -31,4 +32,3 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
-
