@@ -9,7 +9,12 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 5
     groups:
+      frontend-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
       frontend-minor-and-patch:
+        applies-to: version-updates
         patterns:
           - "*"
         update-types:
@@ -24,6 +29,11 @@ updates:
       time: "06:30"
       timezone: Europe/Berlin
     groups:
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
       github-actions:
+        applies-to: version-updates
         patterns:
           - "*"
