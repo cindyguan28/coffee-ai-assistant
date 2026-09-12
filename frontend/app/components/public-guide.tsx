@@ -24,6 +24,10 @@ export function PublicGuide({
   description,
   route,
   sections,
+  ctaKicker,
+  ctaTitle,
+  ctaDescription,
+  ctaLabel,
   children,
 }: {
   title: string;
@@ -31,6 +35,10 @@ export function PublicGuide({
   description: string;
   route: string;
   sections: GuideSection[];
+  ctaKicker: string;
+  ctaTitle: string;
+  ctaDescription: string;
+  ctaLabel: string;
   children: React.ReactNode;
 }) {
   const articleJsonLd = {
@@ -58,13 +66,14 @@ export function PublicGuide({
       <h1>{title} <em>{titleAccent}</em></h1>
       <p className="article-deck">{description}</p>
       <div className="article-byline"><span>By Beanmemo</span><span aria-hidden="true">·</span><time dateTime="2026-09-12">September 12, 2026</time></div>
+      <p className="article-editorial-note">Written by the Beanmemo team in Munich from hands-on work building a personal coffee journal.</p>
     </header>
 
     <div className="article-layout shell">
       <aside className="article-toc" aria-label="On this page"><p>On this page</p><ol>{sections.map(([id, label]) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></aside>
       <article className="article-content">
         {children}
-        <section className="article-cta"><CoffeeMark /><p>Keep what matters</p><h2>Remember the coffee. Learn from the cup.</h2><p>Beanmemo keeps your coffees, brews, and personal taste together in one private space. It is free during public preview, with no credit card required.</p><Link className="button button-primary" href="/login?mode=signup">Start your free coffee journal <span aria-hidden="true">↗</span></Link></section>
+        <section className="article-cta"><CoffeeMark /><p>{ctaKicker}</p><h2>{ctaTitle}</h2><p>{ctaDescription} Beanmemo is free during public preview, with no credit card required.</p><Link className="button button-primary" href="/login?mode=signup">{ctaLabel} <span aria-hidden="true">↗</span></Link></section>
         <section className="guide-links" aria-labelledby="related-guides"><p className="article-section-number">KEEP READING</p><h2 id="related-guides">Related coffee guides</h2><div>{guides.filter(([href]) => href !== route).map(([href, label]) => <Link key={href} href={href}><span>{label}</span><b aria-hidden="true">↗</b></Link>)}</div></section>
       </article>
     </div>
