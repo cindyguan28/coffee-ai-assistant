@@ -1,5 +1,7 @@
+import { extractFlavorFamilies } from "./taste";
+
 export type BrewValidation =
-  | { ok: true; value: Record<string, string | number | null> }
+  | { ok: true; value: Record<string, string | number | string[] | null> }
   | { ok: false; message: string };
 
 const MILK_DRINKS = new Set(["cappuccino", "flat_white", "caffe_latte", "latte_macchiato", "espresso_macchiato", "cortado", "mocha", "milk_coffee"]);
@@ -45,7 +47,7 @@ function numberValue(
 
 export function validateBrewLog(formData: FormData): BrewValidation {
   const beanId = stringValue(formData, "bean_id", 100);
-  if (!beanId) return { ok: false, message: "Choose one of your coffee beans." };
+  if (!beanId) return { ok: false, message: "Choose one of your coffees." };
 
   const brewDate = stringValue(formData, "brew_date", 10);
   if (!brewDate || !/^\d{4}-\d{2}-\d{2}$/.test(brewDate)) {
@@ -75,6 +77,7 @@ export function validateBrewLog(formData: FormData): BrewValidation {
   }
   if (numbers.score === null) return { ok: false, message: "Add a liking score from 0 to 10." };
   if (numbers.grind_setting === null) return { ok: false, message: "Add the grind setting used for this cup." };
+  const perceivedFlavorNotes = stringValue(formData, "perceived_flavor_notes", 1000);
 
   return {
     ok: true,
@@ -91,6 +94,9 @@ export function validateBrewLog(formData: FormData): BrewValidation {
       problem_tags: stringList(formData, "problem_tags", 500),
       next_adjustment: stringValue(formData, "next_adjustment", 1000),
       notes: stringValue(formData, "notes", 2000),
+      perceived_flavor_notes: perceivedFlavorNotes,
+      normalized_flavor_families: perceivedFlavorNotes ? extractFlavorFamilies(perceivedFlavorNotes) : [],
+      taste_description: stringValue(formData, "taste_description", 2000),
       ...numbers,
     },
   };

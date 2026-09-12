@@ -44,13 +44,13 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const [beansResult, logsResult, profileResult] = await Promise.all([
     supabase.from("beans").select("id,name,roaster").eq("user_id", userId!).order("name"),
-    supabase.from("brew_logs").select("*,beans(name,roaster)").eq("user_id", userId!).order("brew_date", { ascending: false }).limit(50),
+    supabase.from("brew_logs").select("*,beans(name,roaster,flavor_notes,acidity)").eq("user_id", userId!).order("brew_date", { ascending: false }).limit(50),
     supabase.from("user_profiles").select("default_machine_model,default_grinder_type,default_brew_method").eq("user_id", userId!).maybeSingle(),
   ]);
   const legacyEquipmentResult = profileResult.error
     ? await supabase.from("user_profiles").select("default_machine_model,default_grinder_type").eq("user_id", userId!).maybeSingle()
     : null;
-  const logs = (logsResult.data ?? []) as unknown as Array<Log & { beans?: { name?: string; roaster?: string } | null }>;
+  const logs = (logsResult.data ?? []) as unknown as Array<Log & { beans?: { name?: string; roaster?: string; flavor_notes?: string; acidity?: string } | null }>;
   const editing = params.edit ? logs.find((log) => log.id === params.edit) : undefined;
   const value = (field: string) => editing?.[field] ?? "";
   const numberValue = (field: string, fallback: number) => value(field) === "" || value(field) === null ? fallback : Number(value(field));
@@ -90,7 +90,7 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             <input type="hidden" name="grinder_type" value={grinderType} />
             <label htmlFor="bean_id">Coffee *</label>
             <select id="bean_id" name="bean_id" defaultValue={String(value("bean_id"))} required>
-              <option value="">Choose a bean</option>{beansResult.data.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}</option>)}
+              <option value="">Choose a coffee</option>{beansResult.data.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}</option>)}
             </select>
             {!editing && <BrewStarter entries={logs as unknown as JournalEntry[]} initialBeanId={String(value("bean_id"))} />}
             <div className="bean-form-row">
@@ -104,6 +104,15 @@ export default async function BrewsPage({ searchParams }: PageProps) {
               acidity: sensoryValue("acidity"), bitterness: sensoryValue("bitterness"), sweetness: sensoryValue("sweetness"),
               aroma: sensoryValue("aroma"), body: sensoryValue("body"), balance: sensoryValue("balance"),
             }} />
+
+            <section className="perception-capture">
+              <span>YOUR PERCEPTION</span>
+              <p>Use your own words. This stays separate from the roaster or product description.</p>
+              <label htmlFor="perceived_flavor_notes">Flavors you tasted</label>
+              <input id="perceived_flavor_notes" name="perceived_flavor_notes" defaultValue={String(value("perceived_flavor_notes"))} placeholder="e.g. grapefruit peel, green apple" />
+              <label htmlFor="taste_description">Taste description</label>
+              <textarea id="taste_description" name="taste_description" rows={2} defaultValue={String(value("taste_description"))} placeholder="e.g. much brighter and sharper than the package suggested" />
+            </section>
 
             <BrewContextFields key={editing ? `context-${editing.id}` : "context-new"} methods={BREW_METHOD_OPTIONS} drinks={DRINK_TYPE_OPTIONS} milks={MILK_TYPE_OPTIONS} pairings={MILK_PAIRING_OPTIONS} initial={{
               brewMethod, drinkType: String(value("drink_type")), milkType: String(value("milk_type")), milkMl: String(value("milk_ml")), milkPairing: String(value("milk_pairing")),

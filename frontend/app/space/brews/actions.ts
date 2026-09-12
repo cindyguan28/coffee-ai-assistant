@@ -21,14 +21,18 @@ function missingColumn(error: { code?: string; message?: string } | null, column
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes(column)));
 }
 
-function withoutField(value: Record<string, string | number | null>, field: string) {
+function withoutField(value: Record<string, string | number | string[] | null>, field: string) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => key !== field));
 }
 
-const OPTIONAL_MIGRATION_FIELDS = ["water_temp_c", "milk_pairing"] as const;
+const OPTIONAL_MIGRATION_FIELDS = ["water_temp_c", "milk_pairing", "perceived_flavor_notes", "normalized_flavor_families", "taste_description"] as const;
 
 function missingOptionalField(error: { code?: string; message?: string } | null) {
   return OPTIONAL_MIGRATION_FIELDS.find((field) => missingColumn(error, field));
+}
+
+function hasOptionalValue(value: string | number | string[] | null | undefined) {
+  return Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
 }
 
 async function ownedBeanExists(beanId: string, userId: string) {
@@ -75,7 +79,7 @@ export async function addBrewLog(formData: FormData) {
   for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
     const field = missingOptionalField(error);
     if (!field) break;
-    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    if (hasOptionalValue(validated.value[field])) redirect(destination("error", `Apply migration 202609120001 before saving ${field.replaceAll("_", " ")}.`));
     payload = withoutField(payload, field);
     ({ error } = await supabase.from("brew_logs").insert({ ...payload, user_id: userId }));
   }
@@ -98,7 +102,7 @@ export async function updateBrewLog(formData: FormData) {
   for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
     const field = missingOptionalField(error);
     if (!field) break;
-    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    if (hasOptionalValue(validated.value[field])) redirect(destination("error", `Apply migration 202609120001 before saving ${field.replaceAll("_", " ")}.`));
     payload = withoutField(payload, field);
     ({ error } = await supabase.from("brew_logs").update(payload).eq("id", logId).eq("user_id", userId));
   }

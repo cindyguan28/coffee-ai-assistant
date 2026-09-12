@@ -22,10 +22,12 @@ describe("Coffee library state", () => {
   });
 
   it("keeps library fields when an unrelated legacy field is unavailable", () => {
-    const fields = beanSelectFields({ library: true, species: true, origins: false, packageWeight: true });
+    const fields = beanSelectFields({ library: true, species: true, origins: false, packageWeight: true, product: true, profileSource: true });
     expect(fields).toContain("favorite,lifecycle_state,repurchase_intent");
     expect(fields).toContain("species,arabica_percentage");
     expect(fields).not.toContain("origin_countries");
+    expect(fields).toContain("product_format,capsule_system,capsule_line,capsule_intensity");
+    expect(fields).toContain("reference_source_type");
   });
 
   it("validates state updates without conflating intent and lifecycle", () => {

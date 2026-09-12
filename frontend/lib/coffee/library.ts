@@ -12,6 +12,8 @@ export type BeanSchemaAvailability = {
   species: boolean;
   origins: boolean;
   packageWeight: boolean;
+  product: boolean;
+  profileSource: boolean;
 };
 
 export function beanSelectFields(available: BeanSchemaAvailability) {
@@ -21,7 +23,8 @@ export function beanSelectFields(available: BeanSchemaAvailability) {
     available.species ? "species,arabica_percentage" : "",
     available.library ? "favorite,lifecycle_state,repurchase_intent" : "",
     available.packageWeight ? "package_weight_g" : "",
-    "bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning)",
+    available.product ? "product_format,capsule_system,capsule_line,capsule_intensity" : "",
+    `bean_profiles(predicted_acidity,predicted_body,predicted_sweetness,predicted_notes,recommended_method,recommended_ratio,recommended_temp,confidence,reasoning${available.profileSource ? ",reference_source_type,reference_source_name,reference_source_url" : ""})`,
   ].filter(Boolean).join(",");
 }
 

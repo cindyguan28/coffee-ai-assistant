@@ -66,6 +66,20 @@ describe("validateBrewLog", () => {
       milk_pairing: "excellent_match",
     });
   });
+
+  it("preserves the user's flavor wording and stores normalized families separately", () => {
+    const result = validateBrewLog(form({
+      ...valid,
+      perceived_flavor_notes: "grapefruit peel, green apple, Floral",
+      taste_description: "Much sharper than the package suggested.",
+    }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toMatchObject({
+      perceived_flavor_notes: "grapefruit peel, green apple, Floral",
+      normalized_flavor_families: ["Citrus", "Orchard fruit", "Floral"],
+      taste_description: "Much sharper than the package suggested.",
+    });
+  });
 });
 
 describe("brewFieldVisibility", () => {

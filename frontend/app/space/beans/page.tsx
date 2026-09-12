@@ -11,6 +11,7 @@ import {
 } from "../../../lib/coffee/options";
 import { buildCoffeeSummary } from "../../../lib/coffee/summary";
 import { compatibleGuidedValue, normalizeGuidedValue, parseOriginCountries } from "../../../lib/coffee/bean";
+import { PRODUCT_FORMAT_LABELS, PRODUCT_FORMATS, type ProductFormat, type ReferenceSourceType } from "../../../lib/coffee/product";
 import { beanSelectFields, libraryBadges, libraryView, matchesLibraryView, type LibraryView } from "../../../lib/coffee/library";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
 import { createClient } from "../../../lib/supabase/server";
@@ -27,6 +28,10 @@ type Bean = {
   id: string;
   name: string;
   roaster: string | null;
+  product_format: ProductFormat;
+  capsule_system: string | null;
+  capsule_line: string | null;
+  capsule_intensity: number | null;
   country: string | null;
   origin_countries: string[] | null;
   species: string | null;
@@ -56,6 +61,9 @@ type Bean = {
     recommended_temp: string | null;
     confidence: number | null;
     reasoning: string | null;
+    reference_source_type: ReferenceSourceType | null;
+    reference_source_name: string | null;
+    reference_source_url: string | null;
   } | Array<{
     predicted_acidity: string | null;
     predicted_body: string | null;
@@ -66,6 +74,9 @@ type Bean = {
     recommended_temp: string | null;
     confidence: number | null;
     reasoning: string | null;
+    reference_source_type: ReferenceSourceType | null;
+    reference_source_name: string | null;
+    reference_source_url: string | null;
   }> | null;
 };
 
@@ -85,7 +96,8 @@ function selectOptions(base: readonly string[], saved?: string | null) {
   return { value, options: value && !base.includes(value) ? [...base, value] : [...base] };
 }
 
-function beanProfile(bean: Bean) {
+function beanProfile(bean?: Bean) {
+  if (!bean) return null;
   return Array.isArray(bean.bean_profiles) ? bean.bean_profiles[0] : bean.bean_profiles;
 }
 
@@ -105,6 +117,25 @@ function missingLibraryState(error: { code?: string; message?: string } | null) 
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (error.message?.includes("favorite") || error.message?.includes("lifecycle_state") || error.message?.includes("repurchase_intent")));
 }
 
+function missingCoffeeProduct(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (
+    error.message?.includes("product_format") || error.message?.includes("capsule_system") ||
+    error.message?.includes("capsule_line") || error.message?.includes("capsule_intensity")
+  ));
+}
+
+function missingProfileSource(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("reference_source"));
+}
+
+const SOURCE_LABELS: Record<ReferenceSourceType, string> = {
+  personal_entry: "Your saved product details",
+  roaster_official: "Roaster / official source",
+  retailer: "Retailer source",
+  open_data: "Open data source",
+  other: "Other reference source",
+};
+
 const VIEW_LABELS: Array<{ value: LibraryView; label: string }> = [
   { value: "all", label: "All" },
   { value: "current", label: "On hand" },
@@ -123,7 +154,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const available = { library: true, species: true, origins: true, packageWeight: true };
+  const available = { library: true, species: true, origins: true, packageWeight: true, product: true, profileSource: true };
   const fetchBeans = () => supabase
     .from("beans")
     .select(beanSelectFields(available))
@@ -131,8 +162,10 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
     .order("created_at", { ascending: false });
 
   let result = await fetchBeans();
-  for (let attempt = 0; result.error && attempt < 4; attempt += 1) {
+  for (let attempt = 0; result.error && attempt < 6; attempt += 1) {
     if (available.library && missingLibraryState(result.error)) available.library = false;
+    else if (available.product && missingCoffeeProduct(result.error)) available.product = false;
+    else if (available.profileSource && missingProfileSource(result.error)) available.profileSource = false;
     else if (available.species && missingSpecies(result.error)) available.species = false;
     else if (available.origins && missingOriginCountries(result.error)) available.origins = false;
     else if (available.packageWeight && missingPackageWeight(result.error)) available.packageWeight = false;
@@ -153,6 +186,12 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
       favorite: available.library && record.favorite === true,
       lifecycle_state: available.library && typeof record.lifecycle_state === "string" ? record.lifecycle_state : null,
       repurchase_intent: available.library && typeof record.repurchase_intent === "string" ? record.repurchase_intent : null,
+      product_format: available.product && PRODUCT_FORMATS.includes(record.product_format as ProductFormat)
+        ? record.product_format
+        : "whole_bean",
+      capsule_system: available.product && typeof record.capsule_system === "string" ? record.capsule_system : null,
+      capsule_line: available.product && typeof record.capsule_line === "string" ? record.capsule_line : null,
+      capsule_intensity: available.product && typeof record.capsule_intensity === "number" ? record.capsule_intensity : null,
     };
   }) as unknown as Bean[];
   const view = libraryView(params.view);
@@ -192,6 +231,11 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
             <h2>{editingBean ? `Edit ${editingBean.name}` : "Add a coffee"}</h2>
             <p>Choose a suggestion or type your own. Only the coffee name is required.</p>
             {editingBean && <input type="hidden" name="beanId" value={editingBean.id} />}
+
+            <label htmlFor="product_format">Coffee format</label>
+            <select id="product_format" name="product_format" defaultValue={editingBean?.product_format ?? "whole_bean"}>
+              {Object.entries(PRODUCT_FORMAT_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
 
             <label htmlFor="name">Coffee name *</label>
             <input id="name" name="name" required maxLength={200} defaultValue={editingBean?.name ?? ""} />
@@ -236,10 +280,25 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
 
             <details className="bean-more-details" open={Boolean(editingBean?.process || editingBean?.weblink)}>
               <summary>More coffee details <span>Optional</span></summary>
+              <div className="capsule-fields">
+                <p>For capsules / pods only</p>
+                <label htmlFor="capsule_system">Capsule system</label>
+                <input id="capsule_system" name="capsule_system" defaultValue={editingBean?.capsule_system ?? ""} placeholder="e.g. Nespresso Original" />
+                <label htmlFor="capsule_line">Line / collection</label>
+                <input id="capsule_line" name="capsule_line" defaultValue={editingBean?.capsule_line ?? ""} placeholder="e.g. Vertuo Barista Creations" />
+                <label htmlFor="capsule_intensity">Capsule intensity</label>
+                <input id="capsule_intensity" name="capsule_intensity" type="number" min="1" max="15" step="1" defaultValue={editingBean?.capsule_intensity ?? ""} placeholder="1–15" />
+              </div>
               <label htmlFor="process">Process</label>
               <GuidedCombobox id="process" name="process" options={processes} initialValue={editingBean?.process} placeholder="Washed, natural…" suggestionLabel="Show process suggestions" maxLength={100} />
               <label htmlFor="weblink">Product website</label>
               <input id="weblink" name="weblink" type="url" defaultValue={editingBean?.weblink ?? ""} placeholder="https://…" />
+              <label htmlFor="reference_source_type">Reference profile source</label>
+              <select id="reference_source_type" name="reference_source_type" defaultValue={beanProfile(editingBean)?.reference_source_type ?? "personal_entry"}>
+                {Object.entries(SOURCE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+              <label htmlFor="reference_source_name">Source name</label>
+              <input id="reference_source_name" name="reference_source_name" defaultValue={beanProfile(editingBean)?.reference_source_name ?? ""} placeholder="e.g. Five Elephant" />
             </details>
             <label htmlFor="notes">Personal notes</label>
             <textarea id="notes" name="notes" rows={3} defaultValue={editingBean?.notes ?? ""} />
@@ -264,7 +323,7 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
               const summary = buildCoffeeSummary({ ...bean, ...profile });
               return (
                 <article className={`bean-item${bean.id === editingBean?.id ? " is-editing" : ""}`} key={bean.id}>
-                  <div><h2>{bean.name}</h2><p>{[bean.roaster, (bean.origin_countries?.length ? bean.origin_countries.join(" · ") : bean.country)].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
+                  <div><h2>{bean.name}</h2><p>{[PRODUCT_FORMAT_LABELS[bean.product_format], bean.roaster, (bean.origin_countries?.length ? bean.origin_countries.join(" · ") : bean.country)].filter(Boolean).join(" · ") || "Your coffee"}</p></div>
                   {(price || bean.package_weight_g) && <dl className="bean-purchase-facts">
                     {bean.package_weight_g && <div><dt>Package</dt><dd>{Number(bean.package_weight_g).toLocaleString()} g</dd></div>}
                     {price && <div><dt>Price</dt><dd>{price}</dd></div>}
@@ -295,15 +354,19 @@ export default async function BeansPage({ searchParams }: BeansPageProps) {
                     </div>
                   </section>
                   {profile ? <section className="bean-profile">
-                    <div className="bean-profile-heading"><div><span>AT A GLANCE</span><h3>{summary.profileLabel}</h3></div><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button type="submit">Refresh</button></form></div>
-                    <div className="bean-reference-grid">
+                    <div className="bean-profile-heading"><div><span>REFERENCE PROFILE</span><h3>{bean.product_format === "capsule" ? bean.capsule_line || "Capsule profile" : summary.profileLabel}</h3><small>{profile.reference_source_type ? SOURCE_LABELS[profile.reference_source_type] : "Your saved product details"}{profile.reference_source_name ? ` · ${profile.reference_source_name}` : ""}{profile.reference_source_url && <> · <a href={profile.reference_source_url} target="_blank" rel="noreferrer">Source</a></>}</small></div><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button type="submit">Refresh</button></form></div>
+                    {bean.product_format === "capsule" ? <dl className="capsule-profile">
+                      {bean.capsule_system && <div><dt>System</dt><dd>{bean.capsule_system}</dd></div>}
+                      {bean.capsule_line && <div><dt>Line</dt><dd>{bean.capsule_line}</dd></div>}
+                      {bean.capsule_intensity && <div><dt>Intensity</dt><dd>{bean.capsule_intensity}/15</dd></div>}
+                    </dl> : <><div className="bean-reference-grid">
                       {[
                         { label: "Roast", scale: summary.roast },
                         { label: "Intensity", scale: summary.intensity },
                         { label: "Acidity", scale: summary.acidity },
                       ].map(({ label, scale }) => <div className="bean-reference" key={label}><div><dt>{label}</dt><dd>{scale.score ? `${scale.score}/5` : "—"}</dd></div><progress max="5" value={scale.score ?? 0} /><small>{scale.label}</small></div>)}
                     </div>
-                    {summary.flavors.length > 0 && <p><b>Main flavors:</b> {summary.flavors.join(" · ")}</p>}
+                    {summary.flavors.length > 0 && <p><b>Reference flavors:</b> {summary.flavors.join(" · ")}</p>}</>}
                   </section> : <section className="bean-profile bean-profile-missing"><span>BEAN PROFILE</span><h3>Profile not generated yet</h3><p>Your Bean is safe. Generate its Roast, Intensity, Acidity and main flavors.</p><form action={regenerateBeanProfile}><input type="hidden" name="beanId" value={bean.id} /><button className="button button-primary" type="submit">Generate profile</button></form></section>}
                   <div className="bean-actions">
                     <Link className="bean-edit" href={`/space/beans?edit=${bean.id}`}>Edit</Link>

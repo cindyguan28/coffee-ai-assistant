@@ -26,7 +26,10 @@ export type JournalEntry = {
   problem_tags?: string | null;
   next_adjustment?: string | null;
   notes?: string | null;
-  beans?: { name?: string | null; roaster?: string | null } | null;
+  perceived_flavor_notes?: string | null;
+  normalized_flavor_families?: string[] | null;
+  taste_description?: string | null;
+  beans?: { name?: string | null; roaster?: string | null; flavor_notes?: string | null; acidity?: string | null } | null;
 };
 
 export type JournalGroupMode = "bean" | "date" | "all";
@@ -58,6 +61,8 @@ function searchable(entry: JournalEntry) {
     entry.problem_tags,
     entry.next_adjustment,
     entry.notes,
+    entry.perceived_flavor_notes,
+    entry.taste_description,
   ].filter(Boolean).join(" ").replaceAll("_", " ").toLowerCase();
 }
 
@@ -147,4 +152,24 @@ export function journalDetailFacts(entry: JournalEntry, defaults: EquipmentDefau
     ["Milk pairing", entry.milk_pairing],
   ];
   return facts.filter((fact): fact is [string, string] => present(fact[1]));
+}
+
+export function journalSensoryFacts(entry: JournalEntry) {
+  const labels: Array<[keyof JournalEntry, string]> = [
+    ["acidity", "Acidity"], ["bitterness", "Bitterness"], ["sweetness", "Natural sweetness"],
+    ["body", "Body"], ["balance", "Balance"], ["aroma", "Aroma"],
+  ];
+  return labels.flatMap(([field, label]) => {
+    const value = entry[field];
+    return typeof value === "number" ? [[label, `${value}/5`] as [string, string]] : [];
+  });
+}
+
+export function experienceDiffersFromReference(entry: JournalEntry) {
+  const referenceNotes = String(entry.beans?.flavor_notes ?? "").trim().toLowerCase();
+  const perceivedNotes = String(entry.perceived_flavor_notes ?? "").trim().toLowerCase();
+  if (referenceNotes && perceivedNotes && referenceNotes !== perceivedNotes) return true;
+  const expected = String(entry.beans?.acidity ?? "").toLowerCase().replaceAll("_", "-");
+  const perceived = typeof entry.acidity === "number" ? entry.acidity : null;
+  return Boolean(perceived && ((expected.includes("low") && perceived >= 4) || (expected.includes("high") && perceived <= 2)));
 }

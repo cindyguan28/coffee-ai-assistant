@@ -3,6 +3,7 @@ export type SensoryDimension = (typeof SENSORY_DIMENSIONS)[number];
 export type TasteLog = Partial<Record<SensoryDimension, number | null>> & {
   score?: number | null;
   flavor_notes?: string | null;
+  perceived_flavor_notes?: string | null;
   bean_profile?: { predicted_acidity?: number | null; predicted_sweetness?: number | null; predicted_body?: number | null } | null;
 };
 
@@ -22,10 +23,10 @@ export function explainTasteDimension(dimension: SensoryDimension, value: number
 }
 
 const FAMILY_BY_NOTE: Record<string, string> = {
-  lemon: "Citrus", orange: "Citrus", bergamot: "Citrus", citrus: "Citrus",
+  lemon: "Citrus", orange: "Citrus", bergamot: "Citrus", citrus: "Citrus", "grapefruit peel": "Citrus", grapefruit: "Citrus",
   strawberry: "Berry", blueberry: "Berry", raspberry: "Berry", berry: "Berry", blackcurrant: "Berry",
   jasmine: "Floral", floral: "Floral", rose: "Floral",
-  peach: "Stone fruit", apricot: "Stone fruit", plum: "Stone fruit", "stone fruit": "Stone fruit",
+  peach: "Stone fruit", apricot: "Stone fruit", plum: "Stone fruit", "stone fruit": "Stone fruit", "green apple": "Orchard fruit", apple: "Orchard fruit",
   cocoa: "Chocolate", chocolate: "Chocolate", cacao: "Chocolate",
   caramel: "Sweet", honey: "Sweet", vanilla: "Sweet",
   almond: "Nutty", hazelnut: "Nutty", nuts: "Nutty", nutty: "Nutty",
@@ -89,13 +90,13 @@ export function calculateTasteProfile(logs: TasteLog[]) {
   };
 }
 
-export function calculateFlavorFamilies(logs: TasteLog[]) {
+export function calculateFlavorFamilies(logs: TasteLog[], source: "reference" | "perceived" = "reference") {
   const weights: Record<string, number> = {};
   const counts: Record<string, number> = {};
   for (const log of logs) {
     const weight = Math.max((typeof log.score === "number" ? log.score : 0) - 5, 0);
     if (!weight) continue;
-    const families = extractFlavorFamilies(log.flavor_notes);
+    const families = extractFlavorFamilies(source === "perceived" ? log.perceived_flavor_notes : log.flavor_notes);
     families.forEach((family) => { weights[family] = (weights[family] ?? 0) + weight; counts[family] = (counts[family] ?? 0) + 1; });
   }
   return Object.entries(weights).map(([family, weight]) => ({ family, weight, brewCount: counts[family] })).sort((a, b) => b.weight - a.weight || a.family.localeCompare(b.family));

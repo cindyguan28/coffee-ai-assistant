@@ -1,6 +1,13 @@
-export type BeanPayload = {
+import { PRODUCT_FORMATS, REFERENCE_SOURCE_TYPES, type ProductFormat, type ReferenceSourceType } from "./product";
+export { PRODUCT_FORMATS, REFERENCE_SOURCE_TYPES, type ProductFormat, type ReferenceSourceType } from "./product";
+
+export type CoffeeProductPayload = {
   name: string;
   roaster: string | null;
+  product_format: ProductFormat;
+  capsule_system: string | null;
+  capsule_line: string | null;
+  capsule_intensity: number | null;
   country: string | null;
   origin_countries: string[] | null;
   species: string | null;
@@ -16,7 +23,12 @@ export type BeanPayload = {
   sweetness: string | null;
   milk_compatibility: string | null;
   notes: string | null;
+  reference_source_type: ReferenceSourceType;
+  reference_source_name: string | null;
 };
+
+// Keep the public name while callers migrate from Bean to Coffee Product terminology.
+export type BeanPayload = CoffeeProductPayload;
 
 export type BeanValidation = { ok: true; value: BeanPayload } | { ok: false; message: string };
 
@@ -91,10 +103,29 @@ export function validateBean(formData: FormData): BeanValidation {
   if (species !== "Blend" && arabicaPercentage.value !== null) {
     return { ok: false, message: "Only add a composition percentage for a blend." };
   }
+  const productFormat = text(formData, "product_format", 50) || "whole_bean";
+  if (!PRODUCT_FORMATS.includes(productFormat as ProductFormat)) {
+    return { ok: false, message: "Choose a valid coffee format." };
+  }
+  const capsuleIntensity = optionalNumber(formData, "capsule_intensity", 15);
+  if (!capsuleIntensity.ok || (capsuleIntensity.value !== null && (!Number.isInteger(capsuleIntensity.value) || capsuleIntensity.value < 1))) {
+    return { ok: false, message: "Enter a capsule intensity between 1 and 15." };
+  }
+  if (productFormat !== "capsule" && capsuleIntensity.value !== null) {
+    return { ok: false, message: "Only add capsule intensity for a capsule product." };
+  }
+  const sourceType = text(formData, "reference_source_type", 50) || "personal_entry";
+  if (!REFERENCE_SOURCE_TYPES.includes(sourceType as ReferenceSourceType)) {
+    return { ok: false, message: "Choose a valid reference source." };
+  }
 
   return { ok: true, value: {
     name,
     roaster: text(formData, "roaster", 200),
+    product_format: productFormat as ProductFormat,
+    capsule_system: productFormat === "capsule" ? text(formData, "capsule_system", 200) : null,
+    capsule_line: productFormat === "capsule" ? text(formData, "capsule_line", 200) : null,
+    capsule_intensity: productFormat === "capsule" ? capsuleIntensity.value : null,
     country: origins.length ? origins.join(", ") : null,
     origin_countries: origins.length ? origins : null,
     species,
@@ -110,5 +141,21 @@ export function validateBean(formData: FormData): BeanValidation {
     sweetness: text(formData, "sweetness", 100),
     milk_compatibility: text(formData, "milk_compatibility", 100),
     notes: text(formData, "notes", 2000),
+    reference_source_type: sourceType as ReferenceSourceType,
+    reference_source_name: text(formData, "reference_source_name", 200),
   } };
+}
+
+export function coffeeProductRecord(payload: CoffeeProductPayload) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([key]) => key !== "reference_source_type" && key !== "reference_source_name"),
+  ) as Omit<CoffeeProductPayload, "reference_source_type" | "reference_source_name">;
+}
+
+export function referenceProfileSource(payload: CoffeeProductPayload) {
+  return {
+    reference_source_type: payload.reference_source_type,
+    reference_source_name: payload.reference_source_name,
+    reference_source_url: payload.weblink,
+  };
 }

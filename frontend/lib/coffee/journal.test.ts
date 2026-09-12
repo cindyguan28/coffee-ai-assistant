@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bestEntryId, filterJournalEntries, groupJournalEntries, journalDetailFacts, selectStarterBrew, showsWaterTemperature, starterValues, type JournalEntry } from "./journal";
+import { bestEntryId, experienceDiffersFromReference, filterJournalEntries, groupJournalEntries, journalDetailFacts, journalSensoryFacts, selectStarterBrew, showsWaterTemperature, starterValues, type JournalEntry } from "./journal";
 
 const entries: JournalEntry[] = [
   { id: "a1", bean_id: "a", brew_date: "2026-09-09", score: 7, brew_method: "espresso_machine", notes: "Too bitter", beans: { name: "Halo", roaster: "The Barn" } },
@@ -69,5 +69,13 @@ describe("journal organization", () => {
       { id: "old", bean_id: "new-date", brew_date: "2026-09-09", created_at: "2026-09-09T12:00:00Z", beans: { name: "Previously logged" } },
     ], "bean");
     expect(groups.map((group) => group.label)).toEqual(["Recently logged", "Previously logged"]);
+  });
+
+  it("keeps explicit perception and reference disagreement visible without rewriting either", () => {
+    const entry: JournalEntry = { id: "x", acidity: 5, perceived_flavor_notes: "grapefruit peel", beans: { acidity: "low", flavor_notes: "milk chocolate" } };
+    expect(journalSensoryFacts(entry)).toContainEqual(["Acidity", "5/5"]);
+    expect(experienceDiffersFromReference(entry)).toBe(true);
+    expect(entry.beans?.flavor_notes).toBe("milk chocolate");
+    expect(entry.perceived_flavor_notes).toBe("grapefruit peel");
   });
 });
