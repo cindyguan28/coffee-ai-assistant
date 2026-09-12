@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireCurrentUserId } from "../../../lib/auth/user";
 import { validateBean } from "../../../lib/coffee/bean";
 import { generateBeanProfile } from "../../../lib/coffee/profile";
+import { validateLibraryState } from "../../../lib/coffee/library";
 import { createClient } from "../../../lib/supabase/server";
 
 function text(formData: FormData, field: string, maxLength = 500) {
@@ -13,6 +14,12 @@ function text(formData: FormData, field: string, maxLength = 500) {
 
 function message(kind: "error" | "message", value: string) {
   return `/space/beans?${kind}=${encodeURIComponent(value)}`;
+}
+
+function libraryMessage(kind: "error" | "message", value: string, view: string) {
+  const params = new URLSearchParams({ [kind]: value });
+  if (view && view !== "all") params.set("view", view);
+  return `/space/beans?${params.toString()}`;
 }
 
 function revalidateCoffeeSpace() {
@@ -27,8 +34,24 @@ function missingPackageWeight(error: { code?: string; message?: string } | null)
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes("package_weight_g")));
 }
 
+function missingOriginCountries(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && error.message?.includes("origin_countries"));
+}
+
+function missingSpecies(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (error.code === "42703" || error.code === "PGRST204") && (error.message?.includes("species") || error.message?.includes("arabica_percentage")));
+}
+
 function withoutPackageWeight<T extends Record<string, unknown>>(bean: T) {
   return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "package_weight_g"));
+}
+
+function withoutOriginCountries<T extends Record<string, unknown>>(bean: T) {
+  return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "origin_countries"));
+}
+
+function withoutSpecies<T extends Record<string, unknown>>(bean: T) {
+  return Object.fromEntries(Object.entries(bean).filter(([key]) => key !== "species" && key !== "arabica_percentage"));
 }
 
 export async function addBean(formData: FormData) {
@@ -38,12 +61,24 @@ export async function addBean(formData: FormData) {
 
   const bean = { user_id: userId, ...validation.value };
   const supabase = await createClient();
-  let { data, error } = await supabase.from("beans").insert(bean).select("id").single();
+  let compatibleBean = bean;
+  let { data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single();
+  if (missingSpecies(error)) {
+    if (validation.value.species !== null) {
+      redirect(message("error", "Species was not saved because the database migration is missing. Apply 202609110002_bean_species_composition.sql and try again."));
+    }
+    compatibleBean = withoutSpecies(bean) as typeof bean;
+    ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
+  }
+  if (missingOriginCountries(error)) {
+    compatibleBean = withoutOriginCountries(compatibleBean) as typeof bean;
+    ({ data, error } = await supabase.from("beans").insert(compatibleBean).select("id").single());
+  }
   if (missingPackageWeight(error)) {
     if (validation.value.package_weight_g !== null) {
       redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
     }
-    ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(bean)).select("id").single());
+    ({ data, error } = await supabase.from("beans").insert(withoutPackageWeight(compatibleBean)).select("id").single());
   }
   if (error || !data) redirect(message("error", "The bean could not be saved. Try again."));
 
@@ -66,20 +101,44 @@ export async function updateBean(formData: FormData) {
   if (!validation.ok) redirect(message("error", validation.message));
 
   const supabase = await createClient();
+  let compatibleBean = validation.value;
   let { data, error } = await supabase
     .from("beans")
-    .update(validation.value)
+    .update(compatibleBean)
     .eq("id", beanId)
     .eq("user_id", userId)
     .select("id")
     .single();
+  if (missingSpecies(error)) {
+    if (validation.value.species !== null) {
+      redirect(message("error", "Species was not saved because the database migration is missing. Apply 202609110002_bean_species_composition.sql and try again."));
+    }
+    compatibleBean = withoutSpecies(validation.value) as typeof validation.value;
+    ({ data, error } = await supabase
+      .from("beans")
+      .update(compatibleBean)
+      .eq("id", beanId)
+      .eq("user_id", userId)
+      .select("id")
+      .single());
+  }
+  if (missingOriginCountries(error)) {
+    compatibleBean = withoutOriginCountries(compatibleBean) as typeof validation.value;
+    ({ data, error } = await supabase
+      .from("beans")
+      .update(compatibleBean)
+      .eq("id", beanId)
+      .eq("user_id", userId)
+      .select("id")
+      .single());
+  }
   if (missingPackageWeight(error)) {
     if (validation.value.package_weight_g !== null) {
       redirect(message("error", "Package weight was not saved because the database migration is missing. Apply 202609080002_bean_package_weight.sql and try again."));
     }
     ({ data, error } = await supabase
       .from("beans")
-      .update(withoutPackageWeight(validation.value))
+      .update(withoutPackageWeight(compatibleBean))
       .eq("id", beanId)
       .eq("user_id", userId)
       .select("id")
@@ -121,6 +180,34 @@ export async function regenerateBeanProfile(formData: FormData) {
 
   revalidateCoffeeSpace();
   redirect(message("message", `${bean.name} Bean Profile generated.`));
+}
+
+export async function updateBeanLibraryState(formData: FormData) {
+  const userId = await requireCurrentUserId();
+  const beanId = text(formData, "beanId", 100);
+  const field = text(formData, "field", 50) ?? "";
+  const value = String(formData.get("value") ?? "");
+  const view = text(formData, "view", 30) ?? "all";
+  if (!beanId) redirect(libraryMessage("error", "Coffee not found.", view));
+
+  const state = validateLibraryState(field, value);
+  if (!state.ok) redirect(libraryMessage("error", "That library status is not valid.", view));
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("beans")
+    .update({ [field]: state.value })
+    .eq("id", beanId)
+    .eq("user_id", userId)
+    .select("id")
+    .single();
+  if (error?.code === "42703" || error?.code === "PGRST204") {
+    redirect(libraryMessage("error", "Library status was not saved because migration 202609110003_coffee_library_states.sql is missing.", view));
+  }
+  if (error || !data) redirect(libraryMessage("error", "Library status could not be updated.", view));
+
+  revalidateCoffeeSpace();
+  redirect(libraryMessage("message", "Coffee library updated.", view));
 }
 
 export async function deleteBean(formData: FormData) {

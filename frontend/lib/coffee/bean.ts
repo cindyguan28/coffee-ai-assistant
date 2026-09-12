@@ -2,6 +2,9 @@ export type BeanPayload = {
   name: string;
   roaster: string | null;
   country: string | null;
+  origin_countries: string[] | null;
+  species: string | null;
+  arabica_percentage: number | null;
   process: string | null;
   roast_level: string | null;
   price: number | null;
@@ -49,6 +52,24 @@ function flavorNotes(formData: FormData) {
   return unique.length ? unique.join(",") : null;
 }
 
+export function parseOriginCountries(value?: string | null) {
+  return [...new Map(
+    String(value ?? "")
+      .split(/\s*(?:,|\/|;)\s*/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => [normalizeGuidedValue(item), item]),
+  ).values()];
+}
+
+function originCountries(formData: FormData) {
+  const selected = formData.getAll("origin_countries").map(String);
+  const fallback = selected.length ? selected : parseOriginCountries(text(formData, "country", 500));
+  return [...new Map(
+    fallback.map((item) => item.trim()).filter(Boolean).map((item) => [normalizeGuidedValue(item), item.slice(0, 100)]),
+  ).values()];
+}
+
 export function validateBean(formData: FormData): BeanValidation {
   const name = text(formData, "name", 200);
   if (!name) return { ok: false, message: "Enter a coffee name." };
@@ -58,11 +79,26 @@ export function validateBean(formData: FormData): BeanValidation {
   if (!packageWeight.ok || (packageWeight.value !== null && packageWeight.value <= 0)) {
     return { ok: false, message: "Enter a valid package weight above zero." };
   }
+  const origins = originCountries(formData);
+  if (origins.length > 12) return { ok: false, message: "Choose no more than 12 origin countries." };
+  const species = text(formData, "species", 50);
+  const supportedSpecies = ["100% Arabica", "100% Robusta", "Blend", "Other", "Unknown"];
+  if (species && !supportedSpecies.includes(species)) return { ok: false, message: "Choose a valid coffee species." };
+  const arabicaPercentage = optionalNumber(formData, "arabica_percentage", 100);
+  if (!arabicaPercentage.ok || (arabicaPercentage.value !== null && !Number.isInteger(arabicaPercentage.value))) {
+    return { ok: false, message: "Enter a whole Arabica percentage between 0 and 100." };
+  }
+  if (species !== "Blend" && arabicaPercentage.value !== null) {
+    return { ok: false, message: "Only add a composition percentage for a blend." };
+  }
 
   return { ok: true, value: {
     name,
     roaster: text(formData, "roaster", 200),
-    country: text(formData, "country", 200),
+    country: origins.length ? origins.join(", ") : null,
+    origin_countries: origins.length ? origins : null,
+    species,
+    arabica_percentage: species === "Blend" ? arabicaPercentage.value : null,
     process: text(formData, "process", 100),
     roast_level: text(formData, "roast_level", 100),
     price: price.value,
