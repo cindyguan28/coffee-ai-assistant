@@ -18,5 +18,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    ...[
+      "coffee-tasting-notes",
+      "brew-log",
+      "discover-your-coffee-taste",
+      "coffee-bean-tracker",
+    ].map((path) => ({
+      url: `https://beanmemo.com/${path}`,
+      lastModified: "2026-09-12",
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
 }

@@ -1,0 +1,26 @@
+.capsule-fields { border: 1px solid var(--line); background: var(--paper-deep); margin: 14px 0; padding: 14px; display: grid; }
+.capsule-fields > p { color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .1em; margin: 0 0 2px; text-transform: uppercase; }
+.bean-profile-heading small { color: var(--muted); display: block; font-size: 9px; margin-top: 4px; }
+.capsule-profile { display: grid; grid-template-columns: repeat(3, 1fr); border-block: 1px solid var(--line); margin: 15px 0 0; }
+.capsule-profile div { padding: 13px 10px; border-right: 1px solid var(--line); }
+.capsule-profile div:last-child { border-right: 0; }
+.capsule-profile dt { color: var(--muted); font-size: 8px; letter-spacing: .09em; text-transform: uppercase; }
+.capsule-profile dd { margin: 5px 0 0; font: 500 15px var(--font-serif), serif; }
+.perception-capture { border: 1px solid var(--line); background: var(--paper-deep); margin-top: 18px; padding: 16px; display: grid; }
+.perception-capture > span, .brew-reference > span, .brew-perception > span { color: var(--coffee); font-size: 8px; font-weight: 800; letter-spacing: .12em; }
+.perception-capture > p { color: var(--muted); font-size: 10px; margin: 6px 0 0; }
+.taste-evidence-layers { border: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+.taste-evidence-layers > div { min-width: 0; padding: 13px; }
+.taste-evidence-layers > div + div { border-left: 1px solid var(--line); }
+.taste-evidence-layers b { display: block; font: 500 14px/1.4 var(--font-serif), serif; margin-top: 7px; }
+.taste-evidence-layers p { color: var(--muted); font-size: 10px; margin: 6px 0 0; }
+.taste-evidence-layers > small { background: var(--paper-deep); border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; grid-column: 1 / -1; padding: 9px 13px; }
+.reference-flavor-families { border-top: 1px solid var(--line); padding-top: 28px; }
+.reference-flavor-families > small { color: var(--muted); display: block; font-size: 9px; margin-top: 12px; }
+
+@media (max-width: 520px) {
+  .capsule-profile, .taste-evidence-layers { grid-template-columns: 1fr; }
+  .capsule-profile div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .capsule-profile div:last-child { border-bottom: 0; }
+  .taste-evidence-layers > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
