@@ -25,6 +25,12 @@ describe("validateBrewLog", () => {
     }
   });
 
+  it("does not require a grinder setting for a capsule", () => {
+    const result = validateBrewLog(form({ ...valid, product_format: "capsule", grind_setting: "" }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.grind_setting).toBeNull();
+  });
+
   it("preserves multiple guided problem tags", () => {
     const result = validateBrewLog(formWithProblems(valid, ["too_sour", "too_weak"]));
     expect(result.ok).toBe(true);
@@ -64,6 +70,20 @@ describe("validateBrewLog", () => {
       drink_type: "cortado",
       milk_type: "barista_oat_milk",
       milk_pairing: "excellent_match",
+    });
+  });
+
+  it("preserves the user's flavor wording and stores normalized families separately", () => {
+    const result = validateBrewLog(form({
+      ...valid,
+      perceived_flavor_notes: "grapefruit peel, green apple, Floral",
+      taste_description: "Much sharper than the package suggested.",
+    }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toMatchObject({
+      perceived_flavor_notes: "grapefruit peel, green apple, Floral",
+      normalized_flavor_families: ["Citrus", "Orchard fruit", "Floral"],
+      taste_description: "Much sharper than the package suggested.",
     });
   });
 });

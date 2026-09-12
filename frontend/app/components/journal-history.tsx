@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { bestEntryId, filterJournalEntries, groupJournalEntries, journalDetailFacts, showsWaterTemperature, type EquipmentDefaults, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
+import { bestEntryId, experienceDiffersFromReference, filterJournalEntries, groupJournalEntries, journalDetailFacts, journalSensoryFacts, showsWaterTemperature, type EquipmentDefaults, type JournalEntry, type JournalGroupMode } from "../../lib/coffee/journal";
 import { deleteBrewLog } from "../space/brews/actions";
 
 function display(value: string | number | null | undefined) {
@@ -37,6 +37,8 @@ export function JournalHistory({ entries, equipmentDefaults = {} }: { entries: J
             const showWater = showsWaterTemperature(entry.brew_method);
             const secondaryFacts = journalDetailFacts(entry, equipmentDefaults);
             const problems = display(entry.problem_tags).split(",").map((item) => item.trim()).filter(Boolean);
+            const sensory = journalSensoryFacts(entry);
+            const hasUserPerception = sensory.length > 0 || entry.perceived_flavor_notes || entry.taste_description;
             return <article className={`journal-row${expanded ? " is-expanded" : ""}`} key={entry.id}>
               <button className={`journal-row-summary${mode !== "bean" ? " has-bean" : ""}${showWater ? " has-water" : ""}`} type="button" aria-expanded={expanded} onClick={() => setExpandedId(expanded ? null : entry.id)}>
                 <span className="journal-row-date">{entry.brew_date || "No date"}</span>
@@ -50,6 +52,11 @@ export function JournalHistory({ entries, equipmentDefaults = {} }: { entries: J
               {expanded && <div className="journal-row-details">
                 {secondaryFacts.length > 0 && <dl>{secondaryFacts.map(([label, value]) => <div key={String(label)}><dt>{label}</dt><dd>{display(value)}</dd></div>)}</dl>}
                 {(entry.taste_result || entry.notes) && <div className="brew-observation">{entry.taste_result && <b>{display(entry.taste_result)}</b>}{entry.notes && <p>{entry.notes}</p>}</div>}
+                {hasUserPerception && <div className="taste-evidence-layers">
+                  {(entry.beans?.flavor_notes || entry.beans?.acidity) && <div className="brew-reference"><span>REFERENCE PROFILE</span>{entry.beans?.flavor_notes && <b>{entry.beans.flavor_notes}</b>}{entry.beans?.acidity && <p>Expected acidity: {display(entry.beans.acidity)}</p>}</div>}
+                  <div className="brew-perception"><span>YOU TASTED</span>{entry.perceived_flavor_notes && <b>{entry.perceived_flavor_notes}</b>}{sensory.length > 0 && <p>{sensory.map(([label, value]) => `${label} ${value}`).join(" · ")}</p>}{entry.taste_description && <p>{entry.taste_description}</p>}</div>
+                  {experienceDiffersFromReference(entry) && <small>Your experience differs from the reference profile. Both are kept as separate evidence.</small>}
+                </div>}
                 {problems.length > 0 && <div className="brew-problems"><span>Observed</span>{problems.map((problem) => <b key={problem}>{display(problem)}</b>)}</div>}
                 {entry.next_adjustment && <p className="brew-next"><span>Next time</span>{display(entry.next_adjustment)}</p>}
                 <div className="brew-actions"><Link href={`/space/brews?edit=${entry.id}#journal-composer`}>Edit</Link><form action={deleteBrewLog}><input type="hidden" name="log_id" value={entry.id} /><button className="bean-delete" type="submit">Remove</button></form></div>

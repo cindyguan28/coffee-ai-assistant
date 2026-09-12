@@ -21,20 +21,28 @@ function missingColumn(error: { code?: string; message?: string } | null, column
   return Boolean(error && (error.code === "42703" || error.code === "PGRST204" || error.message?.includes(column)));
 }
 
-function withoutField(value: Record<string, string | number | null>, field: string) {
+function withoutField(value: Record<string, string | number | string[] | null>, field: string) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => key !== field));
 }
 
-const OPTIONAL_MIGRATION_FIELDS = ["water_temp_c", "milk_pairing"] as const;
+const OPTIONAL_MIGRATION_FIELDS = ["water_temp_c", "milk_pairing", "perceived_flavor_notes", "normalized_flavor_families", "taste_description"] as const;
 
 function missingOptionalField(error: { code?: string; message?: string } | null) {
   return OPTIONAL_MIGRATION_FIELDS.find((field) => missingColumn(error, field));
 }
 
-async function ownedBeanExists(beanId: string, userId: string) {
+function hasOptionalValue(value: string | number | string[] | null | undefined) {
+  return Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
+}
+
+async function ownedCoffeeProduct(beanId: string, userId: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
-  return Boolean(data);
+  const result = await supabase.from("beans").select("id,product_format").eq("id", beanId).eq("user_id", userId).maybeSingle();
+  if (missingColumn(result.error, "product_format")) {
+    const legacy = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
+    return legacy.data ? { id: legacy.data.id, product_format: "whole_bean" } : null;
+  }
+  return result.data;
 }
 
 export async function updateEquipment(formData: FormData) {
@@ -64,10 +72,12 @@ export async function updateEquipment(formData: FormData) {
 
 export async function addBrewLog(formData: FormData) {
   const userId = await requireCurrentUserId();
+  const beanId = String(formData.get("bean_id") ?? "").trim();
+  const product = beanId ? await ownedCoffeeProduct(beanId, userId) : null;
+  if (!product) redirect(destination("error", "Choose one of your own coffees."));
+  formData.set("product_format", product.product_format ?? "whole_bean");
   const validated = validateBrewLog(formData);
   if (!validated.ok) redirect(destination("error", validated.message));
-  const beanId = String(validated.value.bean_id);
-  if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
   let payload = validated.value;
@@ -75,7 +85,7 @@ export async function addBrewLog(formData: FormData) {
   for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
     const field = missingOptionalField(error);
     if (!field) break;
-    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    if (hasOptionalValue(validated.value[field])) redirect(destination("error", `Apply migration 202609120001 before saving ${field.replaceAll("_", " ")}.`));
     payload = withoutField(payload, field);
     ({ error } = await supabase.from("brew_logs").insert({ ...payload, user_id: userId }));
   }
@@ -87,10 +97,12 @@ export async function addBrewLog(formData: FormData) {
 export async function updateBrewLog(formData: FormData) {
   const userId = await requireCurrentUserId();
   const logId = String(formData.get("log_id") ?? "").trim();
+  const beanId = String(formData.get("bean_id") ?? "").trim();
+  const product = beanId ? await ownedCoffeeProduct(beanId, userId) : null;
+  if (!product) redirect(destination("error", "Choose one of your own coffees."));
+  formData.set("product_format", product.product_format ?? "whole_bean");
   const validated = validateBrewLog(formData);
   if (!logId || !validated.ok) redirect(destination("error", validated.ok ? "Journal entry not found." : validated.message));
-  const beanId = String(validated.value.bean_id);
-  if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
   let payload = validated.value;
@@ -98,7 +110,7 @@ export async function updateBrewLog(formData: FormData) {
   for (let attempt = 0; error && attempt < OPTIONAL_MIGRATION_FIELDS.length; attempt += 1) {
     const field = missingOptionalField(error);
     if (!field) break;
-    if (validated.value[field] !== null) redirect(destination("error", `Apply the latest database migration before saving ${field.replaceAll("_", " ")}.`));
+    if (hasOptionalValue(validated.value[field])) redirect(destination("error", `Apply migration 202609120001 before saving ${field.replaceAll("_", " ")}.`));
     payload = withoutField(payload, field);
     ({ error } = await supabase.from("brew_logs").update(payload).eq("id", logId).eq("user_id", userId));
   }

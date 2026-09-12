@@ -59,16 +59,16 @@ The current application uses one Supabase PostgreSQL database per environment, n
 ```text
 auth.users
     ├── 1 user_profiles
-    ├── * beans
-    │      └── 0..1 bean_profiles
-    └── * brew_logs ─── 0..1 beans
+    ├── * coffee products (stored in the compatibility table `beans`)
+    │      └── 0..1 reference profiles (`bean_profiles`)
+    └── * brew logs ─── 0..1 coffee products
 ```
 
 - `auth.users` is managed by Supabase Auth.
 - `user_profiles` stores user-level defaults such as usual machine, grinder, and brew method.
-- `beans` stores private user-owned coffee records.
-- `bean_profiles` stores the generated reference profile for a Bean and inherits ownership through that Bean.
-- `brew_logs` stores private brew settings, outcomes, tasting observations, and liking.
+- `beans` remains the physical compatibility table and stores private user-owned Coffee Products. `product_format` distinguishes whole bean, ground coffee, capsule/pod, and other without changing legacy record IDs.
+- `bean_profiles` stores source-attributed reference information for a Coffee Product and inherits ownership through that product.
+- `brew_logs` stores private brew settings, outcomes, liking, and user-perceived taste. User wording and any normalized flavor families remain separate fields.
 - RLS is the security boundary. Every user must be unable to read or modify another user's data.
 - My Taste and Coffee World are derived dynamically; do not create persisted aggregate profile tables without a demonstrated need.
 - Schema changes must be additive, forward migrations. Never edit a migration that may already have been applied.
@@ -77,7 +77,8 @@ auth.users
 
 ### My Beans and Bean Profiles
 
-- A user can create, edit, and remove a Bean.
+- A user can create, edit, and remove a Coffee Product. Existing Bean terminology and routes remain compatible during the additive transition.
+- Universal product fields include identity, roaster, product name, format, provenance, lifecycle/intent, and liking/history. Bean-specific metadata is optional for capsules; capsule system, line, and intensity must not require fabricated origin, process, grinder, or dose data.
 - Guided inputs should retain useful predefined choices while still allowing custom values.
 - Editing must preserve every previously stored value unless the user explicitly changes or clears it.
 - Saving a new Bean must also generate its Bean Profile. Profile failure must not roll back the saved Bean; the UI must offer a retry.
@@ -89,7 +90,7 @@ auth.users
 - The product name is **Brew Journal**, not Brew Logs or Blocks in user-facing navigation.
 - The compact history is grouped by Bean and ordered so the Bean with the newest entry appears first.
 - The entry composer opens on demand instead of permanently consuming most of the page.
-- Core capture includes Bean, date, grind setting, and liking. Grind setting is required for the current workflow.
+- Core capture includes Coffee Product, date, liking, and format-relevant controls. Grind setting remains required for whole or ground coffee, but not for capsules.
 - Machine, grinder, and usual method can be stored once as equipment defaults.
 - Dose is a controllable setting where method-relevant; yield and extraction time are actual observed outcomes.
 - Drink types and milk details appear only when relevant. Milk type, amount, and pairing are supported for milk drinks.
@@ -103,8 +104,11 @@ auth.users
 
 My Taste deliberately separates two sources of evidence:
 
-1. **Automatic Bean Preference** uses Bean Profile information, flavor labels, and the user's liking score. It can grow even when the user records only liking.
-2. **Sensory Profile** uses only dimensions the user explicitly rated in the Brew Journal.
+1. **Reference Profile context** uses source-attributed product information and flavor labels. It is shown as context, not as the user's observation.
+2. **User Perception / Sensory Profile** uses only dimensions and wording the user explicitly recorded in the Brew Journal; liking is its primary preference signal.
+3. **Brew Context** stores the equipment, recipe settings, observed outcomes, drink, and milk context for that particular experience.
+
+Reference information and user perception must remain distinct in storage and presentation. A mismatch is neutral evidence about that brew, not a correction to the global product profile. Missing values remain missing, and repeated observations remain attributable to the user and brew context.
 
 For an eligible liked brew, the initial sensory weight is:
 

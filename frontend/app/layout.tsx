@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Lora } from "next/font/google";
 import "./globals.css";
+import "./cof74-taste-layers.css";
 
 const sans = DM_Sans({
   variable: "--font-sans",
