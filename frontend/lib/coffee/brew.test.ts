@@ -25,6 +25,12 @@ describe("validateBrewLog", () => {
     }
   });
 
+  it("does not require a grinder setting for a capsule", () => {
+    const result = validateBrewLog(form({ ...valid, product_format: "capsule", grind_setting: "" }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.grind_setting).toBeNull();
+  });
+
   it("preserves multiple guided problem tags", () => {
     const result = validateBrewLog(formWithProblems(valid, ["too_sour", "too_weak"]));
     expect(result.ok).toBe(true);

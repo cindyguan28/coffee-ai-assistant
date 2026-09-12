@@ -24,6 +24,7 @@ import { addBrewLog, updateBrewLog, updateEquipment } from "./actions";
 
 type PageProps = { searchParams: Promise<{ edit?: string; error?: string; message?: string }> };
 type Log = Record<string, string | number | null>;
+type CoffeeOption = { id: string; name: string; roaster: string | null; product_format: string };
 
 const today = () => new Date().toISOString().slice(0, 10);
 function options(items: GuidedOption[], current?: string) {
@@ -42,11 +43,18 @@ export default async function BrewsPage({ searchParams }: PageProps) {
   }
   const userId = await getCurrentUserId();
   const supabase = await createClient();
-  const [beansResult, logsResult, profileResult] = await Promise.all([
-    supabase.from("beans").select("id,name,roaster").eq("user_id", userId!).order("name"),
+  const [productResult, logsResult, profileResult] = await Promise.all([
+    supabase.from("beans").select("id,name,roaster,product_format").eq("user_id", userId!).order("name"),
     supabase.from("brew_logs").select("*,beans(name,roaster,flavor_notes,acidity)").eq("user_id", userId!).order("brew_date", { ascending: false }).limit(50),
     supabase.from("user_profiles").select("default_machine_model,default_grinder_type,default_brew_method").eq("user_id", userId!).maybeSingle(),
   ]);
+  let coffees = (productResult.data ?? []) as CoffeeOption[];
+  let coffeeError = productResult.error;
+  if (coffeeError && (coffeeError.code === "42703" || coffeeError.code === "PGRST204") && coffeeError.message?.includes("product_format")) {
+    const legacyBeans = await supabase.from("beans").select("id,name,roaster").eq("user_id", userId!).order("name");
+    coffees = (legacyBeans.data ?? []).map((bean) => ({ ...bean, product_format: "whole_bean" }));
+    coffeeError = legacyBeans.error;
+  }
   const legacyEquipmentResult = profileResult.error
     ? await supabase.from("user_profiles").select("default_machine_model,default_grinder_type").eq("user_id", userId!).maybeSingle()
     : null;
@@ -66,7 +74,7 @@ export default async function BrewsPage({ searchParams }: PageProps) {
       <p className="kicker"><span /> Remember the cup</p><h1>Brew Journal</h1>
       {params.error && <div className="auth-error" role="alert">{params.error}</div>}
       {params.message && <div className="auth-success" role="status">{params.message}</div>}
-      {beansResult.error || logsResult.error ? <div className="auth-notice">Apply the Supabase migration to activate your private journal.</div> : !beansResult.data?.length ? (
+      {coffeeError || logsResult.error ? <div className="auth-notice">Apply the Supabase migration to activate your private journal.</div> : !coffees.length ? (
         <div className="space-first-step"><h2>Add a Bean before creating a journal entry.</h2><Link className="button button-primary" href="/space/beans">Add a coffee ↗</Link></div>
       ) : (
         <div className="journal-workspace">
@@ -90,12 +98,12 @@ export default async function BrewsPage({ searchParams }: PageProps) {
             <input type="hidden" name="grinder_type" value={grinderType} />
             <label htmlFor="bean_id">Coffee *</label>
             <select id="bean_id" name="bean_id" defaultValue={String(value("bean_id"))} required>
-              <option value="">Choose a coffee</option>{beansResult.data.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}</option>)}
+              <option value="">Choose a coffee</option>{coffees.map((bean) => <option key={bean.id} value={bean.id}>{bean.name}{bean.roaster ? ` · ${bean.roaster}` : ""}{bean.product_format === "capsule" ? " · Capsule" : ""}</option>)}
             </select>
             {!editing && <BrewStarter entries={logs as unknown as JournalEntry[]} initialBeanId={String(value("bean_id"))} />}
             <div className="bean-form-row">
               <div><label htmlFor="brew_date">Date *</label><input id="brew_date" name="brew_date" type="date" defaultValue={String(value("brew_date") || today())} required /></div>
-              <div><label htmlFor="grind_setting">Grind setting *</label><input id="grind_setting" name="grind_setting" type="number" min="0" max="1000" step="1" defaultValue={String(value("grind_setting"))} placeholder="e.g. 10" required /><small>Use the number shown on your grinder.</small></div>
+              <div><label htmlFor="grind_setting">Grind setting</label><input id="grind_setting" name="grind_setting" type="number" min="0" max="1000" step="1" defaultValue={String(value("grind_setting"))} placeholder="e.g. 10" /><small>Required for whole or ground coffee; capsules do not need it.</small></div>
             </div>
 
             <RangeField name="score" label="How much did you like it?" min={0} max={10} step={0.5} defaultValue={numberValue("score", 8)} suffix="/10" lowLabel="Not for me" highLabel="Loved it" />

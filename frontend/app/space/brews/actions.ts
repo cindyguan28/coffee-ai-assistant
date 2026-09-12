@@ -35,10 +35,14 @@ function hasOptionalValue(value: string | number | string[] | null | undefined) 
   return Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
 }
 
-async function ownedBeanExists(beanId: string, userId: string) {
+async function ownedCoffeeProduct(beanId: string, userId: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
-  return Boolean(data);
+  const result = await supabase.from("beans").select("id,product_format").eq("id", beanId).eq("user_id", userId).maybeSingle();
+  if (missingColumn(result.error, "product_format")) {
+    const legacy = await supabase.from("beans").select("id").eq("id", beanId).eq("user_id", userId).maybeSingle();
+    return legacy.data ? { id: legacy.data.id, product_format: "whole_bean" } : null;
+  }
+  return result.data;
 }
 
 export async function updateEquipment(formData: FormData) {
@@ -68,10 +72,12 @@ export async function updateEquipment(formData: FormData) {
 
 export async function addBrewLog(formData: FormData) {
   const userId = await requireCurrentUserId();
+  const beanId = String(formData.get("bean_id") ?? "").trim();
+  const product = beanId ? await ownedCoffeeProduct(beanId, userId) : null;
+  if (!product) redirect(destination("error", "Choose one of your own coffees."));
+  formData.set("product_format", product.product_format ?? "whole_bean");
   const validated = validateBrewLog(formData);
   if (!validated.ok) redirect(destination("error", validated.message));
-  const beanId = String(validated.value.bean_id);
-  if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
   let payload = validated.value;
@@ -91,10 +97,12 @@ export async function addBrewLog(formData: FormData) {
 export async function updateBrewLog(formData: FormData) {
   const userId = await requireCurrentUserId();
   const logId = String(formData.get("log_id") ?? "").trim();
+  const beanId = String(formData.get("bean_id") ?? "").trim();
+  const product = beanId ? await ownedCoffeeProduct(beanId, userId) : null;
+  if (!product) redirect(destination("error", "Choose one of your own coffees."));
+  formData.set("product_format", product.product_format ?? "whole_bean");
   const validated = validateBrewLog(formData);
   if (!logId || !validated.ok) redirect(destination("error", validated.ok ? "Journal entry not found." : validated.message));
-  const beanId = String(validated.value.bean_id);
-  if (!(await ownedBeanExists(beanId, userId))) redirect(destination("error", "Choose one of your own beans."));
 
   const supabase = await createClient();
   let payload = validated.value;

@@ -48,6 +48,7 @@ function numberValue(
 export function validateBrewLog(formData: FormData): BrewValidation {
   const beanId = stringValue(formData, "bean_id", 100);
   if (!beanId) return { ok: false, message: "Choose one of your coffees." };
+  const productFormat = stringValue(formData, "product_format", 50) ?? "whole_bean";
 
   const brewDate = stringValue(formData, "brew_date", 10);
   if (!brewDate || !/^\d{4}-\d{2}-\d{2}$/.test(brewDate)) {
@@ -76,7 +77,9 @@ export function validateBrewLog(formData: FormData): BrewValidation {
     numbers[field] = result.value;
   }
   if (numbers.score === null) return { ok: false, message: "Add a liking score from 0 to 10." };
-  if (numbers.grind_setting === null) return { ok: false, message: "Add the grind setting used for this cup." };
+  if (numbers.grind_setting === null && productFormat !== "capsule") {
+    return { ok: false, message: "Add the grind setting used for this cup." };
+  }
   const perceivedFlavorNotes = stringValue(formData, "perceived_flavor_notes", 1000);
 
   return {

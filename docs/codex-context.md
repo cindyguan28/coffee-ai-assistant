@@ -90,7 +90,7 @@ auth.users
 - The product name is **Brew Journal**, not Brew Logs or Blocks in user-facing navigation.
 - The compact history is grouped by Bean and ordered so the Bean with the newest entry appears first.
 - The entry composer opens on demand instead of permanently consuming most of the page.
-- Core capture includes Bean, date, grind setting, and liking. Grind setting is required for the current workflow.
+- Core capture includes Coffee Product, date, liking, and format-relevant controls. Grind setting remains required for whole or ground coffee, but not for capsules.
 - Machine, grinder, and usual method can be stored once as equipment defaults.
 - Dose is a controllable setting where method-relevant; yield and extraction time are actual observed outcomes.
 - Drink types and milk details appear only when relevant. Milk type, amount, and pairing are supported for milk drinks.
